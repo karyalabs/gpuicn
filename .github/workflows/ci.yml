@@ -69,6 +69,15 @@ jobs:
       - uses: karyalabs/.github/actions/self-hosted-prep@v1
       - name: Check every release version reference agrees
         run: python3 scripts/release-version.py check
+      - name: Check rust-toolchain.toml pins the same toolchain as release-pins.toml
+        run: |
+          python3 - <<'PY'
+          import tomllib, sys
+          pins = tomllib.load(open("release-pins.toml", "rb"))["rust"]["toolchain"]
+          file = tomllib.load(open("rust-toolchain.toml", "rb"))["toolchain"]["channel"]
+          if pins != file:
+              sys.exit(f"::error::release-pins.toml says {pins} but rust-toolchain.toml says {file}.")
+          PY
       - name: Check ejectable components use no crate-private items
         # An ejected file reaches the crate through `super::`.
         run: if grep -rnE "pub\((crate|super)\)" crates/ui/registry; then exit 1; fi
