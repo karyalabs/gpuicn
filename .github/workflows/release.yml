@@ -97,9 +97,19 @@ jobs:
     permissions:
       contents: write
     steps:
+      # The release bot pushes the tag: GITHUB_TOKEN may not push a ref
+      # whose new commits change a workflow file (0.9.13 failed this way).
+      - id: bot
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.KARYA_BOT_APP_ID }}
+          private-key: ${{ secrets.KARYA_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.plan.outputs.sha }}
+          token: ${{ steps.bot.outputs.token }}
       - env:
           TAG: ${{ needs.plan.outputs.tag }}
         run: |
