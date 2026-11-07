@@ -1363,14 +1363,16 @@ impl RenderOnce for QuotedMessage {
                         .when(!expanded, |frame| frame.max_h(clamp).overflow_hidden())
                         .child(
                             div()
-                                .on_prepaint(move |bounds, window, cx| {
+                                .on_prepaint(move |bounds, _, cx| {
                                     // The text's natural height, measured
                                     // inside the clamp, decides whether
                                     // there is more to show.
                                     let overflows = bounds.size.height > clamp + px(0.5);
                                     if measured.read(cx).overflows != overflows {
-                                        measured.update(cx, |state, _| state.overflows = overflows);
-                                        window.refresh();
+                                        measured.update(cx, |state, cx| {
+                                            state.overflows = overflows;
+                                            cx.notify();
+                                        });
                                     }
                                 })
                                 .child(body),
@@ -1389,9 +1391,11 @@ impl RenderOnce for QuotedMessage {
                             label.clone(),
                             label,
                             Some(expanded),
-                            move |_, window, cx| {
-                                toggle.update(cx, |state, _| state.expanded = !state.expanded);
-                                window.refresh();
+                            move |_, _, cx| {
+                                toggle.update(cx, |state, cx| {
+                                    state.expanded = !state.expanded;
+                                    cx.notify();
+                                });
                             },
                             &theme,
                         ),
@@ -1715,12 +1719,25 @@ mod tests {
         }
     }
 
+    struct CachedQuote(gpui_kit::Entity<Quote>);
+
+    impl Render for CachedQuote {
+        fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+            let style = gpui_kit::StyleRefinement::default().size_full();
+            div()
+                .size_full()
+                .child(gpui_kit::AnyView::from(self.0.clone()).cached(style))
+        }
+    }
+
     fn quote(body: &'static str, cx: &mut TestAppContext) -> (Rc<Cell<usize>>, VisualTestContext) {
         cx.update(super::super::theme::init);
         let jumps = Rc::new(Cell::new(0));
+        // In a cached view, as in an app that caches its panes: the quote
+        // renders again only when its own state notifies.
         let window = cx.add_window({
             let jumps = jumps.clone();
-            move |_, _| Quote { jumps, body }
+            move |_, cx| CachedQuote(gpui_kit::AppContext::new(cx, |_| Quote { jumps, body }))
         });
         let mut cx = VisualTestContext::from_window(window.into(), cx);
         cx.update(|window, cx| {

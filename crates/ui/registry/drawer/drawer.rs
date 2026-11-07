@@ -360,13 +360,13 @@ impl RenderOnce for Drawer {
                     )
                     .on_mouse_down(MouseButton::Left, move |event, window, cx| {
                         if enabled {
-                            start.update(cx, |state, _| {
+                            start.update(cx, |state, cx| {
                                 state.start = Some((event.position, px(offset)));
                                 state.offset = px(offset);
+                                cx.notify();
                             });
                             window.prevent_default();
                             cx.stop_propagation();
-                            window.refresh();
                         }
                     }),
             );
@@ -399,13 +399,13 @@ impl RenderOnce for Drawer {
                             |_, _, _| (),
                             move |_, _, window, _| {
                                 window.on_mouse_event(
-                                    move |event: &gpui_kit::MouseMoveEvent, phase, window, cx| {
+                                    move |event: &gpui_kit::MouseMoveEvent, phase, _, cx| {
                                         if phase != gpui_kit::DispatchPhase::Capture
                                             || moving.read(cx).start.is_none()
                                         {
                                             return;
                                         }
-                                        moving.update(cx, |state, _| {
+                                        moving.update(cx, |state, cx| {
                                             if event.pressed_button == Some(MouseButton::Left) {
                                                 let (origin, initial) = state.start.unwrap();
                                                 state.offset = (initial
@@ -415,8 +415,8 @@ impl RenderOnce for Drawer {
                                                 state.start = None;
                                                 state.offset = px(0.);
                                             }
+                                            cx.notify();
                                         });
-                                        window.refresh();
                                         cx.stop_propagation();
                                     },
                                 );
@@ -428,18 +428,18 @@ impl RenderOnce for Drawer {
                                         {
                                             return;
                                         }
-                                        let dismissed = releasing.update(cx, |state, _| {
+                                        let dismissed = releasing.update(cx, |state, cx| {
                                             state.start = None;
                                             let dismissed = state.offset >= extent * 0.25;
                                             if !dismissed {
                                                 state.offset = px(0.);
                                             }
+                                            cx.notify();
                                             dismissed
                                         });
                                         if dismissed {
                                             release.close(window, cx);
                                         }
-                                        window.refresh();
                                         cx.stop_propagation();
                                     },
                                 );

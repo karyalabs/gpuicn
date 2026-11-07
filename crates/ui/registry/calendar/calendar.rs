@@ -693,10 +693,13 @@ impl RenderOnce for Calendar {
         let key_state = self.state.clone();
         let on_select = self.on_select;
         let on_cancel = self.on_cancel;
+        // Escape arrives as the `Dismiss` action, so it reaches the calendar
+        // ahead of an app's own Escape shortcut (#165).
+        let escape_state = self.state.clone();
+        let escape_cancel = on_cancel.clone();
         let root = div()
             .id(id.clone())
             .test_support()
-            .key_context("Calendar")
             .track_focus(&focus_handle)
             .role(Role::Grid)
             .aria_label(title)
@@ -741,6 +744,13 @@ impl RenderOnce for Calendar {
             })
             .child(header)
             .child(div().flex().flex_col().child(weekdays).children(rows));
+        let root = super::theme::primitives::dismiss::on_escape(root, move |window, cx| {
+            escape_state.update(cx, |state, cx| state.handle_key("escape", false, cx));
+            if let Some(handler) = &escape_cancel {
+                handler(window, cx);
+            }
+            true
+        });
         apply_style(root, &self.style)
     }
 }
@@ -869,5 +879,56 @@ mod tests {
             state.update(cx, |state, cx| state.set_first_weekday(Weekday::Monday, cx));
             assert_eq!(state.read(cx).weeks()[0][0], date(2026, 2, 23));
         });
+    }
+
+    gpui_kit::actions!(calendar_test, [MarkRead]);
+
+    struct InApp {
+        state: Entity<CalendarState>,
+        marked: Rc<std::cell::Cell<bool>>,
+    }
+
+    impl Render for InApp {
+        fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+            let marked = self.marked.clone();
+            div()
+                .key_context("App")
+                .on_action(move |_: &MarkRead, _, _| marked.set(true))
+                .child(Calendar::new(&self.state))
+        }
+    }
+
+    #[gpui_kit::test]
+    fn escape_cancels_inside_an_app_escape_shortcut(cx: &mut TestAppContext) {
+        cx.update(|cx| {
+            super::super::theme::init(cx);
+            // An app shortcut on Escape around the calendar, like "mark read".
+            cx.bind_keys([gpui_kit::KeyBinding::new("escape", MarkRead, Some("App"))]);
+        });
+        let events = Rc::new(std::cell::RefCell::new(Vec::new()));
+        let sink = events.clone();
+        let marked = Rc::new(std::cell::Cell::new(false));
+        let window = cx.add_window({
+            let marked = marked.clone();
+            move |_, cx| {
+                let state = cx.new(CalendarState::new);
+                cx.subscribe(&state, move |_, _, event: &CalendarEvent, _| {
+                    sink.borrow_mut().push(*event)
+                })
+                .detach();
+                InApp { state, marked }
+            }
+        });
+        let view = window.root(cx).unwrap();
+        let mut cx = VisualTestContext::from_window(window.into(), cx);
+        let state = cx.update(|_, cx| view.read(cx).state.clone());
+        cx.update(|window, cx| {
+            window.activate_window();
+            state.update(cx, |state, cx| state.focus(window, cx));
+            window.draw(cx).clear(cx);
+        });
+        cx.simulate_keystrokes("escape");
+        assert_eq!(events.borrow().as_slice(), [CalendarEvent::Cancel]);
+        assert!(!marked.get(), "the app's shortcut doesn't run");
     }
 }

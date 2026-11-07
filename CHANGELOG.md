@@ -4,6 +4,23 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.9.13
+
+[Notes](docs/releases/v0.9.13.md)
+
+### Added
+
+- `dialog_with` and `alert_dialog_with`: build a dialog's popup only while it
+  is open (#164).
+
+### Fixed
+
+- Show more appears inside cached views (#161); several components repaint
+  only their own view instead of the whole window (#163).
+- Calendar and Resizable take Escape ahead of an app's Escape shortcut (#165).
+- "N new messages" is translatable (#166); releases retry Apple's stapler
+  (#162).
+
 ## 0.9.12
 
 [Notes](docs/releases/v0.9.12.md)

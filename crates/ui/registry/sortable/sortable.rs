@@ -527,7 +527,7 @@ impl RenderOnce for Sortable {
             {
                 let state = state.clone();
                 header = header.on_drag_move(
-                    move |event: &gpui_kit::DragMoveEvent<DraggedRow>, window, cx| {
+                    move |event: &gpui_kit::DragMoveEvent<DraggedRow>, _, cx| {
                         if !event.bounds.contains(&event.event.position)
                             || event.drag(cx).list != list
                         {
@@ -542,8 +542,10 @@ impl RenderOnce for Sortable {
                             }
                         };
                         if state.read(cx).row_target != Some(target) {
-                            state.update(cx, |state, _| state.row_target = Some(target));
-                            window.refresh();
+                            state.update(cx, |state, cx| {
+                                state.row_target = Some(target);
+                                cx.notify();
+                            });
                         }
                     },
                 );
@@ -693,29 +695,29 @@ impl RenderOnce for Sortable {
                                 cx.new(|_| DragPreview { render, width })
                             },
                         )
-                        .on_drag_move(
-                            move |event: &gpui_kit::DragMoveEvent<DraggedRow>, window, cx| {
-                                if !event.bounds.contains(&event.event.position)
-                                    || event.drag(cx).list != list
-                                {
-                                    return;
-                                }
-                                let after = if horizontal {
-                                    (event.event.position.x > event.bounds.center().x)
-                                        != direction.is_rtl()
-                                } else {
-                                    event.event.position.y > event.bounds.center().y
-                                };
-                                let target = Target::Slot {
-                                    group: group_index,
-                                    slot: index + usize::from(after),
-                                };
-                                if moved.read(cx).row_target != Some(target) {
-                                    moved.update(cx, |state, _| state.row_target = Some(target));
-                                    window.refresh();
-                                }
-                            },
-                        )
+                        .on_drag_move(move |event: &gpui_kit::DragMoveEvent<DraggedRow>, _, cx| {
+                            if !event.bounds.contains(&event.event.position)
+                                || event.drag(cx).list != list
+                            {
+                                return;
+                            }
+                            let after = if horizontal {
+                                (event.event.position.x > event.bounds.center().x)
+                                    != direction.is_rtl()
+                            } else {
+                                event.event.position.y > event.bounds.center().y
+                            };
+                            let target = Target::Slot {
+                                group: group_index,
+                                slot: index + usize::from(after),
+                            };
+                            if moved.read(cx).row_target != Some(target) {
+                                moved.update(cx, |state, cx| {
+                                    state.row_target = Some(target);
+                                    cx.notify();
+                                });
+                            }
+                        })
                         .on_key_down(move |event, window, cx| {
                             let Some(up) = move_key(event, horizontal, direction) else {
                                 return;
@@ -778,7 +780,7 @@ impl RenderOnce for Sortable {
             if reorder_groups {
                 let state = state.clone();
                 container = container.on_drag_move(
-                    move |event: &gpui_kit::DragMoveEvent<DraggedGroup>, window, cx| {
+                    move |event: &gpui_kit::DragMoveEvent<DraggedGroup>, _, cx| {
                         if !event.bounds.contains(&event.event.position)
                             || event.drag(cx).list != list
                         {
@@ -791,8 +793,10 @@ impl RenderOnce for Sortable {
                         };
                         let slot = group_index + usize::from(after);
                         if state.read(cx).group_target != Some(slot) {
-                            state.update(cx, |state, _| state.group_target = Some(slot));
-                            window.refresh();
+                            state.update(cx, |state, cx| {
+                                state.group_target = Some(slot);
+                                cx.notify();
+                            });
                         }
                     },
                 );

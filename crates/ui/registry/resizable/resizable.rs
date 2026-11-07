@@ -176,7 +176,7 @@ impl RenderOnce for Resizable {
         let accessibility_resize = self.on_resize;
         let horizontal = axis == Orientation::Horizontal;
         let handle_id = ElementId::NamedChild(Arc::new(self.id.clone()), "handle".into());
-        let mut handle = div()
+        let handle = div()
             .id(handle_id)
             .test_support()
             .debug_selector(|| "resizable-handle".into())
@@ -265,6 +265,12 @@ impl RenderOnce for Resizable {
                     .when(horizontal, |el| el.w(theme.space(1.)).h(theme.space(6.)))
                     .when(!horizontal, |el| el.h(theme.space(1.)).w(theme.space(6.))),
             );
+        // Escape cancels a drag as the `Dismiss` action, so it wins over an
+        // app's own Escape shortcut; with no drag it goes on to the app.
+        let escape_state = state.clone();
+        let mut handle = super::theme::primitives::dismiss::on_escape(handle, move |_, cx| {
+            escape_state.update(cx, |state, _| state.drag.take().is_some())
+        });
         for action in [
             AccessibleAction::Increment,
             AccessibleAction::Decrement,

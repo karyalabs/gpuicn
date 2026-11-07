@@ -12,7 +12,22 @@ use gpui_kit::{
     App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, Styled, Window, div,
 };
 
+/// Like [`alert_dialog`], but builds the popup only while the dialog is open.
+pub fn alert_dialog_with<E: IntoElement>(
+    id: impl Into<ElementId>,
+    handle: &DialogHandle,
+    build: impl FnOnce(&mut Window, &mut App) -> E,
+    window: &mut Window,
+    cx: &mut App,
+) -> AlertDialog {
+    let popup = super::dialog::lazy_popup(handle, build, window, cx);
+    alert_dialog(id, handle, popup, window, cx)
+}
+
 /// Keep this host mounted while closed; validate the action in `.on_ok(...)`.
+///
+/// The caller builds `popup` on every frame, open or closed; use
+/// [`alert_dialog_with`] to build it only while the dialog is open.
 pub fn alert_dialog(
     id: impl Into<ElementId>,
     handle: &DialogHandle,

@@ -9,12 +9,30 @@ import platform
 import plistlib
 import shutil
 import subprocess
+import time
 import tempfile
 import tomllib
 
 
 def run(*args):
     subprocess.run(args, check=True)
+
+
+def run_with_retries(*args, attempts=5):
+    """Runs a command that only fetches from Apple, retrying network drops.
+
+    The stapler downloads the notarization ticket from Apple's CDN; a dropped
+    connection (error 68) failed whole releases even though notarization had
+    passed (#162).
+    """
+    for attempt in range(1, attempts + 1):
+        if subprocess.run(args).returncode == 0:
+            return
+        if attempt < attempts:
+            delay = 10 * attempt
+            print(f"{args[0]} {args[1]} {args[2]} failed; retrying in {delay}s", flush=True)
+            time.sleep(delay)
+    raise subprocess.CalledProcessError(1, args)
 
 
 def main():
@@ -90,8 +108,8 @@ def main():
         run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(archive))
         if notarize:
             run("xcrun", "notarytool", "submit", str(archive), *credentials, "--wait")
-            run("xcrun", "stapler", "staple", str(app))
-            run("xcrun", "stapler", "validate", str(app))
+            run_with_retries("xcrun", "stapler", "staple", str(app))
+            run_with_retries("xcrun", "stapler", "validate", str(app))
             run("spctl", "--assess", "--type", "execute", str(app))
             archive.unlink()
             run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(archive))
