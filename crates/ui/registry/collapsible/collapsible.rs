@@ -145,13 +145,15 @@ impl gpui_kit::RenderOnce for ShowMore {
             .when(!expanded, |clip| clip.max_h(limit).overflow_hidden())
             .child(
                 div()
-                    .on_prepaint(move |bounds, window, cx| {
+                    .on_prepaint(move |bounds, _, cx| {
                         // The content's natural height, measured inside the
                         // clip, decides whether there is more to show.
                         let overflows = bounds.size.height > limit + gpui_kit::px(0.5);
                         if measured.read(cx).overflows != overflows {
-                            measured.update(cx, |state, _| state.overflows = overflows);
-                            window.refresh();
+                            measured.update(cx, |state, cx| {
+                                state.overflows = overflows;
+                                cx.notify();
+                            });
                         }
                     })
                     .child(self.content),
@@ -218,11 +220,13 @@ impl gpui_kit::RenderOnce for ShowMore {
                             .child(label)
                             .on_click(move |_, window, cx| {
                                 let next = !expanded;
-                                toggle_state.update(cx, |state, _| state.expanded = next);
+                                toggle_state.update(cx, |state, cx| {
+                                    state.expanded = next;
+                                    cx.notify();
+                                });
                                 if let Some(handler) = &on_toggle {
                                     handler(&next, window, cx);
                                 }
-                                window.refresh();
                             }),
                     ),
                 )
@@ -250,9 +254,23 @@ mod show_more_tests {
         }
     }
 
+    /// Holds the post in a cached view, as an app that caches its panes
+    /// does: the post renders again only when its own state notifies.
+    struct Pane(gpui_kit::Entity<Post>);
+
+    impl Render for Pane {
+        fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+            let style = gpui_kit::StyleRefinement::default().size_full();
+            div()
+                .size_full()
+                .child(gpui_kit::AnyView::from(self.0.clone()).cached(style))
+        }
+    }
+
     fn post(height: f32, cx: &mut TestAppContext) -> &mut VisualTestContext {
+        use gpui_kit::AppContext as _;
         cx.update(super::super::theme::init);
-        let (_, cx) = cx.add_window_view(move |_, _| Post(height));
+        let (_, cx) = cx.add_window_view(move |_, cx| Pane(cx.new(|_| Post(height))));
         // The first frame measures, the second shows the toggle.
         cx.update(|window, cx| window.draw(cx).clear(cx));
         cx.update(|window, cx| window.draw(cx).clear(cx));

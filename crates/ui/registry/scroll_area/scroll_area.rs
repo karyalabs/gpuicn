@@ -99,6 +99,9 @@ impl RenderOnce for ScrollArea {
                 .clone(),
         };
         let keyboard = handle.clone();
+        // Repaint only the view that renders this area, so an app's other
+        // cached views are reused.
+        let view = window.current_view();
         let axis = self.axis;
         let viewport = div()
             .id("viewport")
@@ -113,7 +116,7 @@ impl RenderOnce for ScrollArea {
                 viewport.overflow_x_scroll()
             })
             .when_some(self.label, |viewport, label| viewport.aria_label(label))
-            .on_key_down(move |event, window, cx| {
+            .on_key_down(move |event, _, cx| {
                 if event.keystroke.modifiers.modified() {
                     return;
                 }
@@ -146,7 +149,7 @@ impl RenderOnce for ScrollArea {
                 };
                 *value = (*value).clamp(-max.max(px(0.)), px(0.));
                 keyboard.set_offset(offset);
-                window.refresh();
+                cx.notify(view);
                 cx.stop_propagation();
             })
             .child(div().flex().flex_col().min_w_full().children(self.children));

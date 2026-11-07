@@ -582,6 +582,9 @@ impl RenderOnce for VirtualList {
         let state = self.state.clone();
         let change = self.on_event.clone();
         let key_focus = focus.clone();
+        // Repaint only the view that renders this list, so an app's other
+        // cached views are reused.
+        let view = window.current_view();
         let instructions = super::theme::locale::text(
             cx,
             if self.state.data.borrow().mode == ListSelectionMode::Multiple {
@@ -616,7 +619,7 @@ impl RenderOnce for VirtualList {
                     return;
                 }
                 if let Some(event) = state.key(&event.keystroke.key, event.keystroke.modifiers) {
-                    window.refresh();
+                    cx.notify(view);
                     if let Some(change) = &change {
                         change(&event, window, cx);
                     }
