@@ -554,6 +554,9 @@ pub enum UiText {
     AddReaction,
     /// "Jump to latest", the message list's default jump label.
     JumpToLatest,
+    /// "1 new message" or "{count} new messages", the message list's jump
+    /// label while messages arrived out of view.
+    NewMessages(usize),
     /// "online", an avatar status.
     StatusOnline,
     /// "away", an avatar status.
@@ -743,6 +746,7 @@ impl UiText {
             Self::Delete => "delete",
             Self::AddReaction => "add-reaction",
             Self::JumpToLatest => "jump-to-latest",
+            Self::NewMessages(_) => "new-messages",
             Self::StatusOnline => "status-online",
             Self::StatusAway => "status-away",
             Self::StatusDnd => "status-dnd",
@@ -763,6 +767,8 @@ impl UiText {
     pub fn english(&self) -> SharedString {
         let text: &'static str = match self {
             Self::Uploading(percent) => return format!("Uploading… {percent}%").into(),
+            Self::NewMessages(1) => "1 new message",
+            Self::NewMessages(count) => return format!("{count} new messages").into(),
             Self::Required(label) => return format!("{label} (required)").into(),
             Self::InvalidSelection(label) => return format!("{label} (invalid value)").into(),
             Self::Remove(name) => return format!("Remove {name}").into(),
@@ -981,6 +987,8 @@ mod tests {
         assert_eq!(UiText::WeekdayShort(0).english(), "Su");
         assert_eq!(UiText::SkinToneName(5).english(), "Dark skin tone");
         assert_eq!(UiText::Uploading(40).english(), "Uploading… 40%");
+        assert_eq!(UiText::NewMessages(1).english(), "1 new message");
+        assert_eq!(UiText::NewMessages(3).english(), "3 new messages");
         let date = UiText::LongDate {
             weekday: 6,
             month: 3,

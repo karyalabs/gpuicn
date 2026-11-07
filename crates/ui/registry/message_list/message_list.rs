@@ -401,8 +401,7 @@ impl RenderOnce for MessageList {
             0 => self.jump_label.clone().unwrap_or_else(|| {
                 super::theme::locale::text(cx, super::theme::UiText::JumpToLatest)
             }),
-            1 => "1 new message".into(),
-            count => format!("{count} new messages").into(),
+            count => super::theme::locale::text(cx, super::theme::UiText::NewMessages(count)),
         };
         let state = self.state.clone();
         let on_jump = self.on_jump.clone();

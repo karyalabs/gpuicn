@@ -120,7 +120,43 @@ impl gpui_kit::RenderOnce for DialogControl {
     }
 }
 
+/// Like [`dialog`], but builds the popup only while the dialog is open.
+///
+/// Keep the host mounted while closed so it can return focus; `build` runs
+/// only on frames where `handle` is open, so a closed dialog costs no more
+/// than its focus bookkeeping. Prefer this over [`dialog`] whenever the
+/// content takes work to build.
+pub fn dialog_with<E: IntoElement>(
+    id: impl Into<ElementId>,
+    handle: &DialogHandle,
+    build: impl FnOnce(&mut Window, &mut App) -> E,
+    window: &mut Window,
+    cx: &mut App,
+) -> Dialog {
+    let popup = lazy_popup(handle, build, window, cx);
+    dialog(id, handle, popup, window, cx)
+}
+
+/// The popup `build` returns while `handle` is open, and an empty element
+/// while it is closed.
+#[doc(hidden)]
+pub fn lazy_popup<E: IntoElement>(
+    handle: &DialogHandle,
+    build: impl FnOnce(&mut Window, &mut App) -> E,
+    window: &mut Window,
+    cx: &mut App,
+) -> gpui_kit::AnyElement {
+    if handle.is_open() {
+        build(window, cx).into_any_element()
+    } else {
+        div().into_any_element()
+    }
+}
+
 /// Keep the host mounted while closed so it can restore focus after dismissal.
+///
+/// The caller builds `popup` on every frame, open or closed; use
+/// [`dialog_with`] to build it only while the dialog is open.
 pub fn dialog(
     id: impl Into<ElementId>,
     handle: &DialogHandle,
@@ -521,5 +557,44 @@ mod tests {
             page,
             "the backdrop keeps the wheel from the page behind the dialog"
         );
+    }
+
+    struct LazyDialog {
+        handle: DialogHandle,
+        builds: Rc<Cell<usize>>,
+    }
+
+    impl Render for LazyDialog {
+        fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+            let builds = self.builds.clone();
+            div().size_full().child(dialog_with(
+                "lazy",
+                &self.handle,
+                move |_, cx| {
+                    builds.set(builds.get() + 1);
+                    dialog_popup("lazy-popup", "Settings", cx)
+                },
+                window,
+                cx,
+            ))
+        }
+    }
+
+    #[gpui_kit::test]
+    fn dialog_with_builds_only_while_open(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let handle = DialogHandle::new(false);
+        let builds = Rc::new(Cell::new(0));
+        let (_, cx) = cx.add_window_view({
+            let handle = handle.clone();
+            let builds = builds.clone();
+            move |_, _| LazyDialog { handle, builds }
+        });
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert_eq!(builds.get(), 0, "a closed dialog builds nothing");
+        cx.update(|window, cx| handle.open(window, cx));
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(builds.get() > 0, "an open dialog builds its popup");
     }
 }
