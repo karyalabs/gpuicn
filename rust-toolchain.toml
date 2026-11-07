@@ -1,0 +1,8 @@
+[toolchain]
+# The toolchain CI lints and tests with (release-pins.toml `rust.toolchain`,
+# which CI checks this against). Jobs that need another toolchain, such as
+# the MSRV check or the nightly WASM build, set RUSTUP_TOOLCHAIN through
+# karyalabs/.github/actions/rust-toolchain.
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
