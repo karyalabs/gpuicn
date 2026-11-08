@@ -6,12 +6,12 @@ use super::theme::{
 };
 use gpui_kit::base::{Checkbox as BaseCheckbox, CheckboxState};
 use gpui_kit::{
-    App, ClickEvent, ElementId, InteractiveElement as _, IntoElement, RenderOnce, SharedString,
+    App, ElementId, InteractiveElement as _, IntoElement, RenderOnce, SharedString,
     StatefulInteractiveElement as _, Styled, Window, prelude::FluentBuilder as _,
 };
 use std::rc::Rc;
 
-type ChangeHandler = Rc<dyn Fn(bool, &ClickEvent, &mut Window, &mut App)>;
+type ChangeHandler = Rc<dyn Fn(&bool, &mut Window, &mut App)>;
 
 #[derive(IntoElement)]
 /// A controlled Nova checkbox with optional mixed state.
@@ -66,10 +66,7 @@ impl Checkbox {
         self
     }
     /// Reports a requested value change; retain the next value in the owning view.
-    pub fn on_change(
-        mut self,
-        handler: impl Fn(bool, &ClickEvent, &mut Window, &mut App) + 'static,
-    ) -> Self {
+    pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
     }
@@ -98,8 +95,8 @@ impl RenderOnce for Checkbox {
             .when_some(self.label, |root, label| root.accessibility_label(label))
             .when(!self.read_only, |root| {
                 root.when_some(self.on_change, |root, handler| {
-                    root.on_change(move |state, event, window, cx| {
-                        handler(state == CheckboxState::Checked, event, window, cx)
+                    root.on_change(move |state, _, window, cx| {
+                        handler(&(state == CheckboxState::Checked), window, cx)
                     })
                 })
             });
@@ -123,9 +120,7 @@ impl super::field::FieldControl for Checkbox {
         }
         let handler = self.on_change.clone()?;
         let next = self.indeterminate || !self.checked;
-        Some(Rc::new(move |event, window, cx| {
-            handler(next, event, window, cx)
-        }))
+        Some(Rc::new(move |_, window, cx| handler(&next, window, cx)))
     }
 
     fn field_inline(&self) -> bool {

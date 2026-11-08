@@ -569,9 +569,9 @@ impl Showcase {
                                             .checked(self.sidebar_unread)
                                             .on_change({
                                                 let view = cx.entity().downgrade();
-                                                move |checked, _, _, cx| {
+                                                move |checked, _, cx| {
                                                     let _ = view.update(cx, |this, cx| {
-                                                        this.sidebar_unread = checked;
+                                                        this.sidebar_unread = *checked;
                                                         cx.notify();
                                                     });
                                                 }

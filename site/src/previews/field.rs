@@ -28,9 +28,9 @@ impl Showcase {
                     "notify",
                     Checkbox::new("field.notify")
                         .checked(*notify.read(cx))
-                        .on_change(move |checked, _, _, cx| {
+                        .on_change(move |checked, _, cx| {
                             toggled.update(cx, |notify, cx| {
-                                *notify = checked;
+                                *notify = *checked;
                                 cx.notify();
                             })
                         }),

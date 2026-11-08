@@ -118,7 +118,7 @@ fn toggles_report_their_next_state(cx: &mut TestAppContext) {
             .gap(px(8.))
             .child(
                 probe("checkbox").child(Checkbox::new("agree").aria_label("Agree").on_change(
-                    move |next, _, _, _| checkbox.borrow_mut().push(format!("checkbox {next}")),
+                    move |next, _, _| checkbox.borrow_mut().push(format!("checkbox {next}")),
                 )),
             )
             .child(
@@ -130,7 +130,7 @@ fn toggles_report_their_next_state(cx: &mut TestAppContext) {
                 probe("switch").child(
                     Switch::new("airplane")
                         .aria_label("Airplane mode")
-                        .on_change(move |next, _, _, _| {
+                        .on_change(move |next, _, _| {
                             switch.borrow_mut().push(format!("switch {next}"))
                         }),
                 ),
@@ -147,7 +147,7 @@ fn toggles_report_their_next_state(cx: &mut TestAppContext) {
                         .aria_label("Bold")
                         .variant(ToggleVariant::Outline)
                         .size(ToggleSize::Sm)
-                        .on_change(move |next, _, _, _| {
+                        .on_change(move |next, _, _| {
                             toggle.borrow_mut().push(format!("toggle {next}"))
                         })
                         .child("B"),

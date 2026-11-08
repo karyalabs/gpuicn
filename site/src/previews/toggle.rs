@@ -15,9 +15,9 @@ impl Showcase {
                     .pressed(self.pressed)
                     .variant(ToggleVariant::Outline)
                     .aria_label("Bold")
-                    .on_change(move |pressed, _, _, cx| {
+                    .on_change(move |pressed, _, cx| {
                         view.update(cx, |this, cx| {
-                            this.pressed = pressed;
+                            this.pressed = *pressed;
                             cx.notify();
                         })
                         .ok();

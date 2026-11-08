@@ -304,7 +304,7 @@ impl AdoptionConsumer {
                         Switch::new("review.compact")
                             .checked(self.compact)
                             .aria_label("Compact spacing")
-                            .on_change(move |value, _, window, cx| compact(&value, window, cx)),
+                            .on_change(compact),
                     )
                     .child("Compact"),
             )
@@ -317,9 +317,7 @@ impl AdoptionConsumer {
                         Switch::new("review.custom-palette")
                             .checked(self.custom_palette)
                             .aria_label("Custom palette")
-                            .on_change(move |value, _, window, cx| {
-                                custom_palette(&value, window, cx)
-                            }),
+                            .on_change(custom_palette),
                     )
                     .child("Custom palette"),
             )
@@ -332,7 +330,7 @@ impl AdoptionConsumer {
                         Switch::new("review.large-text")
                             .checked(self.large_text)
                             .aria_label("Larger text")
-                            .on_change(move |value, _, window, cx| large_text(&value, window, cx)),
+                            .on_change(large_text),
                     )
                     .child("Larger text"),
             )
@@ -345,9 +343,7 @@ impl AdoptionConsumer {
                         Switch::new("review.long-content")
                             .checked(self.long_content)
                             .aria_label("Long content")
-                            .on_change(move |value, _, window, cx| {
-                                long_content(&value, window, cx)
-                            }),
+                            .on_change(long_content),
                     )
                     .child("Long content"),
             )
@@ -360,9 +356,7 @@ impl AdoptionConsumer {
                         Switch::new("review.disabled-fields")
                             .checked(self.disable_fields)
                             .aria_label("Disable settings fields")
-                            .on_change(move |value, _, window, cx| {
-                                disable_fields(&value, window, cx)
-                            }),
+                            .on_change(disable_fields),
                     )
                     .child("Disabled fields"),
             )

@@ -4,8 +4,8 @@ use std::{rc::Rc, sync::Arc};
 
 use gpui_kit::base::Switch as BaseSwitch;
 use gpui_kit::{
-    App, ClickEvent, ElementId, InteractiveElement as _, IntoElement, ParentElement as _,
-    RenderOnce, SharedString, StatefulInteractiveElement as _, Styled, Window, div,
+    App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
+    SharedString, StatefulInteractiveElement as _, Styled, Window, div,
     prelude::FluentBuilder as _, px,
 };
 
@@ -15,7 +15,7 @@ use super::theme::{
     transition_value,
 };
 
-type ChangeHandler = Rc<dyn Fn(bool, &ClickEvent, &mut Window, &mut App) + 'static>;
+type ChangeHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 
 #[derive(IntoElement)]
 /// A controlled Nova switch with a themed thumb transition.
@@ -63,10 +63,7 @@ impl Switch {
         self
     }
     /// Reports a requested value change; retain the next value in the owning view.
-    pub fn on_change(
-        mut self,
-        handler: impl Fn(bool, &ClickEvent, &mut Window, &mut App) + 'static,
-    ) -> Self {
+    pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
     }
@@ -111,9 +108,7 @@ impl RenderOnce for Switch {
             })
             .when(!self.read_only, |root| {
                 root.when_some(self.on_change, |root, handler| {
-                    root.on_change(move |checked, event, window, cx| {
-                        handler(checked, event, window, cx)
-                    })
+                    root.on_change(move |checked, _, window, cx| handler(&checked, window, cx))
                 })
             });
         super::theme::apply_style(root, &self.style)

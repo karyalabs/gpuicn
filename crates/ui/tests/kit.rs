@@ -129,7 +129,7 @@ impl Render for Choices {
                 .item(RadioItem::new("a", "a").label("Alpha"))
                 .item(RadioItem::new("b", "b").label("Unavailable").disabled(true))
                 .item(RadioItem::new("c", "c").label("Charlie"))
-                .on_change(move |value, _, cx| change(value, cx))
+                .on_change(move |value, _, cx| change(value.clone(), cx))
                 .into_any_element()
         } else {
             use gpuicn::tabs::{Tab, Tabs};
@@ -138,7 +138,7 @@ impl Render for Choices {
                 .item(Tab::new("a", "a", "Alpha"))
                 .item(Tab::new("b", "b", "Unavailable").disabled(true))
                 .item(Tab::new("c", "c", "Charlie"))
-                .on_change(move |value, _, cx| change(value, cx))
+                .on_change(move |value, _, cx| change(value.clone(), cx))
                 .into_any_element()
         }
     }

@@ -559,7 +559,7 @@ impl Workspace {
                             .when(task.priority && !task.done, |el| {
                                 el.child(icon(LucideIcon::Flag, 14., c.muted_foreground))
                             })
-                            .on_change(move |_, _, _, cx| {
+                            .on_change(move |_, _, cx| {
                                 let _ = row_view.update(cx, |this, cx| {
                                     this.navigate(Destination::Task(id), cx)
                                 });
@@ -570,8 +570,9 @@ impl Workspace {
                             Checkbox::new(("workspace.done", id))
                                 .checked(task.done)
                                 .aria_label(format!("Complete {}", task.title))
-                                .on_change(move |done, _, _, cx| {
-                                    let _ = view.update(cx, |this, cx| this.complete(id, done, cx));
+                                .on_change(move |done, _, cx| {
+                                    let _ =
+                                        view.update(cx, |this, cx| this.complete(id, *done, cx));
                                 }),
                         ),
                     ),

@@ -340,3 +340,109 @@ fn every_component_file_is_named_in_a_test() {
         "remove these `untested` baseline lines: {fixed:?}"
     );
 }
+
+/// Splits `text` (the inside of a parenthesised list) at top-level commas.
+fn top_level_args(text: &str) -> Vec<String> {
+    let mut args = Vec::new();
+    let mut depth = 0i32;
+    let mut current = String::new();
+    for ch in text.chars() {
+        match ch {
+            '(' | '<' | '[' => depth += 1,
+            ')' | '>' | ']' => depth -= 1,
+            ',' if depth == 0 => {
+                args.push(current.trim().to_string());
+                current.clear();
+                continue;
+            }
+            _ => {}
+        }
+        current.push(ch);
+    }
+    if !current.trim().is_empty() {
+        args.push(current.trim().to_string());
+    }
+    args
+}
+
+/// The one-value handler signatures in `source` that take the value by value,
+/// or pass a click event beside a `bool`.
+fn by_value_handlers(source: &str) -> Vec<String> {
+    let mut wrong = Vec::new();
+    let mut rest = source;
+    while let Some(start) = rest.find("Fn(") {
+        let after = &rest[start + 3..];
+        let mut depth = 1;
+        let end = after
+            .char_indices()
+            .find(|(_, ch)| {
+                match ch {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    _ => {}
+                }
+                depth == 0
+            })
+            .map(|(index, _)| index)
+            .unwrap_or(after.len());
+        let args = top_level_args(&after[..end]);
+        let returns = after[end..]
+            .get(1..)
+            .is_some_and(|tail| tail.trim_start().starts_with("->"));
+        rest = &after[end..];
+        let ends_with_window = args.len() >= 2
+            && args[args.len() - 2] == "&mut Window"
+            && args[args.len() - 1].ends_with("App");
+        if returns || !ends_with_window {
+            continue;
+        }
+        let values = &args[..args.len() - 2];
+        let by_value = values.len() == 1 && !values[0].starts_with('&');
+        let event_beside_value = values.len() == 2 && values[1] == "&ClickEvent";
+        if by_value || event_beside_value {
+            wrong.push(format!("Fn({})", args.join(", ")));
+        }
+    }
+    wrong
+}
+
+#[test]
+fn by_value_handler_scan_finds_the_old_shapes() {
+    let source = "type A = Rc<dyn Fn(bool, &ClickEvent, &mut Window, &mut App)>;
+        type B = Rc<dyn Fn(SharedString, &mut Window, &mut App)>;
+        type C = Rc<dyn Fn(Vec<SharedString>, &mut Window, &mut App)>;
+        type D = Rc<dyn Fn(&bool, &mut Window, &mut App)>;
+        type E = Rc<dyn Fn(&[SharedString], &mut Window, &mut App)>;
+        type F = Rc<dyn Fn(usize, usize, &mut Window, &mut App)>;
+        type G = Box<dyn FnMut(usize, &mut Window, &mut App) -> AnyElement>;
+        type H = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App)>;";
+    assert_eq!(
+        by_value_handlers(source),
+        [
+            "Fn(bool, &ClickEvent, &mut Window, &mut App)",
+            "Fn(SharedString, &mut Window, &mut App)",
+            "Fn(Vec<SharedString>, &mut Window, &mut App)",
+        ]
+    );
+}
+
+/// Every one-value event handler is `Fn(&T, &mut Window, &mut App)`: the value
+/// by reference, whether or not it is `Copy`, and no click event beside it.
+/// That is the shape `cx.listener` returns, so a view can pass
+/// `cx.listener(|this, value: &T, window, cx| ..)` to any component.
+#[test]
+fn one_value_handlers_take_the_value_by_reference() {
+    let wrong: Vec<String> = registry_files()
+        .into_iter()
+        .flat_map(|(file, source)| {
+            by_value_handlers(non_test(&source))
+                .into_iter()
+                .map(move |handler| format!("{file}: {handler}"))
+        })
+        .collect();
+    assert!(
+        wrong.is_empty(),
+        "one-value handlers take `&T` (see docs/design.md, Handlers):\n  {}",
+        wrong.join("\n  ")
+    );
+}

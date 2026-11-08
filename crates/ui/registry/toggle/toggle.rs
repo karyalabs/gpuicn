@@ -4,8 +4,8 @@ use std::rc::Rc;
 
 use gpui_kit::base::Toggle as BaseToggle;
 use gpui_kit::{
-    AnyElement, App, ClickEvent, ElementId, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, SharedString, Styled, Window, prelude::FluentBuilder as _,
+    AnyElement, App, ElementId, InteractiveElement as _, IntoElement, ParentElement, RenderOnce,
+    SharedString, Styled, Window, prelude::FluentBuilder as _,
 };
 
 use super::theme::{
@@ -14,7 +14,7 @@ use super::theme::{
     primitives::{control, focus},
 };
 
-type ChangeHandler = Rc<dyn Fn(bool, &ClickEvent, &mut Window, &mut App) + 'static>;
+type ChangeHandler = Rc<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 /// Nova toggle surface styles.
@@ -92,10 +92,7 @@ impl Toggle {
         self
     }
     /// Reports a requested value change; retain the next value in the owning view.
-    pub fn on_change(
-        mut self,
-        handler: impl Fn(bool, &ClickEvent, &mut Window, &mut App) + 'static,
-    ) -> Self {
+    pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
     }
@@ -151,9 +148,7 @@ impl RenderOnce for Toggle {
             toggle = toggle.accessibility_label(label);
         }
         if let Some(handler) = self.on_change {
-            toggle = toggle.on_change(move |pressed, details, window, cx| {
-                handler(pressed, details, window, cx)
-            });
+            toggle = toggle.on_change(move |pressed, _, window, cx| handler(&pressed, window, cx));
         }
         toggle
     }

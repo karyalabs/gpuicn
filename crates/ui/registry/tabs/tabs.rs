@@ -48,7 +48,7 @@ impl Tab {
         self
     }
 }
-type ChangeHandler = Rc<dyn Fn(SharedString, &mut Window, &mut App)>;
+type ChangeHandler = Rc<dyn Fn(&SharedString, &mut Window, &mut App)>;
 #[derive(IntoElement)]
 /// A controlled tab list with automatic keyboard selection.
 pub struct Tabs {
@@ -96,7 +96,7 @@ impl Tabs {
     /// Reports a requested value change; retain the next value in the owning view.
     pub fn on_change(
         mut self,
-        handler: impl Fn(SharedString, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&SharedString, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
@@ -173,7 +173,7 @@ impl RenderOnce for Tabs {
                         move |s| focus::ring(s, &theme)
                     })
                     .when_some(change, |tab, handler| {
-                        tab.on_click(move |_, window, cx| handler(item.value.clone(), window, cx))
+                        tab.on_click(move |_, window, cx| handler(&item.value, window, cx))
                     })
             })
             .collect::<Vec<_>>();
@@ -197,7 +197,7 @@ impl RenderOnce for Tabs {
                 if let Some(index) = focus.key(event, Some(gpui_kit::Axis::Horizontal), window, cx)
                     && let Some(change) = &on_change
                 {
-                    change(values[index].clone(), window, cx);
+                    change(&values[index], window, cx);
                 }
             })
             .children(children);

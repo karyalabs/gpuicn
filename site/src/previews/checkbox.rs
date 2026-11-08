@@ -19,10 +19,10 @@ impl Showcase {
                         Checkbox::new("preview.checkbox.interactive")
                             .checked(self.checked)
                             .aria_label("Accept terms")
-                            .on_change(move |checked, _, _, cx| {
+                            .on_change(move |checked, _, cx| {
                                 checkbox_view
                                     .update(cx, |this, cx| {
-                                        this.checked = checked;
+                                        this.checked = *checked;
                                         cx.notify();
                                     })
                                     .ok();

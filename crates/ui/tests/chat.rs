@@ -215,7 +215,7 @@ impl Render for Selectable {
                 .track_focus(&self.focus)
                 .selected(selected)
                 .selectable(|index, _| index != 0)
-                .on_select(move |index, _, _| *sink.borrow_mut() = index)
+                .on_select(move |index, _, _| *sink.borrow_mut() = *index)
                 .on_key(move |event, selected, _, _| {
                     if event.keystroke.key == "e" {
                         claimed.borrow_mut().push(format!("edit {selected:?}"));
