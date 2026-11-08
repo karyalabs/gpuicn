@@ -14,10 +14,10 @@ impl Showcase {
                 Switch::new("preview.switch")
                     .checked(self.checked)
                     .aria_label("Airplane mode")
-                    .on_change(move |checked, _, _, cx| {
+                    .on_change(move |checked, _, cx| {
                         switch_view
                             .update(cx, |this, cx| {
-                                this.checked = checked;
+                                this.checked = *checked;
                                 cx.notify();
                             })
                             .ok();

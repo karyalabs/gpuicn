@@ -17,7 +17,7 @@ use super::button::{Button, ButtonSize, ButtonVariant};
 use super::theme::{UiTheme, apply_style};
 
 type RowRenderer = Box<dyn FnMut(usize, &mut Window, &mut App) -> gpui_kit::AnyElement>;
-type SelectHandler = Rc<dyn Fn(Option<usize>, &mut Window, &mut App) + 'static>;
+type SelectHandler = Rc<dyn Fn(&Option<usize>, &mut Window, &mut App) + 'static>;
 type KeyHandler = Rc<dyn Fn(&KeyDownEvent, Option<usize>, &mut Window, &mut App) -> bool + 'static>;
 type SelectableRow = Rc<dyn Fn(usize, &App) -> bool + 'static>;
 type JumpHandler = Rc<dyn Fn(&mut Window, &mut App) + 'static>;
@@ -126,7 +126,7 @@ impl MessageList {
     /// Runs when Up, Down or Escape changes the selection.
     pub fn on_select(
         mut self,
-        handler: impl Fn(Option<usize>, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&Option<usize>, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_select = Some(Rc::new(handler));
         self
@@ -448,7 +448,7 @@ impl RenderOnce for MessageList {
                     });
                 }
                 if let Some(handler) = &on_select {
-                    handler(next, window, cx);
+                    handler(&next, window, cx);
                 }
             })
             .relative()

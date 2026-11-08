@@ -466,7 +466,7 @@ impl Render for CalendarState {
     }
 }
 
-type SelectHandler = Rc<dyn Fn(CalendarDate, &mut Window, &mut App)>;
+type SelectHandler = Rc<dyn Fn(&CalendarDate, &mut Window, &mut App)>;
 type CancelHandler = Rc<dyn Fn(&mut Window, &mut App)>;
 
 /// A month grid bound to retained `CalendarState`.
@@ -496,7 +496,7 @@ impl Calendar {
     /// Runs after a date is picked, for example to close a popover.
     pub fn on_select(
         mut self,
-        handler: impl Fn(CalendarDate, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&CalendarDate, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_select = Some(Rc::new(handler));
         self
@@ -677,7 +677,7 @@ impl RenderOnce for Calendar {
                                                         state.pick(date, cx)
                                                     });
                                                     if picked && let Some(handler) = &on_select {
-                                                        handler(date, window, cx);
+                                                        handler(&date, window, cx);
                                                     }
                                                 })
                                         } else {
@@ -731,7 +731,7 @@ impl RenderOnce for Calendar {
                     "enter" | "space" => {
                         let picked = key_state.read(cx).selected;
                         if let (Some(date), Some(handler)) = (picked, &on_select) {
-                            handler(date, window, cx);
+                            handler(&date, window, cx);
                         }
                     }
                     "escape" => {

@@ -11,7 +11,7 @@ use gpui_kit::{
 };
 use std::rc::Rc;
 
-type ChangeHandler = Rc<dyn Fn(SharedString, &mut Window, &mut App)>;
+type ChangeHandler = Rc<dyn Fn(&SharedString, &mut Window, &mut App)>;
 /// One radio option with a stable ID and selected value.
 pub struct RadioItem {
     id: ElementId,
@@ -95,7 +95,7 @@ impl RadioGroup {
     /// Reports a requested value change; retain the next value in the owning view.
     pub fn on_change(
         mut self,
-        handler: impl Fn(SharedString, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&SharedString, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
@@ -152,9 +152,7 @@ impl RenderOnce for RadioGroup {
                     .child(circle)
                     .child(gpui_kit::Text::new_inaccessible(item.label))
                     .when_some(change, |radio, handler| {
-                        radio.on_change(move |_, _, window, cx| {
-                            handler(item.value.clone(), window, cx)
-                        })
+                        radio.on_change(move |_, _, window, cx| handler(&item.value, window, cx))
                     });
                 let radio = disabled::interactive(text::sm(radio, &theme), disabled);
                 apply_style(radio, &item.style)
@@ -170,7 +168,7 @@ impl RenderOnce for RadioGroup {
                 if let Some(index) = focus.key(event, None, window, cx)
                     && let Some(change) = &on_change
                 {
-                    change(values[index].clone(), window, cx);
+                    change(&values[index], window, cx);
                 }
             })
             .children(children);

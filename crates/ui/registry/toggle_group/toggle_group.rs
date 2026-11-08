@@ -11,7 +11,7 @@ use gpui_kit::{
 };
 use std::rc::Rc;
 
-type ChangeHandler = Rc<dyn Fn(Vec<SharedString>, &mut Window, &mut App)>;
+type ChangeHandler = Rc<dyn Fn(&[SharedString], &mut Window, &mut App)>;
 /// A labeled toggle option with custom child content.
 pub struct ToggleGroupItem {
     id: ElementId,
@@ -115,7 +115,7 @@ impl ToggleGroup {
     /// Reports a requested value change; retain the next value in the owning view.
     pub fn on_change(
         mut self,
-        handler: impl Fn(Vec<SharedString>, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&[SharedString], &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
@@ -189,7 +189,7 @@ impl RenderOnce for ToggleGroup {
                     .when(!disabled, |t| t.hover(move |s| s.bg(control.hover)))
                     .children(item.children)
                     .when_some(change, |toggle, handler| {
-                        toggle.on_change(move |_, _, window, cx| handler(next.clone(), window, cx))
+                        toggle.on_change(move |_, _, window, cx| handler(&next, window, cx))
                     });
                 apply_style(toggle, &item.style)
             })

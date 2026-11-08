@@ -4,6 +4,19 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.10.0
+
+[Notes](docs/releases/v0.10.0.md)
+
+### Changed (breaking)
+
+- One-value handlers take the value by reference, the shape `cx.listener`
+  returns (#168). `Checkbox`, `Switch` and `Toggle` `on_change` take
+  `&bool` with no `ClickEvent`; `Tabs` and `RadioGroup` take
+  `&SharedString`; `CheckboxGroup` and `ToggleGroup` take `&[SharedString]`;
+  `Calendar::on_select` takes `&CalendarDate`; `MessageList::on_select`
+  takes `&Option<usize>`.
+
 ## 0.9.13
 
 [Notes](docs/releases/v0.9.13.md)

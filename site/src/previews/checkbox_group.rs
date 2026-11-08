@@ -19,7 +19,7 @@ impl Showcase {
             )
             .on_change(move |next, _, cx| {
                 value.update(cx, |value, cx| {
-                    *value = next;
+                    *value = next.to_vec();
                     cx.notify();
                 })
             })

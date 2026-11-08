@@ -11,7 +11,7 @@ use gpui_kit::{
 };
 use std::rc::Rc;
 
-type ChangeHandler = Rc<dyn Fn(Vec<SharedString>, &mut Window, &mut App)>;
+type ChangeHandler = Rc<dyn Fn(&[SharedString], &mut Window, &mut App)>;
 /// One checkbox option with a stable ID and selected value.
 pub struct CheckboxGroupItem {
     id: ElementId,
@@ -95,7 +95,7 @@ impl CheckboxGroup {
     /// Reports a requested value change; retain the next value in the owning view.
     pub fn on_change(
         mut self,
-        handler: impl Fn(Vec<SharedString>, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&[SharedString], &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
@@ -144,8 +144,7 @@ impl RenderOnce for CheckboxGroup {
                     .child(square)
                     .child(gpui_kit::Text::new_inaccessible(item.label))
                     .when_some(change, |checkbox, handler| {
-                        checkbox
-                            .on_change(move |_, _, window, cx| handler(next.clone(), window, cx))
+                        checkbox.on_change(move |_, _, window, cx| handler(&next, window, cx))
                     });
                 let checkbox = disabled::interactive(text::sm(checkbox, &theme), disabled);
                 apply_style(checkbox, &item.style)

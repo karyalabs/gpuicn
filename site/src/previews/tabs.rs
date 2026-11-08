@@ -20,7 +20,7 @@ impl Showcase {
                     .item(Tab::new("billing", "billing", "Billing").disabled(true))
                     .on_change(move |next, _, cx| {
                         value.update(cx, |value, cx| {
-                            *value = next;
+                            *value = next.clone();
                             cx.notify();
                         })
                     }),

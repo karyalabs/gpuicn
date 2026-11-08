@@ -303,9 +303,9 @@ mod choice_tests {
                     Field::from_control(
                         "notify",
                         Checkbox::new("notify-box").checked(self.checked).on_change(
-                            move |next, _, _, cx| {
+                            move |next, _, cx| {
                                 view.update(cx, |form, cx| {
-                                    form.checked = next;
+                                    form.checked = *next;
                                     cx.notify()
                                 })
                             },

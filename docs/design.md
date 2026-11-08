@@ -61,6 +61,23 @@ can only go down.
 `cargo xtask new-component <name>` creates all of them, so the gates pass on
 the first build and the work is the component itself.
 
+## Handlers
+
+Every handler has one of a few shapes, so a caller never has to look one up:
+
+- A click is `Fn(&ClickEvent, &mut Window, &mut App)`, as in GPUI.
+- A change, toggle, select or resize reports one value as
+  `Fn(&T, &mut Window, &mut App)`: by reference even when `T` is `Copy`
+  (`&bool`, `&Pixels`), strings as `&SharedString` and lists as
+  `&[SharedString]`. It does not pass the click that caused it. This is the
+  shape `cx.listener` returns, so a view writes
+  `.on_change(cx.listener(|this, checked: &bool, window, cx| ..))`.
+- A handler that reports more than one value takes them in order before
+  `&mut Window` (`Sortable::on_reorder_group(from, to, ..)`).
+
+`tests/registry_lint.rs` fails on a one-value handler that takes its value by
+value.
+
 ## Evidence
 
 Every visible change comes with before and after screenshots at the same

@@ -100,9 +100,9 @@ impl Showcase {
                     .selected(current)
                     .selectable(|index, _| !index.is_multiple_of(60))
                     .on_select(move |index, _, cx| {
-                        select.update(cx, |selected, _| *selected = index);
+                        select.update(cx, |selected, _| *selected = *index);
                         let _ = owner.update(cx, |this, cx| {
-                            this.demo_action = match index {
+                            this.demo_action = match *index {
                                 Some(index) => format!("Selected message {index}"),
                                 None => "Cleared the selection".into(),
                             };

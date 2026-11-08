@@ -122,7 +122,7 @@ mod checkbox {
         Checkbox::new("terms")
             .checked(checked)
             .aria_label("Accept terms")
-            .on_change(|checked, _, _, _| println!("Accepted: {checked}"))
+            .on_change(|checked, _, _| println!("Accepted: {checked}"))
     }
 }
 
@@ -141,7 +141,7 @@ mod checkbox_group {
             .item(CheckboxGroupItem::new("push", "push").label("Push"))
             .on_change(move |next, _, cx| {
                 value.update(cx, |value, cx| {
-                    *value = next;
+                    *value = next.to_vec();
                     cx.notify();
                 })
             })
@@ -443,7 +443,7 @@ mod radio_group {
             .item(RadioItem::new("comfortable", "comfortable").label("Comfortable"))
             .on_change(move |next, _, cx| {
                 value.update(cx, |value, cx| {
-                    *value = next;
+                    *value = next.clone();
                     cx.notify();
                 })
             })
@@ -513,7 +513,7 @@ mod switch {
         Switch::new("airplane")
             .checked(checked)
             .aria_label("Airplane mode")
-            .on_change(|checked, _, _, _| println!("Airplane mode: {checked}"))
+            .on_change(|checked, _, _| println!("Airplane mode: {checked}"))
     }
 }
 
@@ -534,7 +534,7 @@ mod tabs {
                     .item(Tab::new("password", "password", "Password"))
                     .on_change(move |value, _, cx| {
                         selected.update(cx, |selected, cx| {
-                            *selected = value;
+                            *selected = value.clone();
                             cx.notify();
                         })
                     }),
@@ -583,7 +583,7 @@ mod toggle {
             .aria_label("Bold")
             .pressed(pressed)
             .child("B")
-            .on_change(|pressed, _, _, _| println!("Bold: {pressed}"))
+            .on_change(|pressed, _, _| println!("Bold: {pressed}"))
     }
 }
 
@@ -610,7 +610,7 @@ mod toggle_group {
             )
             .on_change(move |next, _, cx| {
                 value.update(cx, |value, cx| {
-                    *value = next;
+                    *value = next.to_vec();
                     cx.notify();
                 })
             })
@@ -1061,7 +1061,7 @@ mod message_list {
             .on_jump(|_, _| println!("load the latest page"))
             .track_focus(&focus)
             .selected(current)
-            .on_select(move |index, _, cx| selected.update(cx, |selected, _| *selected = index))
+            .on_select(move |index, _, cx| selected.update(cx, |selected, _| *selected = *index))
             .on_key(|event, selected, _, _| {
                 // E edits the selected message; other keys fall through.
                 event.keystroke.key == "e" && selected.is_some()
