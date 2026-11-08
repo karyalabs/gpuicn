@@ -1,6 +1,7 @@
 //! Nova menus composed from Kit buttons and popup positioning.
 use super::{
     button::{ButtonSize, ButtonVariant, style_button},
+    kbd::{format_shortcut, key_label},
     theme::{
         UiTheme, apply_style,
         locale::DirectionalStyled as _,
@@ -19,6 +20,7 @@ use gpui_kit::{
 use std::{rc::Rc, time::Duration};
 
 type Handler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App)>;
+type Slot = Rc<dyn Fn(&mut Window, &mut App) -> AnyElement>;
 #[derive(Clone)]
 /// An action, check item, radio item, separator or submenu entry.
 pub struct MenuItem {
@@ -31,6 +33,11 @@ pub struct MenuItem {
     handler: Option<Handler>,
     children: Vec<MenuItem>,
     separator: bool,
+    icon: Option<LucideIcon>,
+    leading: Option<Slot>,
+    description: Option<SharedString>,
+    trailing: Option<Slot>,
+    shortcut: Option<SharedString>,
 }
 impl MenuItem {
     /// Creates an action with a caller-owned ID, unique within this menu tree.
@@ -45,7 +52,49 @@ impl MenuItem {
             handler: None,
             children: Vec::new(),
             separator: false,
+            icon: None,
+            leading: None,
+            description: None,
+            trailing: None,
+            shortcut: None,
         }
+    }
+    /// Shows a 16px Lucide icon in muted color at the row's leading edge.
+    pub fn icon(mut self, icon: LucideIcon) -> Self {
+        self.icon = Some(icon);
+        self
+    }
+    /// Renders a caller-built element at the row's leading edge, such as an
+    /// avatar or a team tile. It replaces [`MenuItem::icon`]. The closure runs
+    /// on every render of the open menu, so items stay cheap to clone.
+    pub fn leading(mut self, slot: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self {
+        self.leading = Some(Rc::new(slot));
+        self
+    }
+    /// Shows a muted secondary line under the label.
+    pub fn description(mut self, text: impl Into<SharedString>) -> Self {
+        self.description = Some(text.into());
+        self
+    }
+    /// Renders a caller-built element right-aligned before the shortcut, such
+    /// as an unread count or a status dot.
+    pub fn trailing(
+        mut self,
+        slot: impl Fn(&mut Window, &mut App) -> AnyElement + 'static,
+    ) -> Self {
+        self.trailing = Some(Rc::new(slot));
+        self
+    }
+    /// Shows a keyboard shortcut at the far right, written like a key binding
+    /// (`"secondary-alt-1"`) and drawn for the running platform (`⌘⌥1` on
+    /// macOS, `Ctrl+Alt+1` elsewhere). Text that does not parse is shown as
+    /// written, so a plain hint such as `"Settings"` works too.
+    pub fn shortcut(mut self, shortcut: impl Into<SharedString>) -> Self {
+        self.shortcut = Some(shortcut.into());
+        self
+    }
+    fn rich(&self) -> bool {
+        self.icon.is_some() || self.leading.is_some() || self.description.is_some()
     }
     /// Disables interaction and applies the disabled appearance.
     pub fn disabled(mut self, value: bool) -> Self {
@@ -129,6 +178,7 @@ pub struct MenuState {
     query: String,
     typed_at: Option<web_time::Instant>,
     submenu_timer: Option<gpui_kit::Task<()>>,
+    width: Option<Pixels>,
 }
 
 /// How long the pointer rests on a submenu row before the submenu opens.
@@ -177,7 +227,14 @@ impl MenuState {
             query: String::new(),
             typed_at: None,
             submenu_timer: None,
+            width: None,
         }
+    }
+    /// Gives the root panel a fixed width instead of sizing it to its widest
+    /// row. Submenus keep sizing to their content.
+    pub fn width(mut self, width: Pixels) -> Self {
+        self.width = Some(width);
+        self
     }
     /// Returns whether the popup is open.
     pub fn is_open(&self) -> bool {
@@ -427,6 +484,7 @@ impl Render for MenuState {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let t = UiTheme::read(cx).clone();
         let viewport = window.viewport_size();
+        let os = cx.platform_info().os;
         let escape = cx.entity().downgrade();
         let mut root = dismiss::on_escape(div(), move |window, cx| {
             escape
@@ -472,6 +530,9 @@ impl Render for MenuState {
                 .relative()
                 .role(Role::Menu)
                 .min_w(t.space(40.))
+                .when_some(self.width.filter(|_| depth == 0), |popup, width| {
+                    popup.w(width)
+                })
                 .max_h(menu_max_height(anchor, viewport, beside, t.space(1.)))
                 .debug_selector(move || format!("menu-popup-{depth}"))
                 .overflow_y_scroll()
@@ -522,7 +583,7 @@ impl Render for MenuState {
                     .accessibility_label(item.label.clone())
                     .relative()
                     .w_full()
-                    .min_h(t.space(8.))
+                    .min_h(t.space(if item.rich() { 9. } else { 8. }))
                     .mirror_row(t.direction)
                     .justify_start()
                     .gap(t.space(2.))
@@ -557,12 +618,65 @@ impl Render for MenuState {
                     .on_click(cx.listener(move |this, event, window, cx| {
                         this.activate(depth, index, event, window, cx)
                     }))
-                    .child(div().flex_1().child(item.label))
+                    .map(|b| match (&item.leading, item.icon) {
+                        (Some(slot), _) => b.child(
+                            div()
+                                .flex_shrink_0()
+                                .flex()
+                                .items_center()
+                                .child(slot(window, cx)),
+                        ),
+                        (None, Some(icon)) => b.child(
+                            lucide(icon)
+                                .flex_shrink_0()
+                                .size(t.space(4.))
+                                .text_color(t.colors.muted_foreground),
+                        ),
+                        (None, None) => b,
+                    })
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .flex()
+                            .flex_col()
+                            .child(div().truncate().child(item.label.clone()))
+                            .when_some(item.description.clone(), |col, description| {
+                                col.child(
+                                    div()
+                                        .truncate()
+                                        .text_size(t.text(12.))
+                                        .text_color(t.colors.muted_foreground)
+                                        .child(description),
+                                )
+                            }),
+                    )
+                    .when_some(item.trailing.clone(), |b, slot| {
+                        b.child(
+                            div()
+                                .flex_shrink_0()
+                                .flex()
+                                .items_center()
+                                .child(slot(window, cx)),
+                        )
+                    })
                     .when(item.checked == Some(true), |b| {
                         b.child(
                             lucide(LucideIcon::Check)
                                 .size(t.space(4.))
                                 .text_color(t.colors.popover_foreground),
+                        )
+                    })
+                    .when_some(item.shortcut.clone(), |b, shortcut| {
+                        b.child(
+                            key_label(
+                                &format_shortcut(&shortcut, os),
+                                t.text(12.),
+                                t.colors.muted_foreground.into(),
+                            )
+                            .debug_selector(|| "menu-shortcut".into())
+                            .flex_shrink_0()
+                            .text_size(t.text(12.)),
                         )
                     })
                     .when(submenu, |b| {
@@ -800,6 +914,48 @@ mod tests {
         let popup = cx.debug_bounds("menu-popup-0").expect("the menu is open");
         // Twelve 32px rows plus padding: taller than the old 288px cap.
         assert!(popup.size.height > px(12. * 32.), "{popup:?}");
+    }
+
+    #[gpui_kit::test]
+    fn rich_items_draw_their_shortcut_and_grow_to_36px(cx: &mut gpui_kit::TestAppContext) {
+        cx.update(super::super::theme::init);
+        let (view, cx) = cx.add_window_view(|_, cx| LongMenu {
+            state: cx.new(|cx| {
+                MenuState::new(
+                    [
+                        MenuItem::new("tech", "Tech")
+                            .icon(LucideIcon::Users)
+                            .description("karya.team")
+                            .trailing(|_, _| div().child("3").into_any_element())
+                            .shortcut("secondary-alt-1")
+                            .radio(true),
+                        MenuItem::new("join", "Join another team…").icon(LucideIcon::Plus),
+                    ],
+                    cx,
+                )
+                .width(px(300.))
+            }),
+        });
+        cx.simulate_resize(size(px(800.), px(800.)));
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        cx.update(|window, cx| {
+            let state = view.read(cx).state.clone();
+            state.update(cx, |menu, cx| menu.open(window, cx));
+        });
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        let popup = cx.debug_bounds("menu-popup-0").expect("the menu is open");
+        assert_eq!(popup.size.width, px(300.));
+        assert!(popup.size.height >= px(2. * 36.), "{popup:?}");
+        let shortcut = cx
+            .debug_bounds("menu-shortcut")
+            .expect("the shortcut is drawn");
+        assert!(shortcut.size.width > px(0.));
+        // The shortcut sits at the trailing edge of the panel.
+        assert!(
+            shortcut.right() > popup.right() - px(24.),
+            "{shortcut:?} {popup:?}"
+        );
     }
 
     #[gpui_kit::test]
