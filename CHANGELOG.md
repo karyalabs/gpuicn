@@ -4,6 +4,22 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.10.3
+
+[Notes](docs/releases/v0.10.3.md)
+
+### Fixed
+
+- Controls claim their press: pressing one never starts a text selection,
+  and a clickable `Message` row leaves the click to it.
+- Tooltips use the popover surface, so they follow light and dark mode.
+- A selected `SidebarItem` keeps its colors on hover.
+
+### Added
+
+- `message::emoji_tooltip`, `SidebarItem::label_suffix_tooltip_view` and
+  `primitives::press`.
+
 ## 0.10.2
 
 [Notes](docs/releases/v0.10.2.md)

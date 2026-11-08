@@ -250,6 +250,9 @@ impl RenderOnce for Attachment {
             .when_some(self.on_click.clone(), |root, handler| {
                 root.cursor_pointer()
                     .hover(|root| root.bg(colors.muted.opacity(0.5)))
+                    .on_mouse_down(gpui_kit::MouseButton::Left, |_, _, cx| {
+                        super::theme::primitives::press::claim_now(cx)
+                    })
                     .on_click(move |event, window, cx| handler(event, window, cx))
             });
 

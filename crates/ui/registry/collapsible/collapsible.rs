@@ -193,41 +193,44 @@ impl gpui_kit::RenderOnce for ShowMore {
             .when(overflows, |column| {
                 column.child(
                     div().flex().pt(theme.space(1.)).child(
-                        gpui_kit::base::Button::new((self.id.clone(), "toggle"))
-                            .aria_label(label.clone())
-                            .aria_expanded(expanded)
-                            .flex()
-                            .items_center()
-                            .gap(theme.space(1.))
-                            .rounded(theme.radius.sm)
-                            .text_size(theme.text(13.))
-                            .font_weight(gpui_kit::FontWeight::MEDIUM)
-                            .text_color(colors.primary)
-                            .cursor_pointer()
-                            .hover(|style| style.underline())
-                            .focus_visible(move |style| {
-                                super::theme::primitives::focus::ring(style, &focus_theme)
+                        super::theme::primitives::press::claim(gpui_kit::base::Button::new((
+                            self.id.clone(),
+                            "toggle",
+                        )))
+                        .aria_label(label.clone())
+                        .aria_expanded(expanded)
+                        .flex()
+                        .items_center()
+                        .gap(theme.space(1.))
+                        .rounded(theme.radius.sm)
+                        .text_size(theme.text(13.))
+                        .font_weight(gpui_kit::FontWeight::MEDIUM)
+                        .text_color(colors.primary)
+                        .cursor_pointer()
+                        .hover(|style| style.underline())
+                        .focus_visible(move |style| {
+                            super::theme::primitives::focus::ring(style, &focus_theme)
+                        })
+                        .child(
+                            lucide(if expanded {
+                                LucideIcon::ChevronUp
+                            } else {
+                                LucideIcon::ChevronDown
                             })
-                            .child(
-                                lucide(if expanded {
-                                    LucideIcon::ChevronUp
-                                } else {
-                                    LucideIcon::ChevronDown
-                                })
-                                .size(theme.space(3.5))
-                                .text_color(colors.primary),
-                            )
-                            .child(label)
-                            .on_click(move |_, window, cx| {
-                                let next = !expanded;
-                                toggle_state.update(cx, |state, cx| {
-                                    state.expanded = next;
-                                    cx.notify();
-                                });
-                                if let Some(handler) = &on_toggle {
-                                    handler(&next, window, cx);
-                                }
-                            }),
+                            .size(theme.space(3.5))
+                            .text_color(colors.primary),
+                        )
+                        .child(label)
+                        .on_click(move |_, window, cx| {
+                            let next = !expanded;
+                            toggle_state.update(cx, |state, cx| {
+                                state.expanded = next;
+                                cx.notify();
+                            });
+                            if let Some(handler) = &on_toggle {
+                                handler(&next, window, cx);
+                            }
+                        }),
                     ),
                 )
             })
