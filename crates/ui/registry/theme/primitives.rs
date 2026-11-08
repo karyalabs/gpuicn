@@ -235,14 +235,18 @@ pub mod surface {
             .bg(theme.colors.background)
             .shadow(theme.shadows.sm.to_vec())
     }
-    /// Tooltips: inverted colors at the small radius and caption size.
+    /// Tooltips: the popover surface (so they follow light and dark mode)
+    /// at the medium radius and caption size.
     pub fn tooltip<T: Styled>(element: T, theme: &UiTheme) -> T {
         reading_start(text::xs(element, theme), theme)
-            .rounded(theme.radius.sm)
+            .rounded(theme.radius.md)
             .px(theme.space(3.))
             .py(theme.space(1.5))
-            .bg(theme.colors.foreground)
-            .text_color(theme.colors.background)
+            .border_1()
+            .border_color(theme.control().surface_border)
+            .bg(theme.colors.popover)
+            .text_color(theme.colors.popover_foreground)
+            .shadow(theme.shadows.md.to_vec())
     }
     /// A one-pixel rule in the border color, across or down.
     pub fn divider<T: Styled>(element: T, theme: &UiTheme, axis: Axis) -> T {
@@ -543,4 +547,39 @@ pub fn hover_reveal_in_group<T: Styled + InteractiveElement>(
 /// Erases an element's type after styling, for callers that store children.
 pub fn erase(element: impl IntoElement) -> AnyElement {
     element.into_any_element()
+}
+
+/// A press that belongs to a control. GPUI runs a parent's click handler
+/// after its child's unless the child stops propagation, and the window's
+/// text selection starts from any press; a control that claims its press
+/// keeps both from happening, so a click on a button inside a clickable row
+/// is the button's alone and pressing it never starts a selection.
+pub mod press {
+    use gpui_kit::{App, InteractiveElement, MouseButton, base::GlobalState};
+
+    /// Claims every left press on `element` for it.
+    pub fn claim<T: InteractiveElement>(element: T) -> T {
+        element.on_mouse_down(MouseButton::Left, |_, _, cx| claim_now(cx))
+    }
+
+    /// Claims the current press, from inside a mouse-down handler.
+    pub fn claim_now(cx: &mut App) {
+        GlobalState::init(cx);
+        GlobalState::suppress_text_selection(cx);
+    }
+
+    /// Whether a control claimed the current press. A clickable container
+    /// checks this in its click handler and leaves the click to the control.
+    pub fn claimed(cx: &App) -> bool {
+        cx.has_global::<GlobalState>() && GlobalState::is_text_selection_suppressed(cx)
+    }
+
+    /// Forgets the last press's claim. Call it in the capture phase of a
+    /// container's mouse down, so a claim never outlives its press in a
+    /// window without a selection root (which does this itself).
+    pub fn reset(cx: &mut App) {
+        if cx.has_global::<GlobalState>() {
+            GlobalState::reset_text_selection_suppression(cx);
+        }
+    }
 }

@@ -220,6 +220,9 @@ impl RenderOnce for Button {
         if let Some(label) = self.aria_label {
             root = root.accessibility_label(label);
         }
+        if !self.disabled {
+            root = super::theme::primitives::press::claim(root);
+        }
         if let Some(handler) = self.on_click {
             root = root.on_click(move |event, window, cx| handler(event, window, cx));
         }

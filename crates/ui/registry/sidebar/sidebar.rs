@@ -19,6 +19,8 @@ use gpui_kit::{
 };
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
+type SuffixTooltip = Rc<dyn Fn(&mut Window, &mut App) -> gpui_kit::AnyView>;
+
 type ActivateHandler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App)>;
 fn part(id: &ElementId, name: &'static str) -> ElementId {
     ElementId::NamedChild(Arc::new(id.clone()), name.into())
@@ -398,6 +400,7 @@ pub struct SidebarItem {
     icon: Option<AnyElement>,
     label_suffix: Option<AnyElement>,
     label_suffix_tooltip: Option<SharedString>,
+    label_suffix_tooltip_view: Option<SuffixTooltip>,
     trailing: Option<AnyElement>,
     size: SidebarItemSize,
     outline: bool,
@@ -418,6 +421,7 @@ impl SidebarItem {
             icon: None,
             label_suffix: None,
             label_suffix_tooltip: None,
+            label_suffix_tooltip_view: None,
             trailing: None,
             size: SidebarItemSize::Default,
             outline: false,
@@ -464,6 +468,17 @@ impl SidebarItem {
     /// the label by assistive technology.
     pub fn label_suffix_tooltip(mut self, text: impl Into<SharedString>) -> Self {
         self.label_suffix_tooltip = Some(text.into());
+        self
+    }
+    /// Shows `build`'s view as the suffix's tooltip instead of a plain text
+    /// one, such as `message::emoji_tooltip` for a status emoji. Set
+    /// [`SidebarItem::label_suffix_tooltip`] too: its text is still what
+    /// assistive technology reads.
+    pub fn label_suffix_tooltip_view(
+        mut self,
+        build: impl Fn(&mut Window, &mut App) -> gpui_kit::AnyView + 'static,
+    ) -> Self {
+        self.label_suffix_tooltip_view = Some(Rc::new(build));
         self
     }
     /// Adds noninteractive trailing content, such as a count. Separate actions belong beside the item.
@@ -642,9 +657,12 @@ impl RenderOnce for SidebarItem {
                         .when(selected, |el| el.font_weight(FontWeight::MEDIUM))
                         .when(collapsed, |el| el.w(spacing * 8_f32).justify_center())
                         .when(self.disabled, disabled::style)
-                        .when(!self.disabled, |el| {
-                            el.cursor_pointer()
-                                .hover(|style| style.bg(active).text_color(active_fg))
+                        // The selected item is already in its active
+                        // colors; hovering it changes nothing, so an app's
+                        // own selected colors stay put too.
+                        .when(!self.disabled, |el| el.cursor_pointer())
+                        .when(!self.disabled && !selected, |el| {
+                            el.hover(|style| style.bg(active).text_color(active_fg))
                         })
                         .focus_visible(|style| style.border_color(ring))
                 };
@@ -665,6 +683,7 @@ impl RenderOnce for SidebarItem {
                     None => el.child(label.flex_1()),
                     Some(suffix) => {
                         let tooltip = self.label_suffix_tooltip.clone();
+                        let tooltip_view = self.label_suffix_tooltip_view.clone();
                         el.child(
                             div()
                                 .flex_1()
@@ -679,10 +698,14 @@ impl RenderOnce for SidebarItem {
                                         .flex_none()
                                         .flex()
                                         .items_center()
-                                        .when_some(tooltip, |suffix, text| {
-                                            suffix.tooltip(move |_, cx| {
+                                        .map(|suffix| match (tooltip_view, tooltip) {
+                                            (Some(build), _) => {
+                                                suffix.tooltip(move |window, cx| build(window, cx))
+                                            }
+                                            (None, Some(text)) => suffix.tooltip(move |_, cx| {
                                                 text_tooltip(text.clone(), cx)
-                                            })
+                                            }),
+                                            (None, None) => suffix,
                                         })
                                         .child(suffix),
                                 ),

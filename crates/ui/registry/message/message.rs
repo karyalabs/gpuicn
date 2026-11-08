@@ -20,7 +20,7 @@ use super::button::{Button, ButtonSize, ButtonVariant};
 use super::theme::{
     UiText, UiTheme, apply_style,
     locale::{self, DirectionalStyled as _},
-    primitives::{focus, hover_reveal_in_group, surface, text},
+    primitives::{focus, hover_reveal_in_group, press, surface, text},
 };
 use super::tooltip::text_tooltip;
 
@@ -673,11 +673,18 @@ impl RenderOnce for Message {
             .child(gutter_content)
             .child(body)
             .when_some(self.on_click, |row, handler| {
-                row.on_click(move |event, window, cx| {
-                    if is_plain_click(event) && !TextSelection::has_selection(window, cx) {
-                        handler(event, window, cx)
-                    }
-                })
+                // A press on a control in the row (a button, a link card, a
+                // reaction, "Show more") is that control's: it claims the
+                // press, and the row leaves the click to it.
+                row.capture_any_mouse_down(|_, _, cx| press::reset(cx))
+                    .on_click(move |event, window, cx| {
+                        if is_plain_click(event)
+                            && !press::claimed(cx)
+                            && !TextSelection::has_selection(window, cx)
+                        {
+                            handler(event, window, cx)
+                        }
+                    })
             })
             .when_some(hover.clone(), |row, hover| {
                 row.on_hover(move |hovered, _, cx| {
@@ -748,10 +755,30 @@ pub fn reaction_tooltip(
     hint: Option<SharedString>,
     cx: &mut App,
 ) -> AnyView {
+    emoji_tooltip(
+        reaction.emoji.clone(),
+        reaction.image.clone(),
+        text,
+        hint,
+        cx,
+    )
+}
+
+/// A tooltip in the reaction chip's style for anything an emoji stands
+/// for, such as a person's custom status: the emoji large on top (`image`
+/// for a custom emoji, else the `emoji` text), `text` under it and an
+/// optional muted `hint`.
+pub fn emoji_tooltip(
+    emoji: SharedString,
+    image: Option<ImageSource>,
+    text: SharedString,
+    hint: Option<SharedString>,
+    cx: &mut App,
+) -> AnyView {
     use gpui_kit::AppContext as _;
     let tip = ReactionTip {
-        emoji: reaction.emoji.clone(),
-        image: reaction.image.clone(),
+        emoji,
+        image,
         text,
         hint,
     };
@@ -1311,6 +1338,53 @@ mod tests {
                 ),
             )
         }
+    }
+
+    struct ControlInBodyProbe(Rc<std::cell::Cell<usize>>, Rc<std::cell::Cell<usize>>);
+
+    impl Render for ControlInBodyProbe {
+        fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+            let (rows, buttons) = (self.0.clone(), self.1.clone());
+            div().w(px(600.)).child(
+                Message::new("row")
+                    .on_click(move |_, _, _| rows.set(rows.get() + 1))
+                    .child(
+                        div().h(px(40.)).child(
+                            // Like a code block's copy button: its handler
+                            // does not stop propagation.
+                            div().debug_selector(|| "control".into()).child(
+                                Button::new("copy")
+                                    .label("Copy")
+                                    .on_click(move |_, _, _| buttons.set(buttons.get() + 1)),
+                            ),
+                        ),
+                    ),
+            )
+        }
+    }
+
+    /// A button inside the body claims its press, so the row does not open
+    /// even though the button lets the click propagate (matty#749).
+    #[gpui_kit::test]
+    fn a_control_in_the_body_keeps_its_click(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let rows = Rc::new(std::cell::Cell::new(0));
+        let buttons = Rc::new(std::cell::Cell::new(0));
+        let (row_probe, button_probe) = (rows.clone(), buttons.clone());
+        let window = cx.add_window(move |_, _| ControlInBodyProbe(row_probe, button_probe));
+        let mut cx = VisualTestContext::from_window(window.into(), cx);
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        let control = cx.debug_bounds("control").expect("control drew");
+        cx.simulate_click(control.center(), gpui_kit::Modifiers::default());
+        assert_eq!(buttons.get(), 1, "the button ran");
+        assert_eq!(rows.get(), 0, "the row left the click to the button");
+
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        cx.simulate_click(
+            gpui_kit::point(control.center().x, control.bottom() + px(4.)),
+            gpui_kit::Modifiers::default(),
+        );
+        assert_eq!(rows.get(), 1, "a click beside it opens the row");
     }
 
     /// A click on the row runs `on_click`; one on the gutter or a reaction,

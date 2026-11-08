@@ -293,6 +293,9 @@ impl MarkdownPlugin for EntityLinks {
             })
             .when_some(on_click, move |chip, handler| {
                 chip.cursor_pointer()
+                    .on_mouse_down(gpui_kit::MouseButton::Left, |_, _, cx| {
+                        super::theme::primitives::press::claim_now(cx)
+                    })
                     .on_click(move |_, window, cx| handler(&target, window, cx))
             })
             .child(entity.label)
@@ -588,6 +591,9 @@ impl MarkdownPlugin for MarkdownImages {
             .when_some(on_click, move |frame, handler| {
                 frame
                     .cursor_pointer()
+                    .on_mouse_down(gpui_kit::MouseButton::Left, |_, _, cx| {
+                        super::theme::primitives::press::claim_now(cx)
+                    })
                     .on_click(move |_, window, cx| handler(&key, window, cx))
             })
             .map(|frame| match (source, known) {

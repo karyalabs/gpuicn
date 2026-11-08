@@ -197,6 +197,9 @@ fn large_image(
         .when_some(on_click, |frame, handler| {
             frame
                 .cursor_pointer()
+                .on_mouse_down(gpui_kit::MouseButton::Left, |_, _, cx| {
+                    super::theme::primitives::press::claim_now(cx)
+                })
                 .on_click(move |event, window, cx| handler(event, window, cx))
         })
         .into_any_element()
@@ -220,6 +223,9 @@ fn thumbnail(
         .when_some(on_click, |frame, handler| {
             frame
                 .cursor_pointer()
+                .on_mouse_down(gpui_kit::MouseButton::Left, |_, _, cx| {
+                    super::theme::primitives::press::claim_now(cx)
+                })
                 .on_click(move |event, window, cx| handler(event, window, cx))
         })
         .into_any_element()
