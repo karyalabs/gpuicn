@@ -94,7 +94,7 @@ jobs:
       - uses: karyalabs/.github/actions/gpui-deps@v1
       - if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'tests')
         run: cargo test -p gpuicn -p gpuicn-cli --locked
-      - uses: oven-sh/setup-bun@v2
+      - uses: ./.github/actions/setup-bun
       - name: Check the generated registry is up to date
         run: |
           cargo run -q -p gpuicn-cli --locked -- build
@@ -133,7 +133,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - uses: oven-sh/setup-bun@v2
+      - uses: ./.github/actions/setup-bun
       - name: Build and lint the website
         working-directory: web
         run: |

@@ -41,7 +41,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      - uses: oven-sh/setup-bun@v2
+      - uses: ./.github/actions/setup-bun
       - name: Install with the gpuicn CLI
         run: |
           cargo run -p gpuicn-cli --locked -- build
@@ -147,7 +147,7 @@ jobs:
             echo "::error::These files exceed Cloudflare Workers' 25 MiB asset limit, so the site can't deploy."
             exit 1
           fi
-      - uses: oven-sh/setup-bun@v2
+      - uses: ./.github/actions/setup-bun
       - name: Shoot every preview in light and dark mode
         # The sheet is the before/after evidence for release notes and pull
         # requests. It compares against the newest folder under docs/screenshots.

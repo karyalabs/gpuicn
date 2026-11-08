@@ -1,0 +1,17 @@
+name: Set up Bun
+description: >
+  Puts Bun on PATH without downloading it from GitHub releases when the
+  runner already has it. oven-sh/setup-bun downloads Bun from GitHub
+  releases on every run, even on self-hosted runners that have it, so a
+  GitHub releases outage (HTTP 504) failed every job that needs Bun. A
+  runner without Bun gets it from npm instead.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        if [ -x "$HOME/.bun/bin/bun" ]; then
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+        elif ! command -v bun >/dev/null; then
+          npm install --global --no-fund --no-audit bun
+        fi
