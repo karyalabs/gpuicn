@@ -137,6 +137,11 @@ const COMPONENTS: &[(&str, &str, &str)] = &[
         "Explains an empty state and offers a clear next action.",
     ),
     (
+        "item",
+        "Item",
+        "Rows with media, a title, a description and actions, grouped into cards.",
+    ),
+    (
         "kbd",
         "Kbd",
         "Shows a keyboard key or shortcut with platform modifier names.",

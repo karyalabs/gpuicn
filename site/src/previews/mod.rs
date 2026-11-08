@@ -169,6 +169,7 @@ previews! {
     form => Form,
     input => Input,
     input_group => InputGroup,
+    item => Item,
     kbd => Kbd,
     lightbox => Lightbox,
     markdown => Markdown,

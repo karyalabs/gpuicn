@@ -71,6 +71,8 @@ pub mod form;
 pub mod input;
 #[path = "../registry/input_group/input_group.rs"]
 pub mod input_group;
+#[path = "../registry/item/item.rs"]
+pub mod item;
 #[path = "../registry/kbd/kbd.rs"]
 pub mod kbd;
 #[path = "../registry/lightbox/lightbox.rs"]

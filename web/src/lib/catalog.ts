@@ -193,6 +193,12 @@ export const components: CatalogComponent[] = [
       "Combines an input or textarea with inline addons and actions.",
   },
   {
+    slug: "item",
+    name: "Item",
+    description:
+      "Rows with media, a title, a description and actions, grouped into cards.",
+  },
+  {
     slug: "kbd",
     name: "Kbd",
     description:

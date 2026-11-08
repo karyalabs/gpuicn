@@ -1330,3 +1330,24 @@ mod color_picker {
         ])
     }
 }
+
+mod item {
+    use crate::ui::item::*;
+    use gpui_kit::{IntoElement, ParentElement as _, div};
+
+    fn example() -> impl IntoElement {
+        ItemGroup::new("startup")
+            .child(
+                Item::new("open-at-login")
+                    .title("Open at login")
+                    .description("Start Matty when you sign in to this computer")
+                    .actions(div().child("Switch")),
+            )
+            .child(
+                Item::new("download-folder")
+                    .title("Download folder")
+                    .description("~/Downloads")
+                    .actions(div().child("Change…")),
+            )
+    }
+}

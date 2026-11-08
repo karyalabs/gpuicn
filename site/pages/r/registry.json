@@ -695,6 +695,11 @@
           "target": "~/src/ui/button.rs"
         },
         {
+          "path": "registry/kbd/kbd.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/kbd.rs"
+        },
+        {
           "path": "registry/menu/menu.rs",
           "type": "registry:file",
           "target": "~/src/ui/menu.rs"
@@ -1143,6 +1148,34 @@
       ]
     },
     {
+      "name": "item",
+      "type": "registry:item",
+      "title": "Item",
+      "description": "Rows with media, a title, a description and actions, grouped into cards.",
+      "files": [
+        {
+          "path": "registry/theme/locale.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/locale.rs"
+        },
+        {
+          "path": "registry/theme/primitives.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/primitives.rs"
+        },
+        {
+          "path": "registry/theme/theme.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/theme.rs"
+        },
+        {
+          "path": "registry/item/item.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/item.rs"
+        }
+      ]
+    },
+    {
       "name": "kbd",
       "type": "registry:item",
       "title": "Kbd",
@@ -1293,6 +1326,11 @@
           "target": "~/src/ui/button.rs"
         },
         {
+          "path": "registry/kbd/kbd.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/kbd.rs"
+        },
+        {
           "path": "registry/menu/menu.rs",
           "type": "registry:file",
           "target": "~/src/ui/menu.rs"
@@ -1324,6 +1362,11 @@
           "path": "registry/button/button.rs",
           "type": "registry:file",
           "target": "~/src/ui/button.rs"
+        },
+        {
+          "path": "registry/kbd/kbd.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/kbd.rs"
         },
         {
           "path": "registry/menu/menu.rs",
@@ -1461,6 +1504,11 @@
           "path": "registry/button/button.rs",
           "type": "registry:file",
           "target": "~/src/ui/button.rs"
+        },
+        {
+          "path": "registry/kbd/kbd.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/kbd.rs"
         },
         {
           "path": "registry/menu/menu.rs",
@@ -1844,6 +1892,11 @@
           "path": "registry/input/input.rs",
           "type": "registry:file",
           "target": "~/src/ui/input.rs"
+        },
+        {
+          "path": "registry/kbd/kbd.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/kbd.rs"
         },
         {
           "path": "registry/menu/menu.rs",
