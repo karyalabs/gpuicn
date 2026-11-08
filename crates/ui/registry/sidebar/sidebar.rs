@@ -35,6 +35,7 @@ pub struct Sidebar {
     content_padding: Option<gpui_kit::Pixels>,
     footer: Option<AnyElement>,
     roving_focus: bool,
+    surface: bool,
     children: Vec<AnyElement>,
 }
 impl Sidebar {
@@ -48,6 +49,7 @@ impl Sidebar {
             content_padding: None,
             footer: None,
             roving_focus: false,
+            surface: false,
             children: vec![],
         }
     }
@@ -59,6 +61,14 @@ impl Sidebar {
     /// header, footer and other controls keep their own tab stops. Off by default.
     pub fn roving_focus(mut self, roving: bool) -> Self {
         self.roving_focus = roving;
+        self
+    }
+    /// Draws the navigation on the page's muted surface (`muted` background,
+    /// `foreground` text) instead of the sidebar colors, for a section list
+    /// beside a page, such as a settings window, that should not read as a
+    /// second app sidebar. Give its rows [`SidebarItem::surface`] too.
+    pub fn surface(mut self, surface: bool) -> Self {
+        self.surface = surface;
         self
     }
     /// Override the content inset, for example zero for full-width mail rows.
@@ -95,7 +105,11 @@ impl RenderOnce for Sidebar {
         });
         let theme = UiTheme::read(cx).clone();
         let spacing = theme.spacing.unit;
-        let color = theme.colors.sidebar;
+        let (color, foreground) = if self.surface {
+            (theme.colors.muted, theme.colors.foreground)
+        } else {
+            (theme.colors.sidebar, theme.colors.sidebar_foreground)
+        };
         let padding = self.content_padding.unwrap_or(spacing * 2_f32);
         let content = ScrollArea::new(part(&self.id, "scroll"))
             .when_some(roving.as_ref(), |area, model| {
@@ -122,7 +136,7 @@ impl RenderOnce for Sidebar {
             .min_w_0()
             .min_h_0()
             .bg(color)
-            .text_color(theme.colors.sidebar_foreground)
+            .text_color(foreground)
             .map(|el| text::sm(el, &theme))
             .when_some(self.header, |el, header| {
                 el.child(div().flex_shrink_0().p(spacing * 2_f32).child(header))
@@ -387,6 +401,7 @@ pub struct SidebarItem {
     trailing: Option<AnyElement>,
     size: SidebarItemSize,
     outline: bool,
+    surface: bool,
     expanded: Option<bool>,
     on_activate: Option<ActivateHandler>,
 }
@@ -406,9 +421,16 @@ impl SidebarItem {
             trailing: None,
             size: SidebarItemSize::Default,
             outline: false,
+            surface: false,
             expanded: None,
             on_activate: None,
         }
+    }
+    /// Uses the page's colors (`foreground`, `accent` on hover and when
+    /// selected, `ring`) for a row in a [`Sidebar::surface`] navigation.
+    pub fn surface(mut self, surface: bool) -> Self {
+        self.surface = surface;
+        self
     }
     /// Marks the current destination with shadcn's active background and medium weight.
     pub fn selected(mut self, value: bool) -> Self {
@@ -499,6 +521,27 @@ impl RenderOnce for SidebarItem {
         let selected = self.selected;
         let size = self.size;
         let outline = self.outline;
+        let c = &theme.colors;
+        // (rest, foreground, active, active foreground, border, ring)
+        let (rest, fg, active, active_fg, border, ring) = if self.surface {
+            (
+                c.muted,
+                c.foreground,
+                c.accent,
+                c.accent_foreground,
+                c.border,
+                c.ring,
+            )
+        } else {
+            (
+                c.sidebar,
+                c.sidebar_foreground,
+                c.sidebar_accent,
+                c.sidebar_accent_foreground,
+                c.sidebar_border,
+                c.sidebar_ring,
+            )
+        };
         let collapsed = self.collapsed;
         let mut accessible = self.label.to_string();
         if let Some(text) = self
@@ -581,40 +624,29 @@ impl RenderOnce for SidebarItem {
                         .font_family(theme.fonts.body.clone())
                         .font_weight(FontWeight::NORMAL)
                         .border_1()
-                        .border_color(if outline {
-                            theme.colors.sidebar_border
-                        } else {
-                            theme.colors.sidebar.opacity(0.)
-                        })
+                        .border_color(if outline { border } else { rest.opacity(0.) })
                         .min_w_0()
                         .flex_shrink_0()
                         .items_center()
                         .gap(spacing * 2_f32)
                         .px(spacing * 2_f32)
                         .rounded(theme.radius.md)
-                        .text_color(if selected {
-                            theme.colors.sidebar_accent_foreground
-                        } else {
-                            theme.colors.sidebar_foreground
-                        })
+                        .text_color(if selected { active_fg } else { fg })
                         .bg(if selected {
-                            theme.colors.sidebar_accent
+                            active
                         } else if outline {
                             theme.colors.background
                         } else {
-                            theme.colors.sidebar
+                            rest
                         })
                         .when(selected, |el| el.font_weight(FontWeight::MEDIUM))
                         .when(collapsed, |el| el.w(spacing * 8_f32).justify_center())
                         .when(self.disabled, disabled::style)
                         .when(!self.disabled, |el| {
-                            el.cursor_pointer().hover(|style| {
-                                style
-                                    .bg(theme.colors.sidebar_accent)
-                                    .text_color(theme.colors.sidebar_accent_foreground)
-                            })
+                            el.cursor_pointer()
+                                .hover(|style| style.bg(active).text_color(active_fg))
                         })
-                        .focus_visible(|style| style.border_color(theme.colors.sidebar_ring))
+                        .focus_visible(|style| style.border_color(ring))
                 };
                 super::theme::apply_style(base, &self.style)
             })

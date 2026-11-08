@@ -4,6 +4,15 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.10.2
+
+[Notes](docs/releases/v0.10.2.md)
+
+### Added
+
+- `Sidebar::surface` and `SidebarItem::surface` draw a navigation on the
+  page's muted surface instead of the sidebar colors.
+
 ## 0.10.1
 
 [Notes](docs/releases/v0.10.1.md)
