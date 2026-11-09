@@ -565,21 +565,32 @@ impl RenderOnce for Message {
                         &theme,
                     )
                 }))
-                .when_some(self.on_add_reaction.clone(), |row, handler| {
-                    row.child(
-                        Button::new((self.id.clone(), "add-reaction"))
-                            .variant(ButtonVariant::Ghost)
-                            .size(ButtonSize::IconXs)
-                            .rounded_full()
-                            .aria_label(locale::text(cx, UiText::AddReaction))
-                            .on_click(move |event, window, cx| handler(event, window, cx))
-                            .child(
-                                lucide(LucideIcon::FaceSlightlySmilingPlus)
-                                    .size(theme.space(3.5))
-                                    .text_color(colors.muted_foreground),
+                // Like Mattermost's, the add button joins the chips while the
+                // row is hovered or selected, so rows the pointer is not on
+                // lay out only their chips. A row without a hover bar has no
+                // hover tracking, so it keeps the button showing.
+                .when_some(
+                    self.on_add_reaction
+                        .clone()
+                        .filter(|_| show_actions || hover.is_none()),
+                    |row, handler| {
+                        row.child(
+                            div().debug_selector(|| "add-reaction".into()).child(
+                                Button::new((self.id.clone(), "add-reaction"))
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::IconXs)
+                                    .rounded_full()
+                                    .aria_label(locale::text(cx, UiText::AddReaction))
+                                    .on_click(move |event, window, cx| handler(event, window, cx))
+                                    .child(
+                                        lucide(LucideIcon::FaceSlightlySmilingPlus)
+                                            .size(theme.space(3.5))
+                                            .text_color(colors.muted_foreground),
+                                    ),
                             ),
-                    )
-                })
+                        )
+                    },
+                )
         });
 
         // Compact rows start the body line with the name; continuation rows
@@ -974,7 +985,6 @@ fn reaction_chip(
         .label
         .clone()
         .unwrap_or_else(|| format!("{} {}", reaction.emoji, reaction.count).into());
-    let key = SharedString::from(format!("reaction-{}", reaction.emoji));
     let glyph = match reaction.image.clone() {
         Some(image) => super::theme::primitives::image(image)
             .size(theme.space(4.))
@@ -985,7 +995,9 @@ fn reaction_chip(
             .child(reaction.emoji.clone())
             .into_any_element(),
     };
-    let chip = Button::new((message.clone(), key.clone()))
+    // Named inside the wrapper below, which the emoji names: no id string
+    // is formatted per chip per frame.
+    let chip = Button::new("chip")
         .variant(ButtonVariant::Outline)
         .size(ButtonSize::Xs)
         .h(theme.space(6.))
@@ -1026,10 +1038,7 @@ fn reaction_chip(
     };
     let reaction = reaction.clone();
     div()
-        .id((
-            message.clone(),
-            SharedString::from(format!("{key}-tooltip")),
-        ))
+        .id((message.clone(), reaction.emoji.clone()))
         .when_some(tooltip, move |wrapper, builder| {
             wrapper.tooltip(move |window, cx| builder(&reaction, window, cx))
         })
@@ -1493,6 +1502,72 @@ mod tests {
             cx.debug_bounds("bar-b").is_some(),
             "the bar stays under the pointer"
         );
+    }
+
+    struct ReactionsProbe;
+
+    impl Render for ReactionsProbe {
+        fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+            div()
+                .w(px(600.))
+                .pt(px(40.))
+                .flex()
+                .flex_col()
+                .children(["a", "b"].map(|id| {
+                    let row = Message::new(id)
+                        .author("Arya")
+                        .child("Hello")
+                        .reactions([Reaction::new("🎉", 2, false)])
+                        .on_add_reaction(|_, _, _| {})
+                        .actions_with(|_, _| div().size(px(20.)).into_any_element());
+                    div().debug_selector(move || format!("row-{id}")).child(row)
+                }))
+        }
+    }
+
+    /// The add-reaction button joins the chips only on the hovered row, as
+    /// in Mattermost (matty#796): other rows lay out their chips alone.
+    #[gpui_kit::test]
+    fn the_add_reaction_button_shows_on_hover(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let window = cx.add_window(|_, _| ReactionsProbe);
+        let mut cx = VisualTestContext::from_window(window.into(), cx);
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(
+            cx.debug_bounds("add-reaction").is_none(),
+            "no row is hovered"
+        );
+        let row = cx.debug_bounds("row-b").expect("row drew");
+        cx.simulate_mouse_move(row.center(), None, gpui_kit::Modifiers::default());
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        let button = cx
+            .debug_bounds("add-reaction")
+            .expect("the hovered row shows the button");
+        assert!(row.contains(&button.center()), "on the hovered row");
+    }
+
+    struct BareReactionsProbe;
+
+    impl Render for BareReactionsProbe {
+        fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+            div().w(px(600.)).child(
+                Message::new("bare")
+                    .author("Arya")
+                    .child("Hello")
+                    .reactions([Reaction::new("🎉", 2, false)])
+                    .on_add_reaction(|_, _, _| {}),
+            )
+        }
+    }
+
+    /// A row without a hover bar tracks no hover, so it keeps the button.
+    #[gpui_kit::test]
+    fn a_row_without_actions_keeps_the_add_reaction_button(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let window = cx.add_window(|_, _| BareReactionsProbe);
+        let mut cx = VisualTestContext::from_window(window.into(), cx);
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(cx.debug_bounds("add-reaction").is_some());
     }
 
     type Clicked = Rc<std::cell::RefCell<Vec<Bounds<Pixels>>>>;
