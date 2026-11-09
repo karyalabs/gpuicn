@@ -29,3 +29,7 @@ strip = "debuginfo"
 inherits = "release"
 opt-level = "z"
 lto = "fat"
+
+# Spike: GPUI Fast trial (unreleased gpui-icons feature).
+[patch.crates-io]
+gpui-icons = { git = "https://github.com/karyalabs/gpui-icons", branch = "claude/project-thread-ngfu9u" }

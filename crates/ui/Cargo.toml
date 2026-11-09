@@ -19,6 +19,9 @@ syntect = ["gpui-kit/syntect"]
 # which lists or outlines controls without an accessible name. For tests and
 # debug builds; release builds leave it off.
 test-support = ["gpui-kit/test-support"]
+# Builds on Longbridge's GPUI Fast instead of gpui-pre (GPUI Kit's
+# `gpui-fast`). The app must enable it too and use `gpui-fast-platform`.
+gpui-fast = ["gpui-kit/gpui-fast", "gpui-icons/gpui-fast"]
 
 [dependencies]
 gpui-kit.workspace = true
