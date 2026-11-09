@@ -46,10 +46,23 @@ pub fn markdown(
     source: impl Into<SharedString>,
     cx: &App,
 ) -> MarkdownView {
+    markdown_with(id, source, MarkdownBlocks::new(), cx)
+}
+
+/// [`markdown`], with the tables and headings drawn by `blocks`, whose
+/// [`MarkdownBlocks::inline`] renders their text the way the application
+/// renders the rest of the message: with its link handler and plugins.
+pub fn markdown_with(
+    id: impl Into<ElementId>,
+    source: impl Into<SharedString>,
+    blocks: MarkdownBlocks,
+    cx: &App,
+) -> MarkdownView {
     let theme = UiTheme::read(cx);
     let colors = theme.colors;
     let mut code_block = StyleRefinement::default()
-        .p(theme.space(3.))
+        .px(theme.space(3.))
+        .py(theme.space(2.5))
         .rounded(theme.radius.lg)
         .border_1()
         .border_color(colors.border)
@@ -81,6 +94,7 @@ pub fn markdown(
         });
     TextView::markdown(id, source)
         .style(style)
+        .plugin(blocks)
         .code_block_actions(|block, _, _| CodeBlockActions {
             lang: block.lang().filter(|lang| !lang.is_empty()),
             code: block.code(),
@@ -91,12 +105,14 @@ pub fn markdown(
                 .rounded(theme.radius.sm)
                 .px(px(3.)),
         )
+        // Quoted text reads at full strength, as in Mattermost; the rule
+        // marks it as a quote.
         .blockquote_style(
             StyleRefinement::default()
                 .border_l_2()
                 .border_color(colors.border)
                 .pl(theme.space(3.))
-                .text_color(colors.muted_foreground),
+                .text_color(colors.foreground),
         )
         .list_style(StyleRefinement::default().text_color(colors.muted_foreground))
         .selectable(true)
@@ -629,6 +645,446 @@ impl MarkdownPlugin for MarkdownImages {
     }
 }
 
+type InlineView = Arc<
+    dyn Fn(ElementId, SharedString, &mut Window, &mut App) -> MarkdownView + Send + Sync + 'static,
+>;
+
+/// Draws Markdown tables and headings as Mattermost does: a table as wide as
+/// its content, with a bold header and a rule between every cell, and
+/// headings with a modest gap above them.
+///
+/// [`markdown`] adds it with plain text views for the cells and headings;
+/// pass one to [`markdown_with`] with [`MarkdownBlocks::inline`] so their
+/// links, mentions and emoji behave like the rest of the message.
+#[derive(Clone, Default)]
+pub struct MarkdownBlocks {
+    inline: Option<InlineView>,
+}
+
+/// A parsed table: each row's cells, the first row the header.
+#[derive(Clone, Debug)]
+struct TableBlock {
+    align: Vec<markdown_ast::AlignKind>,
+    rows: Vec<Vec<InlineSource>>,
+}
+
+/// A parsed heading.
+#[derive(Clone, Debug)]
+struct HeadingBlock {
+    level: u8,
+    content: InlineSource,
+}
+
+/// Inline Markdown and the runs it measures as.
+#[derive(Clone, Debug, Default)]
+struct InlineSource {
+    source: SharedString,
+    runs: Vec<(String, Run)>,
+}
+
+/// How a run of text is drawn, for measuring.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Run {
+    Text,
+    Strong,
+    Code,
+    Emoji,
+}
+
+impl MarkdownBlocks {
+    /// Tables and headings with gpuicn's plain Markdown view for their text.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Renders the text of a table cell or heading: `source` is inline
+    /// Markdown, already escaped so that it parses as one paragraph. Return
+    /// the application's Markdown view for it, such as [`markdown_with`] with
+    /// its plugins and link handler; keep `id`.
+    pub fn inline(
+        mut self,
+        view: impl Fn(ElementId, SharedString, &mut Window, &mut App) -> MarkdownView
+        + Send
+        + Sync
+        + 'static,
+    ) -> Self {
+        self.inline = Some(Arc::new(view));
+        self
+    }
+
+    fn inline_view(
+        &self,
+        id: ElementId,
+        source: &SharedString,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> MarkdownView {
+        let view = match &self.inline {
+            Some(view) => view(id, source.clone(), window, cx),
+            None => markdown_with(id, source.clone(), MarkdownBlocks::new(), cx),
+        };
+        // The block is selected and copied as a whole.
+        view.selectable(false)
+    }
+
+    fn render_table(
+        &self,
+        node: &MarkdownNode,
+        table: &TableBlock,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> gpui_kit::AnyElement {
+        let theme = UiTheme::read(cx).clone();
+        let colors = theme.colors;
+        let font_size = theme.text(14.);
+        let pad_x = theme.space(3.);
+        let pad_y = theme.space(1.5);
+        let columns = table.rows.iter().map(Vec::len).max().unwrap_or(0);
+        let mut widths = vec![0f32; columns];
+        for (row_ix, row) in table.rows.iter().enumerate() {
+            for (ix, cell) in row.iter().enumerate() {
+                let width = measure(&cell.runs, row_ix == 0, font_size, &theme, window);
+                widths[ix] = widths[ix].max(width);
+            }
+        }
+        // Room for the padding, the rule after the cell and rounding.
+        let widths: Vec<f32> = widths
+            .into_iter()
+            .map(|width| (width + f32::from(pad_x) * 2. + 3.).ceil())
+            .collect();
+        let total: f32 = widths.iter().sum::<f32>() + 2.;
+        let start = node.source_range().map_or(0, |range| range.start);
+        let row_count = table.rows.len();
+        let rows = table.rows.iter().enumerate().map(|(row_ix, row)| {
+            let header = row_ix == 0;
+            div()
+                .flex()
+                .w_full()
+                .when(row_ix + 1 < row_count, |row| {
+                    row.border_b_1().border_color(colors.border)
+                })
+                .when(header, |row| {
+                    row.bg(colors.muted.opacity(0.5))
+                        .font_weight(gpui_kit::FontWeight::SEMIBOLD)
+                })
+                .children((0..columns).map(|ix| {
+                    let width = widths[ix];
+                    let cell = div()
+                        .flex_basis(px(width))
+                        .flex_grow(1.)
+                        .flex_shrink(1.)
+                        .min_w(px(width.min(64.)))
+                        .px(pad_x)
+                        .py(pad_y)
+                        .overflow_hidden()
+                        .when(ix + 1 < columns, |cell| {
+                            cell.border_r_1().border_color(colors.border)
+                        })
+                        .map(|cell| match table.align.get(ix) {
+                            Some(markdown_ast::AlignKind::Center) => cell.text_center(),
+                            Some(markdown_ast::AlignKind::Right) => cell.text_right(),
+                            _ => cell,
+                        });
+                    match row.get(ix).filter(|content| !content.source.is_empty()) {
+                        Some(content) => cell.child(
+                            self.inline_view(
+                                ElementId::Name(format!("md-cell-{start}-{row_ix}-{ix}").into()),
+                                &content.source,
+                                window,
+                                cx,
+                            )
+                            .when(header, |view| {
+                                view.font_weight(gpui_kit::FontWeight::SEMIBOLD)
+                            }),
+                        ),
+                        None => cell,
+                    }
+                }))
+                .into_any_element()
+        });
+        let rows: Vec<_> = rows.collect();
+        div()
+            .debug_selector(|| "markdown-table".into())
+            .w(px(total))
+            .max_w_full()
+            .overflow_hidden()
+            .rounded(theme.radius.lg)
+            .border_1()
+            .border_color(colors.border)
+            .bg(colors.background)
+            .text_size(font_size)
+            .children(rows)
+            .into_any_element()
+    }
+
+    fn render_heading(
+        &self,
+        node: &MarkdownNode,
+        heading: &HeadingBlock,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> gpui_kit::AnyElement {
+        let theme = UiTheme::read(cx).clone();
+        let (scale, line_height) = match heading.level {
+            1 => (1.6, 1.25),
+            2 => (1.36, 1.3),
+            3 => (1.18, 1.35),
+            4 => (1.07, 1.35),
+            5 => (1., 1.35),
+            _ => (0.93, 1.35),
+        };
+        let size = theme.text(14.) * scale;
+        let start = node.source_range().map_or(0, |range| range.start);
+        div()
+            .pt(size * 0.35)
+            .child(
+                self.inline_view(
+                    ElementId::Name(format!("md-heading-{start}").into()),
+                    &heading.content.source,
+                    window,
+                    cx,
+                )
+                .text_size(size)
+                .line_height(relative(line_height))
+                .font_weight(gpui_kit::FontWeight::SEMIBOLD)
+                .when(heading.level >= 6, |view| {
+                    view.text_color(theme.colors.muted_foreground)
+                }),
+            )
+            .into_any_element()
+    }
+}
+
+impl MarkdownPlugin for MarkdownBlocks {
+    fn is_block(&self) -> bool {
+        true
+    }
+
+    fn name(&self) -> &str {
+        "gpuicn-blocks"
+    }
+
+    fn parse(
+        &self,
+        node: &markdown_ast::Node,
+        cx: &MarkdownParseContext<'_>,
+    ) -> Option<MarkdownNode> {
+        match node {
+            markdown_ast::Node::Table(table) => {
+                let rows: Vec<Vec<InlineSource>> = table
+                    .children
+                    .iter()
+                    .filter_map(|row| match row {
+                        markdown_ast::Node::TableRow(row) => Some(
+                            row.children
+                                .iter()
+                                .map(|cell| {
+                                    inline_source(cell.children().map_or(&[][..], |c| c), cx)
+                                })
+                                .collect(),
+                        ),
+                        _ => None,
+                    })
+                    .collect();
+                let text = rows
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .map(|cell| plain(&cell.runs))
+                            .collect::<Vec<_>>()
+                            .join("\t")
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                let markdown = cx.node_source(node).unwrap_or_default().to_string();
+                Some(
+                    MarkdownNode::new(
+                        "gpuicn-blocks",
+                        Block::Table(TableBlock {
+                            align: table.align.clone(),
+                            rows,
+                        }),
+                    )
+                    .text(text)
+                    .markdown(markdown),
+                )
+            }
+            markdown_ast::Node::Heading(heading) => {
+                let content = inline_source(&heading.children, cx);
+                let text = plain(&content.runs);
+                let markdown = cx.node_source(node).unwrap_or_default().to_string();
+                Some(
+                    MarkdownNode::new(
+                        "gpuicn-blocks",
+                        Block::Heading(HeadingBlock {
+                            level: heading.depth,
+                            content,
+                        }),
+                    )
+                    .text(text)
+                    .markdown(markdown),
+                )
+            }
+            _ => None,
+        }
+    }
+
+    fn render(&self, node: &MarkdownNode, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        match node.data::<Block>() {
+            Some(Block::Table(table)) => self.render_table(node, table, window, cx),
+            Some(Block::Heading(heading)) => self.render_heading(node, heading, window, cx),
+            None => div().child(node.as_text().to_string()).into_any_element(),
+        }
+    }
+}
+
+/// What [`MarkdownBlocks`] parsed.
+#[derive(Clone, Debug)]
+enum Block {
+    Table(TableBlock),
+    Heading(HeadingBlock),
+}
+
+/// The inline Markdown of `children`, escaped to parse as one paragraph,
+/// and its runs for measuring.
+fn inline_source(children: &[markdown_ast::Node], cx: &MarkdownParseContext<'_>) -> InlineSource {
+    let source = match (children.first(), children.last()) {
+        (Some(first), Some(last)) => match (first.position(), last.position()) {
+            (Some(start), Some(end)) => cx
+                .source()
+                .get(start.start.offset..end.end.offset)
+                .unwrap_or_default(),
+            _ => "",
+        },
+        _ => "",
+    };
+    let mut runs = Vec::new();
+    collect_runs(children, Run::Text, &mut runs);
+    InlineSource {
+        source: escape_block_start(source.trim()).into(),
+        runs,
+    }
+}
+
+fn collect_runs(children: &[markdown_ast::Node], run: Run, runs: &mut Vec<(String, Run)>) {
+    use markdown_ast::Node;
+    for child in children {
+        match child {
+            Node::Text(text) => runs.push((text.value.clone(), run)),
+            Node::InlineCode(code) => runs.push((code.value.clone(), Run::Code)),
+            Node::InlineMath(math) => runs.push((math.value.clone(), Run::Code)),
+            Node::Strong(strong) => collect_runs(&strong.children, Run::Strong, runs),
+            Node::Image(image) if image.url.starts_with("emoji:") => {
+                runs.push((image.alt.clone(), Run::Emoji))
+            }
+            Node::Image(image) => runs.push((image.alt.clone(), run)),
+            Node::Break(_) => runs.push((" ".into(), run)),
+            other => {
+                if let Some(children) = other.children() {
+                    collect_runs(children, run, runs);
+                }
+            }
+        }
+    }
+}
+
+fn plain(runs: &[(String, Run)]) -> String {
+    runs.iter().map(|(text, _)| text.as_str()).collect()
+}
+
+/// `source` with a leading character escaped when it would start a block,
+/// such as `1. ` or `# `, so a cell or heading's text stays a paragraph.
+fn escape_block_start(source: &str) -> String {
+    let first = source.chars().next();
+    let rest_after = |n: usize| source[n..].chars().next();
+    let ends_marker = |n: usize| rest_after(n).is_none_or(|c| c == ' ' || c == '\t');
+    let escape_at = match first {
+        Some('#' | '>') => Some(0),
+        Some('`' | '~') if source.starts_with("```") || source.starts_with("~~~") => Some(0),
+        Some('-' | '+' | '*' | '_' | '=') => {
+            let marker = first.unwrap_or_default();
+            let rule = source.chars().all(|c| c == marker || c == ' ')
+                && source.matches(marker).count() >= 3;
+            (rule || (marker != '_' && marker != '=' && ends_marker(1))).then_some(0)
+        }
+        Some(c) if c.is_ascii_digit() => {
+            let digits = source.len()
+                - source
+                    .trim_start_matches(|c: char| c.is_ascii_digit())
+                    .len();
+            (digits <= 9
+                && matches!(rest_after(digits), Some('.' | ')'))
+                && ends_marker(digits + 1))
+            .then_some(digits)
+        }
+        _ => None,
+    };
+    match escape_at {
+        Some(at) => format!("{}\\{}", &source[..at], &source[at..]),
+        None => source.to_string(),
+    }
+}
+
+/// The width `runs` take on one line, in pixels.
+fn measure(
+    runs: &[(String, Run)],
+    bold: bool,
+    font_size: gpui_kit::Pixels,
+    theme: &UiTheme,
+    window: &mut Window,
+) -> f32 {
+    let weight = |run: Run| {
+        if bold || run == Run::Strong {
+            gpui_kit::FontWeight::SEMIBOLD
+        } else {
+            gpui_kit::FontWeight::NORMAL
+        }
+    };
+    let mut width = 0.;
+    for (text, run) in runs {
+        if *run == Run::Emoji {
+            width += f32::from(font_size) * 1.25;
+            continue;
+        }
+        let text: String = text
+            .chars()
+            .map(|c| if c == '\n' { ' ' } else { c })
+            .collect();
+        if text.is_empty() {
+            continue;
+        }
+        let family = if *run == Run::Code {
+            theme.fonts.mono.clone()
+        } else {
+            theme.fonts.body.clone()
+        };
+        let font = gpui_kit::Font {
+            family,
+            weight: weight(*run),
+            ..gpui_kit::font("")
+        };
+        let len = text.len();
+        let line = window.text_system().shape_line(
+            text.into(),
+            font_size,
+            &[gpui_kit::TextRun {
+                len,
+                font,
+                color: theme.colors.foreground.into(),
+                background_color: None,
+                underline: None,
+                strikethrough: None,
+            }],
+            None,
+        );
+        width += f32::from(line.width);
+        if *run == Run::Code {
+            width += 8.;
+        }
+    }
+    width
+}
+
 /// The window's root for text selection. Render it once around the window's
 /// content; Markdown views and `selectable_text` inside it then share one
 /// selection, and Cmd+C (Ctrl+C elsewhere) copies it in reading order.
@@ -785,5 +1241,55 @@ mod image_tests {
         cx.update(|window, _| {
             window.find_by_label("Copied");
         });
+    }
+    #[test]
+    fn block_starts_are_escaped_in_inline_text() {
+        for (source, escaped) in [
+            ("1. Intro", "1\\. Intro"),
+            ("2) next", "2\\) next"),
+            ("# not a heading", "\\# not a heading"),
+            ("> not a quote", "\\> not a quote"),
+            ("- dash", "\\- dash"),
+            ("+", "\\+"),
+            ("***", "\\***"),
+            ("```", "\\```"),
+        ] {
+            assert_eq!(escape_block_start(source), escaped, "{source:?}");
+        }
+        for source in [
+            "*emphasis* text",
+            "**bold**",
+            "2024 was good",
+            "-1 point",
+            "_x_",
+            "plain",
+        ] {
+            assert_eq!(escape_block_start(source), source, "{source:?}");
+        }
+    }
+
+    struct Tables;
+
+    impl Render for Tables {
+        fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+            div().w(px(600.)).child(markdown(
+                "tables",
+                "| Service | Status |\n| --- | --- |\n| api | up |",
+                cx,
+            ))
+        }
+    }
+
+    #[gpui_kit::test]
+    fn tables_are_as_wide_as_their_content(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let window = cx.add_window(|_, _| Tables);
+        let mut cx = VisualTestContext::from_window(window.into(), cx);
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        let table = cx
+            .debug_bounds("markdown-table")
+            .expect("the table is drawn");
+        assert!(table.size.width > px(80.), "{:?}", table.size);
+        assert!(table.size.width < px(300.), "{:?}", table.size);
     }
 }
