@@ -1546,6 +1546,30 @@ mod tests {
         assert!(row.contains(&button.center()), "on the hovered row");
     }
 
+    struct BareReactionsProbe;
+
+    impl Render for BareReactionsProbe {
+        fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+            div().w(px(600.)).child(
+                Message::new("bare")
+                    .author("Arya")
+                    .child("Hello")
+                    .reactions([Reaction::new("🎉", 2, false)])
+                    .on_add_reaction(|_, _, _| {}),
+            )
+        }
+    }
+
+    /// A row without a hover bar tracks no hover, so it keeps the button.
+    #[gpui_kit::test]
+    fn a_row_without_actions_keeps_the_add_reaction_button(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let window = cx.add_window(|_, _| BareReactionsProbe);
+        let mut cx = VisualTestContext::from_window(window.into(), cx);
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(cx.debug_bounds("add-reaction").is_some());
+    }
+
     type Clicked = Rc<std::cell::RefCell<Vec<Bounds<Pixels>>>>;
 
     struct AuthorProbe(Clicked, MessageDensity);
