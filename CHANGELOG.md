@@ -4,6 +4,16 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.10.6
+
+[Notes](docs/releases/v0.10.6.md)
+
+### Changed
+
+- `Message` shows its add-reaction button only while the row is hovered or
+  selected (rows with an action bar), and reaction chips build no id
+  strings per frame.
+
 ## 0.10.5
 
 [Notes](docs/releases/v0.10.5.md)
