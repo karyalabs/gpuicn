@@ -422,6 +422,42 @@ impl UiEasing {
     }
 }
 
+/// Steps per second of a looping indicator, such as a spinner or a skeleton's pulse.
+/// A loop drawn every frame redraws its view 60 or 120 times a second for as long
+/// as it shows, which can be minutes for a connection banner; a dozen steps read
+/// as the same motion.
+pub const LOOP_STEPS_PER_SECOND: u32 = 12;
+
+/// Where a looping indicator is in its cycle of `period`, from 0 to 1. The value
+/// moves in [`LOOP_STEPS_PER_SECOND`] steps on one clock shared by every loop, and
+/// the view that draws it is asked to redraw once at the next step, however many
+/// loops it holds, and only while its window is active: a loop in a background
+/// window costs nothing until the window comes forward (activation redraws it).
+pub fn loop_phase(period: Duration, window: &mut Window, cx: &mut App) -> f32 {
+    thread_local! {
+        static EPOCH: web_time::Instant = web_time::Instant::now();
+        static WAITING: std::cell::RefCell<std::collections::HashSet<gpui_kit::EntityId>> =
+            Default::default();
+    }
+    let step = Duration::from_secs(1) / LOOP_STEPS_PER_SECOND;
+    let elapsed = EPOCH.with(|epoch| epoch.elapsed());
+    let steps = (period.as_secs_f64() / step.as_secs_f64()).round().max(1.);
+    let at = (elapsed.as_secs_f64() / step.as_secs_f64()).floor();
+    let phase = ((at % steps) / steps) as f32;
+    let view = window.current_view();
+    if window.is_window_active() && WAITING.with(|waiting| waiting.borrow_mut().insert(view)) {
+        let next = step.mul_f64(at + 1.);
+        let wait = next.saturating_sub(elapsed);
+        cx.spawn(async move |cx| {
+            cx.background_executor().timer(wait).await;
+            WAITING.with(|waiting| waiting.borrow_mut().remove(&view));
+            cx.update(|cx| cx.notify(view));
+        })
+        .detach();
+    }
+    phase
+}
+
 /// Returns a smoothly retargetable value for one stable, caller-named property.
 /// Starts at the target on mount; rapid reversals continue from the current value.
 /// Honors theme and GPUI reduced-motion settings and schedules no idle frames.
