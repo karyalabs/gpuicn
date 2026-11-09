@@ -6,8 +6,14 @@ with Nova styling. Implementation: `crates/ui/registry/markdown/markdown.rs`.
 
 Body text is 14px with a 1.45 line height. Code blocks sit in a bordered,
 rounded muted frame in the theme's mono font and scroll sideways rather than
-wrap; inline code gets a muted fill. Quotes have a left rule and muted text,
-tables a rounded border and a muted header row. Links use the primary color.
+wrap; inline code gets a muted fill. Quotes have a left rule. Tables are as
+wide as their content, with a rounded border, a rule around every cell and a
+bold, muted header row; a table wider than the view wraps its cells.
+
+Tables and headings are drawn by the `MarkdownBlocks` plugin. Pass one with
+`MarkdownBlocks::inline` to `markdown_with` so the text in cells and headings
+is rendered by the application's own Markdown view, with its link handler and
+plugins; `markdown` uses plain views. Links use the primary color.
 `UiTheme::set` passes these colors and the light or dark highlight theme to GPUI
 Kit, so a theme switch restyles rendered Markdown. Text is selectable.
 

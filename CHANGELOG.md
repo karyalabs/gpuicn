@@ -4,6 +4,22 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.10.4
+
+[Notes](docs/releases/v0.10.4.md)
+
+### Changed
+
+- Markdown tables are as wide as their content, with a bold header and a
+  rule around every cell.
+- Headings have a smaller gap above them; quotes keep full-strength text;
+  code blocks are slimmer.
+
+### Added
+
+- `MarkdownBlocks` and `markdown_with`, to render table cells and headings
+  with the application's Markdown view.
+
 ## 0.10.3
 
 [Notes](docs/releases/v0.10.3.md)
