@@ -1,7 +1,7 @@
 //! Nova-styled loading placeholders.
 
 use gpui_kit::{
-    Animation, AnimationExt as _, App, ElementId, IntoElement, RenderOnce, Styled, Window, div,
+    App, ElementId, InteractiveElement as _, IntoElement, RenderOnce, Styled, Window, div,
     ease_in_out,
 };
 
@@ -21,7 +21,7 @@ pub struct Skeleton {
 }
 
 impl Skeleton {
-    /// Creates a `Skeleton` with a stable caller-owned ID for its pulse animation.
+    /// Creates a `Skeleton` with a stable caller-owned ID.
     pub fn new(id: impl Into<ElementId>) -> Self {
         Self {
             style: gpui_kit::StyleRefinement::default(),
@@ -31,9 +31,10 @@ impl Skeleton {
 }
 
 impl RenderOnce for Skeleton {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = UiTheme::read(cx);
         let root = div()
+            .id(self.id)
             .w_full()
             .h(theme.space(4.))
             .flex_shrink_0()
@@ -43,13 +44,11 @@ impl RenderOnce for Skeleton {
         if theme.motion.reduced || cx.reduce_motion() {
             return root.into_any_element();
         }
-        root.with_animation(
-            self.id,
-            Animation::new(PULSE).repeat().with_easing(ease_in_out),
-            // Tailwind's pulse dips to half opacity halfway through each cycle.
-            |root, delta| root.opacity(1. - 0.5 * (1. - (2. * delta - 1.).abs())),
-        )
-        .into_any_element()
+        // Stepped, not per frame: skeletons can stand in for a while.
+        let delta = ease_in_out(super::theme::loop_phase(PULSE, window, cx));
+        // Tailwind's pulse dips to half opacity halfway through each cycle.
+        root.opacity(1. - 0.5 * (1. - (2. * delta - 1.).abs()))
+            .into_any_element()
     }
 }
 

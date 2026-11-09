@@ -4,6 +4,21 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.10.5
+
+[Notes](docs/releases/v0.10.5.md)
+
+### Changed
+
+- `Spinner` and `Skeleton` step 12 times a second on a shared clock instead
+  of redrawing every frame, and pause while their window is in the
+  background.
+
+### Added
+
+- `theme::loop_phase` and `LOOP_STEPS_PER_SECOND` for other looping
+  indicators.
+
 ## 0.10.4
 
 [Notes](docs/releases/v0.10.4.md)

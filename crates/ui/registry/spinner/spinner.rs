@@ -2,9 +2,9 @@
 
 use gpui_icons::{LucideIcon, lucide};
 use gpui_kit::{
-    Animation, AnimationExt as _, App, ElementId, InteractiveElement as _, IntoElement,
-    ParentElement as _, RenderOnce, Rgba, Role, SharedString, StatefulInteractiveElement as _,
-    Styled, Transformation, Window, div, percentage,
+    App, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce, Rgba,
+    Role, SharedString, StatefulInteractiveElement as _, Styled, Transformation, Window, div,
+    percentage,
 };
 
 use super::theme::UiTheme;
@@ -46,20 +46,18 @@ impl Spinner {
 }
 
 impl RenderOnce for Spinner {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let theme = UiTheme::read(cx);
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let theme = UiTheme::read(cx).clone();
         let icon = lucide(LucideIcon::LoaderCircle)
             .size_full()
             .text_color(self.color.unwrap_or(theme.colors.muted_foreground));
         let icon = if theme.motion.reduced || cx.reduce_motion() {
             icon.into_any_element()
         } else {
-            icon.with_animation(
-                (self.id.clone(), "spin"),
-                Animation::new(TURN).repeat(),
-                |icon, delta| icon.with_transformation(Transformation::rotate(percentage(delta))),
-            )
-            .into_any_element()
+            // Stepped, not per frame: a spinner can show for minutes.
+            let turn = super::theme::loop_phase(TURN, window, cx);
+            icon.with_transformation(Transformation::rotate(percentage(turn)))
+                .into_any_element()
         };
         let root =
             div()
