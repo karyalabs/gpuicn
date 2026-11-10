@@ -10,7 +10,7 @@ shows the same starter.
 Use Rust 1.98 or newer. Install the CLI, create an app, and run it:
 
 ```sh
-cargo install gpuicn-cli --version 0.10.6 --locked
+cargo install gpuicn-cli --version 0.11.0 --locked
 gpuicn new my-app
 cd my-app && cargo run
 gpuicn add sidebar dialog
@@ -102,19 +102,19 @@ too when you pass them its types.
 
 ## Manual setup
 
-gpuicn v0.10.6 supports GPUI Kit 0.9.0 on its pinned `gpui-pre` 0.3.11
+gpuicn v0.11.0 supports GPUI Kit 0.9.1 on its pinned `gpui-pre` 0.3.12
 runtime. Keep these dependency pins together. Apps using another GPUI revision
 must migrate to this runtime before installing the components.
 
 ```toml
 [dependencies]
 web-time = "1.1"
-gpui_platform = { package = "gpui-pre-platform", version = "=0.3.11", features = ["font-kit"] }
-gpui-icons = "=0.6.0"
-gpui-kit = { version = "=0.9.0", default-features = false, features = ["component"] }
+gpui_platform = { package = "gpui-pre-platform", version = "=0.3.12", features = ["font-kit"] }
+gpui-icons = "=0.7.0"
+gpui-kit = { version = "=0.9.1", default-features = false, features = ["component"] }
 
 [dev-dependencies]
-gpui-kit = { version = "=0.9.0", default-features = false, features = ["component", "test-support"] }
+gpui-kit = { version = "=0.9.1", default-features = false, features = ["component", "test-support"] }
 ```
 
 Import GPUI types through `gpui_kit` so the application and installed components
@@ -123,7 +123,7 @@ share the same GPUI types. No compatibility crate or Cargo patch is required.
 Initialize a config pointing to the registry from the same release as your CLI:
 
 ```sh
-gpuicn --registry https://raw.githubusercontent.com/karyalabs/gpuicn/v0.10.6/site/pages/r init --config-only
+gpuicn --registry https://raw.githubusercontent.com/karyalabs/gpuicn/v0.11.0/site/pages/r init --config-only
 gpuicn list
 gpuicn add button
 ```
@@ -135,7 +135,7 @@ registry. Version 1 configs (without `[theme]`) still load; `theme set` and
 
 ```toml
 version = 2
-registry = "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.10.6/site/pages/r"
+registry = "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.11.0/site/pages/r"
 output = "src/ui"
 
 [theme]
@@ -225,10 +225,10 @@ their license and the starter:
 ```sh
 mkdir -p assets/fonts
 for file in Geist-Regular.ttf Geist-Medium.ttf Geist-SemiBold.ttf GeistMono-Regular.ttf; do
-  curl -fL "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.10.6/site/assets/fonts/$file" -o "assets/fonts/$file"
+  curl -fL "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.11.0/site/assets/fonts/$file" -o "assets/fonts/$file"
 done
-curl -fL "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.10.6/LICENSES/Geist-OFL-1.1" -o assets/fonts/OFL.txt
-curl -fL "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.10.6/fixtures/registry-install/src/main.rs" -o src/main.rs
+curl -fL "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.11.0/LICENSES/Geist-OFL-1.1" -o assets/fonts/OFL.txt
+curl -fL "https://raw.githubusercontent.com/karyalabs/gpuicn/v0.11.0/fixtures/registry-install/src/main.rs" -o src/main.rs
 cargo run
 ```
 

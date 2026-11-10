@@ -4,6 +4,15 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.0
+
+[Notes](docs/releases/v0.11.0.md)
+
+### Changed
+
+- Runtime pins move to GPUI Kit 0.9.1 on `gpui-pre` 0.3.12 and gpui-icons
+  0.7.0. No gpuicn API changes.
+
 ## 0.10.6
 
 [Notes](docs/releases/v0.10.6.md)
