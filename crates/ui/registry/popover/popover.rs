@@ -68,6 +68,7 @@ pub fn popover_description(cx: &App) -> Div {
 }
 
 type OpenChange = Rc<dyn Fn(&bool, &mut Window, &mut App)>;
+type Suppress = Rc<dyn Fn(&Window, &App) -> bool>;
 type ContentBuilder = Box<dyn FnOnce(&mut Window, &mut App) -> AnyElement>;
 type TriggerStyle = Box<dyn FnOnce(Button) -> Button>;
 
@@ -100,6 +101,7 @@ pub struct HoverPopover {
     on_open_change: Option<OpenChange>,
     passive: bool,
     open_requested: bool,
+    suppress: Option<Suppress>,
     style: StyleRefinement,
 }
 
@@ -118,6 +120,7 @@ pub fn hover_popover(id: impl Into<ElementId>, label: impl Into<SharedString>) -
         on_open_change: None,
         passive: false,
         open_requested: false,
+        suppress: None,
         style: StyleRefinement::default(),
     }
 }
@@ -183,6 +186,18 @@ impl HoverPopover {
         self.open_requested = requested;
         self
     }
+    /// Keeps hover from opening the popup while `suppressed` says so, such
+    /// as while a menu is open or something is being dragged: resting the
+    /// pointer starts no timer and a pending one opens nothing. Asked when
+    /// the pointer moves and again when the delay ends, so it needs no
+    /// redraw to take effect. An open popup stays open.
+    pub fn suppress_hover_when(
+        mut self,
+        suppressed: impl Fn(&Window, &App) -> bool + 'static,
+    ) -> Self {
+        self.suppress = Some(Rc::new(suppressed));
+        self
+    }
     /// Reports each open and close, whatever caused it.
     pub fn on_open_change(
         mut self,
@@ -215,6 +230,7 @@ pub struct HoverPopoverState {
     on_open_change: Option<OpenChange>,
     /// What held focus before a keyboard open of a passive popover.
     return_focus: Option<FocusHandle>,
+    suppress: Option<Suppress>,
 }
 
 impl HoverPopoverState {
@@ -231,6 +247,7 @@ impl HoverPopoverState {
             timer: None,
             on_open_change: None,
             return_focus: None,
+            suppress: None,
         }
     }
     /// Returns whether the popup is showing.
@@ -271,6 +288,11 @@ impl HoverPopoverState {
             _ = this.update_in(cx, |this, window, cx| then(this, window, cx));
         }));
     }
+    fn suppressed(&self, window: &Window, cx: &App) -> bool {
+        self.suppress
+            .as_ref()
+            .is_some_and(|suppressed| suppressed(window, cx))
+    }
     fn pointer_moved(
         &mut self,
         open_delay: Duration,
@@ -282,11 +304,11 @@ impl HoverPopoverState {
             return;
         }
         if self.over_trigger || self.over_content {
-            if self.open {
+            if self.open || self.suppressed(window, cx) {
                 self.timer = None;
             } else {
                 self.after(open_delay, window, cx, |this, window, cx| {
-                    if this.over_trigger {
+                    if this.over_trigger && !this.suppressed(window, cx) {
                         this.set_open(true, false, window, cx);
                     }
                 });
@@ -307,7 +329,10 @@ impl RenderOnce for HoverPopover {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let t = UiTheme::read(cx).clone();
         let state = window.use_keyed_state(self.id.clone(), cx, |_, cx| HoverPopoverState::new(cx));
-        state.update(cx, |state, _| state.on_open_change = self.on_open_change);
+        state.update(cx, |state, _| {
+            state.on_open_change = self.on_open_change;
+            state.suppress = self.suppress;
+        });
         if self.open_requested && !state.read(cx).open {
             let focused = window.focused(cx);
             state.update(cx, |state, cx| {
@@ -491,10 +516,12 @@ mod tests {
         clicks: usize,
         request: bool,
         focus: FocusHandle,
+        busy: Rc<std::cell::Cell<bool>>,
     }
     impl Render for Row {
         fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
             let request = std::mem::take(&mut self.request);
+            let busy = self.busy.clone();
             div()
                 .p(px(20.))
                 .flex()
@@ -504,6 +531,7 @@ mod tests {
                     hover_popover("row", "unused")
                         .passive()
                         .open_requested(request)
+                        .suppress_hover_when(move |_, _| busy.get())
                         .trigger(
                             div()
                                 .id("row.button")
@@ -525,10 +553,15 @@ mod tests {
     #[gpui_kit::test]
     fn a_passive_popover_leaves_clicks_to_the_row(cx: &mut TestAppContext) {
         cx.update(super::super::theme::init);
-        let (view, cx) = cx.add_window_view(|_, cx| Row {
-            clicks: 0,
-            request: false,
-            focus: cx.focus_handle(),
+        let busy = Rc::new(std::cell::Cell::new(false));
+        let (view, cx) = cx.add_window_view({
+            let busy = busy.clone();
+            move |_, cx| Row {
+                clicks: 0,
+                request: false,
+                focus: cx.focus_handle(),
+                busy,
+            }
         });
         cx.update(|window, cx| {
             window.activate_window();
@@ -555,6 +588,32 @@ mod tests {
         cx.run_until_parked();
         cx.update(|window, cx| window.draw(cx).clear(cx));
         assert!(cx.debug_bounds("card").is_none());
+
+        // While suppressed, resting opens nothing, and a timer already
+        // running when it starts opens nothing either.
+        busy.set(true);
+        cx.simulate_mouse_move(row.center(), None, Modifiers::none());
+        cx.executor().advance_clock(HOVER_POPOVER_OPEN_DELAY * 2);
+        cx.run_until_parked();
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(
+            cx.debug_bounds("card").is_none(),
+            "suppressed hover opens nothing"
+        );
+        busy.set(false);
+        cx.simulate_mouse_move(elsewhere.center(), None, Modifiers::none());
+        cx.simulate_mouse_move(row.center(), None, Modifiers::none());
+        busy.set(true);
+        cx.executor().advance_clock(HOVER_POPOVER_OPEN_DELAY * 2);
+        cx.run_until_parked();
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(
+            cx.debug_bounds("card").is_none(),
+            "a pending open is dropped"
+        );
+        busy.set(false);
+        cx.simulate_mouse_move(elsewhere.center(), None, Modifiers::none());
+        cx.run_until_parked();
 
         // The row's owner opens it from the keyboard; Escape gives focus back.
         let focus = view.read_with(cx, |row, _| row.focus.clone());

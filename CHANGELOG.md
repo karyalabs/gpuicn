@@ -4,6 +4,15 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.3
+
+[Notes](docs/releases/v0.11.3.md)
+
+### Added
+
+- `HoverPopover::suppress_hover_when`, so a hover preview does not open
+  while a menu is open or something is being dragged.
+
 ## 0.11.2
 
 [Notes](docs/releases/v0.11.2.md)
