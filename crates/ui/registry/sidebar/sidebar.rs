@@ -34,8 +34,12 @@ pub struct Sidebar {
     id: ElementId,
     label: SharedString,
     header: Option<AnyElement>,
+    header_padding: Option<gpui_kit::Pixels>,
     content_padding: Option<gpui_kit::Pixels>,
     footer: Option<AnyElement>,
+    footer_padding: Option<gpui_kit::Pixels>,
+    overlay: Option<AnyElement>,
+    scroll: Option<gpui_kit::ScrollHandle>,
     roving_focus: bool,
     surface: bool,
     children: Vec<AnyElement>,
@@ -48,8 +52,12 @@ impl Sidebar {
             id: id.into(),
             label: label.into(),
             header: None,
+            header_padding: None,
             content_padding: None,
             footer: None,
+            footer_padding: None,
+            overlay: None,
+            scroll: None,
             roving_focus: false,
             surface: false,
             children: vec![],
@@ -89,6 +97,32 @@ impl Sidebar {
         self.footer = Some(child.into_any_element());
         self
     }
+    /// Overrides the header's inset (8px by default), for example zero for a
+    /// header that draws its own height and padding.
+    pub fn header_padding(mut self, padding: gpui_kit::Pixels) -> Self {
+        self.header_padding = Some(padding.max(px(0.)));
+        self
+    }
+    /// Overrides the footer's inset (8px by default), for example zero for a
+    /// full-width footer with a hairline on top.
+    pub fn footer_padding(mut self, padding: gpui_kit::Pixels) -> Self {
+        self.footer_padding = Some(padding.max(px(0.)));
+        self
+    }
+    /// Floats `child` over the scrolling navigation without scrolling with
+    /// it, such as a "2 unread below" pill. Position it with `absolute()`;
+    /// the area it is placed in is the navigation's visible part.
+    pub fn overlay(mut self, child: impl IntoElement) -> Self {
+        self.overlay = Some(child.into_any_element());
+        self
+    }
+    /// Shares the navigation's scroll position with the caller, to read
+    /// what is in view or scroll a row into it. Without it the sidebar keeps
+    /// its own.
+    pub fn track_scroll(mut self, handle: &gpui_kit::ScrollHandle) -> Self {
+        self.scroll = Some(handle.clone());
+        self
+    }
 }
 impl ParentElement for Sidebar {
     fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
@@ -105,6 +139,9 @@ impl RenderOnce for Sidebar {
             model.start_frame(window);
             model
         });
+        if let (Some(model), Some(handle)) = (roving.as_ref(), self.scroll.as_ref()) {
+            model.0.borrow_mut().scroll = handle.clone();
+        }
         let theme = UiTheme::read(cx).clone();
         let spacing = theme.spacing.unit;
         let (color, foreground) = if self.surface {
@@ -113,10 +150,12 @@ impl RenderOnce for Sidebar {
             (theme.colors.sidebar, theme.colors.sidebar_foreground)
         };
         let padding = self.content_padding.unwrap_or(spacing * 2_f32);
+        let scroll = self
+            .scroll
+            .clone()
+            .or_else(|| roving.as_ref().map(|model| model.0.borrow().scroll.clone()));
         let content = ScrollArea::new(part(&self.id, "scroll"))
-            .when_some(roving.as_ref(), |area, model| {
-                area.track_scroll(&model.0.borrow().scroll)
-            })
+            .when_some(scroll.as_ref(), |area, handle| area.track_scroll(handle))
             .size_full()
             .aria_label(self.label.clone())
             .child(
@@ -141,10 +180,16 @@ impl RenderOnce for Sidebar {
             .text_color(foreground)
             .map(|el| text::sm(el, &theme))
             .when_some(self.header, |el, header| {
-                el.child(div().flex_shrink_0().p(spacing * 2_f32).child(header))
+                el.child(
+                    div()
+                        .flex_shrink_0()
+                        .p(self.header_padding.unwrap_or(spacing * 2_f32))
+                        .child(header),
+                )
             })
             .child(
                 div()
+                    .relative()
                     .flex_1()
                     .min_h_0()
                     .min_w_0()
@@ -164,10 +209,16 @@ impl RenderOnce for Sidebar {
                             })
                         }
                         None => el.child(content),
-                    }),
+                    })
+                    .children(self.overlay),
             )
             .when_some(self.footer, |el, footer| {
-                el.child(div().flex_shrink_0().p(spacing * 2_f32).child(footer))
+                el.child(
+                    div()
+                        .flex_shrink_0()
+                        .p(self.footer_padding.unwrap_or(spacing * 2_f32))
+                        .child(footer),
+                )
             })
             .map(|base| super::theme::apply_style(base, &self.style))
     }

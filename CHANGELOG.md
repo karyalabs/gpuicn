@@ -4,6 +4,17 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.1
+
+[Notes](docs/releases/v0.11.1.md)
+
+### Added
+
+- `title_bar::window_drag_area`, `WindowControls`, `draws_window_controls`
+  and `traffic_light_inset`, for windows without a title bar.
+- `Sidebar::track_scroll`, `Sidebar::overlay`, `Sidebar::header_padding`
+  and `Sidebar::footer_padding`.
+
 ## 0.11.0
 
 [Notes](docs/releases/v0.11.0.md)

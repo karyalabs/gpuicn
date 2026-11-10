@@ -7,7 +7,6 @@
 use std::rc::Rc;
 
 use gpui_icons::{LucideIcon, lucide};
-use gpui_kit::base::InteractiveElementExt as _;
 use gpui_kit::{
     AnyElement, App, ClickEvent, Decorations, InteractiveElement as _, IntoElement, MouseButton,
     ParentElement, RenderOnce, SharedString, StatefulInteractiveElement as _, Styled,
@@ -182,24 +181,162 @@ struct DragState {
     should_move: bool,
 }
 
+/// Whether this window draws its own minimize, maximize and close controls:
+/// Windows, and Linux under client-side decorations. macOS keeps its traffic
+/// lights, a server-decorated Linux window gets the window manager's, and the
+/// web has none.
+pub fn draws_window_controls(window: &Window) -> bool {
+    let client_decorated = matches!(window.window_decorations(), Decorations::Client { .. });
+    let is_linux = cfg!(target_os = "linux");
+    !cfg!(target_os = "macos") && !cfg!(target_family = "wasm") && (!is_linux || client_decorated)
+}
+
+/// The left inset that keeps content clear of the macOS traffic lights, 80px
+/// outside full screen; zero elsewhere.
+pub fn traffic_light_inset(window: &Window) -> gpui_kit::Pixels {
+    if cfg!(target_os = "macos") && !window.is_fullscreen() {
+        px(80.)
+    } else {
+        px(0.)
+    }
+}
+
+/// Makes `element` drag the window as a title bar does, for an app without a
+/// `TitleBar` whose pane headers or sidebar top are the window's top edge:
+/// dragging empty space moves the window, a double-click zooms it (macOS
+/// follows the user's titlebar double-click preference), and on client-
+/// decorated Linux a right-click opens the window menu. Buttons inside keep
+/// their clicks. Does nothing on the web. `id` keys the drag state, so give
+/// each area in a window its own.
+pub fn window_drag_area<E>(
+    id: impl Into<gpui_kit::ElementId>,
+    element: E,
+    window: &mut Window,
+    cx: &mut App,
+) -> E
+where
+    E: gpui_kit::StatefulInteractiveElement + gpui_kit::base::InteractiveElementExt + IntoElement,
+{
+    if cfg!(target_family = "wasm") {
+        return element;
+    }
+    let state = window.use_keyed_state(id, cx, |_, _| DragState { should_move: false });
+    let client_decorated = matches!(window.window_decorations(), Decorations::Client { .. });
+    element
+        .when(cfg!(target_os = "linux"), |el| {
+            el.on_double_click(|_, window, _| window.zoom_window())
+        })
+        .when(cfg!(target_os = "macos"), |el| {
+            el.on_double_click(|_, window, _| window.titlebar_double_click())
+        })
+        .when(cfg!(target_os = "linux") && client_decorated, |el| {
+            el.on_mouse_down(MouseButton::Right, |event, window, _| {
+                window.show_window_menu(event.position)
+            })
+        })
+        .on_mouse_down_out(window.listener_for(&state, |state, _, _, _| {
+            state.should_move = false;
+        }))
+        .on_mouse_down(
+            MouseButton::Left,
+            window.listener_for(&state, |state, _, _, _| state.should_move = true),
+        )
+        .on_mouse_up(
+            MouseButton::Left,
+            window.listener_for(&state, |state, _, _, _| state.should_move = false),
+        )
+        .on_mouse_move(window.listener_for(&state, |state, _, window, _| {
+            if state.should_move {
+                state.should_move = false;
+                window.start_window_move();
+            }
+        }))
+        .window_control_area(WindowControlArea::Drag)
+}
+
+/// The minimize, maximize (or restore) and close controls a `TitleBar` draws,
+/// on their own, for the end of a pane header in a window without a title
+/// bar. Renders nothing where [`draws_window_controls`] is false.
+#[derive(IntoElement)]
+pub struct WindowControls {
+    style: gpui_kit::StyleRefinement,
+    on_close: Option<CloseHandler>,
+}
+
+impl WindowControls {
+    /// Creates the controls for the current window.
+    pub fn new() -> Self {
+        Self {
+            style: gpui_kit::StyleRefinement::default(),
+            on_close: None,
+        }
+    }
+
+    /// Runs instead of closing the window when close is clicked on Linux, as
+    /// [`TitleBar::on_close`] does.
+    pub fn on_close(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
+        self.on_close = Some(Rc::new(handler));
+        self
+    }
+}
+
+impl Default for WindowControls {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Styled for WindowControls {
+    fn style(&mut self) -> &mut gpui_kit::StyleRefinement {
+        &mut self.style
+    }
+}
+
+impl RenderOnce for WindowControls {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let theme = UiTheme::read(cx).clone();
+        let supported = window.window_controls();
+        let maximized = window.is_maximized();
+        let row =
+            div()
+                .flex()
+                .h_full()
+                .flex_shrink_0()
+                .when(draws_window_controls(window), |row| {
+                    row.when(supported.minimize, |row| {
+                        row.child(control(Control::Minimize, None, &theme, cx))
+                    })
+                    .when(supported.maximize, |row| {
+                        row.child(control(
+                            if maximized {
+                                Control::Restore
+                            } else {
+                                Control::Maximize
+                            },
+                            None,
+                            &theme,
+                            cx,
+                        ))
+                    })
+                    .child(control(
+                        Control::Close,
+                        self.on_close.clone(),
+                        &theme,
+                        cx,
+                    ))
+                });
+        apply_style(row, &self.style)
+    }
+}
+
 impl RenderOnce for TitleBar {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = UiTheme::read(cx).clone();
-        let client_decorated = matches!(window.window_decorations(), Decorations::Client { .. });
         let is_web = cfg!(target_family = "wasm");
-        let is_macos = cfg!(target_os = "macos");
-        let is_linux = cfg!(target_os = "linux");
-        // Under server-side decorations the window manager draws its own controls.
-        let draws_controls = !is_macos && !is_web && (!is_linux || client_decorated);
-        let state = window.use_state(cx, |_, _| DragState { should_move: false });
-        let supported = window.window_controls();
-        let maximized = window.is_maximized();
-        let left_inset = if is_macos && !window.is_fullscreen() {
-            px(80.)
-        } else {
-            theme.space(3.)
-        };
-
+        let left_inset = traffic_light_inset(window).max(theme.space(3.));
         let bar = div()
             .id("title-bar")
             .flex_shrink_0()
@@ -213,30 +350,11 @@ impl RenderOnce for TitleBar {
             .bg(theme.colors.sidebar)
             .text_color(theme.colors.foreground)
             .font_family(theme.fonts.body.clone())
-            .text_size(theme.text(13.))
-            .when(is_linux, |bar| {
-                bar.on_double_click(|_, window, _| window.zoom_window())
-            })
-            .when(is_macos, |bar| {
-                bar.on_double_click(|_, window, _| window.titlebar_double_click())
-            })
-            .on_mouse_down_out(window.listener_for(&state, |state, _, _, _| {
-                state.should_move = false;
-            }))
-            .on_mouse_down(
-                MouseButton::Left,
-                window.listener_for(&state, |state, _, _, _| state.should_move = true),
-            )
-            .on_mouse_up(
-                MouseButton::Left,
-                window.listener_for(&state, |state, _, _, _| state.should_move = false),
-            )
-            .on_mouse_move(window.listener_for(&state, |state, _, window, _| {
-                if state.should_move {
-                    state.should_move = false;
-                    window.start_window_move();
-                }
-            }))
+            .text_size(theme.text(13.));
+        let bar = window_drag_area("title-bar.drag", bar, window, cx);
+        let mut controls = WindowControls::new();
+        controls.on_close = self.on_close.clone();
+        let bar = bar
             .child(
                 div()
                     .id("title-bar-content")
@@ -249,37 +367,9 @@ impl RenderOnce for TitleBar {
                     .when(!is_web, |content| {
                         content.window_control_area(WindowControlArea::Drag)
                     })
-                    .when(is_linux && client_decorated, |content| {
-                        content.on_mouse_down(MouseButton::Right, |event, window, _| {
-                            window.show_window_menu(event.position)
-                        })
-                    })
                     .children(self.children),
             )
-            .when(draws_controls, |bar| {
-                bar.child(
-                    div()
-                        .flex()
-                        .h_full()
-                        .flex_shrink_0()
-                        .when(supported.minimize, |row| {
-                            row.child(control(Control::Minimize, None, &theme, cx))
-                        })
-                        .when(supported.maximize, |row| {
-                            row.child(control(
-                                if maximized {
-                                    Control::Restore
-                                } else {
-                                    Control::Maximize
-                                },
-                                None,
-                                &theme,
-                                cx,
-                            ))
-                        })
-                        .child(control(Control::Close, self.on_close.clone(), &theme, cx)),
-                )
-            });
+            .child(controls);
         apply_style(bar, &self.style)
     }
 }
