@@ -14,16 +14,16 @@ font_mono = "geist-mono"
 
 [gpui]
 package = "gpui-pre"
-version = "0.3.11"
-commit = "f816e1f9263e3a8ef63c4baaa02e1441ce1c6038"
+version = "0.3.12"
+commit = "d2a4fb6ded7c470be25d1541281da3882495b65b"
 
 [gpui_kit]
-version = "0.9.0"
-commit = "7591a35eced761e3613c01e71ff04c10129dae1a"
+version = "0.9.1"
+commit = "39ab849a93b5f15507b969164d49891db8d5b470"
 
 [gpui_icons]
-version = "0.6.0"
-commit = "fb9d0d170ca31cb9dc38c10f51fb3b82b2fd3a3c"
+version = "0.7.0"
+commit = "ed570f18318c01e8a198fd5a7815c6d55c503ce9"
 lucide_version = "1.63.0"
 lucide_commit = "2ca268e74888d3506b3319fb8f94aaaaf70ceca9"
 
