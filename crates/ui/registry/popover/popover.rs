@@ -98,6 +98,8 @@ pub struct HoverPopover {
     placement: Placement,
     align: Align,
     on_open_change: Option<OpenChange>,
+    passive: bool,
+    open_requested: bool,
     style: StyleRefinement,
 }
 
@@ -114,6 +116,8 @@ pub fn hover_popover(id: impl Into<ElementId>, label: impl Into<SharedString>) -
         placement: Placement::Bottom,
         align: Align::Start,
         on_open_change: None,
+        passive: false,
+        open_requested: false,
         style: StyleRefinement::default(),
     }
 }
@@ -160,6 +164,25 @@ impl HoverPopover {
         self.align = align;
         self
     }
+    /// Wraps the trigger as it is instead of making it a button, for a row
+    /// that already has its own click and focus, such as a sidebar channel
+    /// that opens on click and shows a preview on hover. Resting the pointer
+    /// still opens the popup; clicks reach the row. The row's owner opens it
+    /// from the keyboard with [`HoverPopover::open_requested`], and Escape
+    /// closes it while focus is in the row or the popup. The accessible name
+    /// passed to [`hover_popover`] is not used: name the row itself.
+    pub fn passive(mut self) -> Self {
+        self.passive = true;
+        self
+    }
+    /// Opens the popup this frame as a click would, moving focus into it,
+    /// when it is not already open: pass `true` once, in the frame after the
+    /// key that asks for it (Space on a focused row). Closing gives focus
+    /// back to whatever held it before.
+    pub fn open_requested(mut self, requested: bool) -> Self {
+        self.open_requested = requested;
+        self
+    }
     /// Reports each open and close, whatever caused it.
     pub fn on_open_change(
         mut self,
@@ -190,6 +213,8 @@ pub struct HoverPopoverState {
     content_bounds: Bounds<Pixels>,
     timer: Option<Task<()>>,
     on_open_change: Option<OpenChange>,
+    /// What held focus before a keyboard open of a passive popover.
+    return_focus: Option<FocusHandle>,
 }
 
 impl HoverPopoverState {
@@ -205,6 +230,7 @@ impl HoverPopoverState {
             content_bounds: Bounds::default(),
             timer: None,
             on_open_change: None,
+            return_focus: None,
         }
     }
     /// Returns whether the popup is showing.
@@ -223,7 +249,10 @@ impl HoverPopoverState {
         }
         self.open = open;
         if !open && self.content_focus.contains_focused(window, cx) {
-            self.trigger_focus.focus(window, cx);
+            match self.return_focus.take() {
+                Some(focus) => focus.focus(window, cx),
+                None => self.trigger_focus.focus(window, cx),
+            }
         }
         if let Some(handler) = self.on_open_change.clone() {
             handler(&open, window, cx);
@@ -279,6 +308,13 @@ impl RenderOnce for HoverPopover {
         let t = UiTheme::read(cx).clone();
         let state = window.use_keyed_state(self.id.clone(), cx, |_, cx| HoverPopoverState::new(cx));
         state.update(cx, |state, _| state.on_open_change = self.on_open_change);
+        if self.open_requested && !state.read(cx).open {
+            let focused = window.focused(cx);
+            state.update(cx, |state, cx| {
+                state.return_focus = focused;
+                state.set_open(true, true, window, cx);
+            });
+        }
         let (open, focus, content_focus) = {
             let state = state.read(cx);
             (
@@ -294,40 +330,63 @@ impl RenderOnce for HoverPopover {
         let click = state.clone();
         let escape = state.clone();
         let focus_theme = t.clone();
-        let trigger = Button::new((self.id.clone(), "trigger"))
-            .track_focus(&focus)
-            .tab_stop(true)
-            .accessibility_label(self.label)
-            .aria_expanded(open)
-            .map(|button| match self.trigger_style {
-                Some(style) => style(button),
-                None => button
-                    .flex_row_in(t.direction)
-                    .items_center()
-                    .rounded(t.radius.sm)
-                    .cursor_pointer()
-                    .focus_visible(move |style| focus::ring(style, &focus_theme)),
-            })
-            .on_hover(move |over, window, cx| {
-                hover.update(cx, |state, cx| {
-                    state.over_trigger = *over;
-                    state.pointer_moved(open_delay, close_delay, window, cx);
+        let trigger: AnyElement = if self.passive {
+            let trigger = div()
+                .id((self.id.clone(), "trigger"))
+                .flex_1()
+                .min_w_0()
+                .on_hover(move |over, window, cx| {
+                    hover.update(cx, |state, cx| {
+                        state.over_trigger = *over;
+                        state.pointer_moved(open_delay, close_delay, window, cx);
+                    })
                 })
+                .children(self.trigger);
+            dismiss::on_escape(trigger, move |window, cx| {
+                if !escape.read(cx).open {
+                    return false;
+                }
+                escape.update(cx, |state, cx| state.set_open(false, false, window, cx));
+                true
             })
-            .on_click(move |_, window, cx| {
-                click.update(cx, |state, cx| {
-                    let close = state.open && state.pinned;
-                    state.set_open(!close, true, window, cx);
+            .into_any_element()
+        } else {
+            let trigger = Button::new((self.id.clone(), "trigger"))
+                .track_focus(&focus)
+                .tab_stop(true)
+                .accessibility_label(self.label)
+                .aria_expanded(open)
+                .map(|button| match self.trigger_style {
+                    Some(style) => style(button),
+                    None => button
+                        .flex_row_in(t.direction)
+                        .items_center()
+                        .rounded(t.radius.sm)
+                        .cursor_pointer()
+                        .focus_visible(move |style| focus::ring(style, &focus_theme)),
                 })
-            })
-            .children(self.trigger);
-        let trigger = dismiss::on_escape(trigger, move |window, cx| {
-            if !escape.read(cx).open {
-                return false;
-            }
-            escape.update(cx, |state, cx| state.set_open(false, false, window, cx));
-            true
-        });
+                .on_hover(move |over, window, cx| {
+                    hover.update(cx, |state, cx| {
+                        state.over_trigger = *over;
+                        state.pointer_moved(open_delay, close_delay, window, cx);
+                    })
+                })
+                .on_click(move |_, window, cx| {
+                    click.update(cx, |state, cx| {
+                        let close = state.open && state.pinned;
+                        state.set_open(!close, true, window, cx);
+                    })
+                })
+                .children(self.trigger);
+            let trigger = dismiss::on_escape(trigger, move |window, cx| {
+                if !escape.read(cx).open {
+                    return false;
+                }
+                escape.update(cx, |state, cx| state.set_open(false, false, window, cx));
+                true
+            });
+            trigger.into_any_element()
+        };
 
         let mut root = div()
             .id(self.id.clone())
@@ -343,10 +402,13 @@ impl RenderOnce for HoverPopover {
             let outside = state.clone();
             let escape = state.clone();
             let measured = state.clone();
+            let passive = self.passive;
             let popup = dismiss::on_escape(div(), move |window, cx| {
                 escape.update(cx, |state, cx| {
                     state.set_open(false, false, window, cx);
-                    state.trigger_focus.focus(window, cx);
+                    if !passive {
+                        state.trigger_focus.focus(window, cx);
+                    }
                 });
                 true
             })
@@ -422,6 +484,93 @@ mod tests {
                 .child(div().debug_selector(|| "elsewhere".into()).size(px(10.)))
                 .when(false, |root| root.child(popover_title(cx)))
         }
+    }
+
+    /// A row with its own click and focus, previewed by a passive popover.
+    struct Row {
+        clicks: usize,
+        request: bool,
+        focus: FocusHandle,
+    }
+    impl Render for Row {
+        fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+            let request = std::mem::take(&mut self.request);
+            div()
+                .p(px(20.))
+                .flex()
+                .flex_col()
+                .gap(px(200.))
+                .child(
+                    hover_popover("row", "unused")
+                        .passive()
+                        .open_requested(request)
+                        .trigger(
+                            div()
+                                .id("row.button")
+                                .track_focus(&self.focus)
+                                .debug_selector(|| "row".into())
+                                .size(px(32.))
+                                .on_click(cx.listener(|this, _, _, _| this.clicks += 1)),
+                        )
+                        .content(|_, cx| {
+                            popover_popup("row.card", "Preview", cx)
+                                .debug_selector(|| "card".into())
+                                .h(px(80.))
+                        }),
+                )
+                .child(div().debug_selector(|| "elsewhere".into()).size(px(10.)))
+        }
+    }
+
+    #[gpui_kit::test]
+    fn a_passive_popover_leaves_clicks_to_the_row(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        let (view, cx) = cx.add_window_view(|_, cx| Row {
+            clicks: 0,
+            request: false,
+            focus: cx.focus_handle(),
+        });
+        cx.update(|window, cx| {
+            window.activate_window();
+            window.draw(cx).clear(cx);
+        });
+        let row = cx.debug_bounds("row").unwrap();
+        cx.simulate_click(row.center(), Modifiers::none());
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert_eq!(view.read_with(cx, |row, _| row.clicks), 1);
+        assert!(
+            cx.debug_bounds("card").is_none(),
+            "a click does not open it"
+        );
+
+        // Hover still opens it.
+        cx.simulate_mouse_move(row.center(), None, Modifiers::none());
+        cx.executor().advance_clock(HOVER_POPOVER_OPEN_DELAY);
+        cx.run_until_parked();
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(cx.debug_bounds("card").is_some(), "hover opens it");
+        let elsewhere = cx.debug_bounds("elsewhere").unwrap();
+        cx.simulate_mouse_move(elsewhere.center(), None, Modifiers::none());
+        cx.executor().advance_clock(HOVER_POPOVER_CLOSE_DELAY * 2);
+        cx.run_until_parked();
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(cx.debug_bounds("card").is_none());
+
+        // The row's owner opens it from the keyboard; Escape gives focus back.
+        let focus = view.read_with(cx, |row, _| row.focus.clone());
+        cx.update(|window, cx| focus.focus(window, cx));
+        view.update(cx, |row, cx| {
+            row.request = true;
+            cx.notify();
+        });
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(cx.debug_bounds("card").is_some(), "the request opens it");
+        cx.update(|window, _| assert!(!focus.is_focused(window), "focus moved into it"));
+        cx.simulate_keystrokes("escape");
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        assert!(cx.debug_bounds("card").is_none(), "Escape closes it");
+        cx.update(|window, _| assert!(focus.is_focused(window), "focus is back on the row"));
     }
 
     fn profile(cx: &mut TestAppContext) -> &mut VisualTestContext {

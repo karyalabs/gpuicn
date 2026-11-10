@@ -4,6 +4,15 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.2
+
+[Notes](docs/releases/v0.11.2.md)
+
+### Added
+
+- `HoverPopover::passive` and `HoverPopover::open_requested`, for a preview
+  on a row that keeps its own click and focus.
+
 ## 0.11.1
 
 [Notes](docs/releases/v0.11.1.md)
