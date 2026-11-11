@@ -114,8 +114,11 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/playwright"
           printf '{"name":"thumbnails","private":true}\n' > "$RUNNER_TEMP/playwright/package.json"
-          (cd "$RUNNER_TEMP/playwright" && bun add playwright@1.56.1 && bunx playwright install --with-deps chromium)
-          NODE_PATH="$RUNNER_TEMP/playwright/node_modules" bun scripts/thumbnails.mjs
+          (cd "$RUNNER_TEMP/playwright" && bun add playwright@1.56.1)
+          # Drive the Chrome the runner image ships: Playwright's own
+          # Chromium download does not support every Ubuntu release.
+          CHROMIUM_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser)" \
+            NODE_PATH="$RUNNER_TEMP/playwright/node_modules" bun scripts/thumbnails.mjs
       - name: Build the Astro site
         working-directory: web
         run: |
