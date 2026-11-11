@@ -40,7 +40,8 @@ const has = existsSync(join(process.cwd(), "public/thumbs", `${slug}-light.png`)
   }
   .thumb__img {
     max-width: 100%;
-    max-height: 100%;
+    /* The cell's height less its padding; a percentage does not resolve in a grid. */
+    max-height: 7.7rem;
     width: auto;
     height: auto;
     object-fit: contain;
