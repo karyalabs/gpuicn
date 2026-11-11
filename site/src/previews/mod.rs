@@ -122,6 +122,12 @@ macro_rules! previews {
 
         impl Showcase {
             pub(crate) fn preview(&self, window: &mut Window, cx: &mut Context<Self>) -> gpui_kit::AnyElement {
+                // A named example replaces the overview. Sidebar reads its own.
+                if self.demo != Demo::Sidebar && !self.example.is_empty() {
+                    if let Some(example) = crate::examples::render(self.demo.slug(), &self.example, self, window, cx) {
+                        return example;
+                    }
+                }
                 match self.demo {
                     Demo::Board => board::preview(self, window, cx),
                     Demo::Icons => self.icons_preview(cx).into_any_element(),
