@@ -18,6 +18,26 @@ mkdirSync(`${root}fixtures/registry-install/src/bin`, { recursive: true });
 writeFileSync(`${root}fixtures/registry-install/src/bin/generated-usage.rs`, installedUsage);
 const destination = `${root}web/src/generated/components`;
 mkdirSync(destination, { recursive: true });
+// The website's catalog: registry.toml in its own order, grouped by category.
+// web/src/lib/catalog.ts reads this file and names no component itself.
+const manifest = Bun.TOML.parse(read("registry.toml"));
+// These have no page: theme installs with every component, and app is the
+// starter covered by the Installation chapter.
+const withoutPage = new Set(["theme", "app"]);
+const titleCase = (module) => module.split("_").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+writeFileSync(`${root}web/src/generated/catalog.json`, JSON.stringify({
+  categories: manifest.categories,
+  components: Object.entries(manifest.components)
+    .filter(([module]) => !withoutPage.has(module))
+    .map(([module, meta]) => ({
+      slug: module.replaceAll("_", "-"),
+      name: meta.title ?? titleCase(module),
+      description: meta.description,
+      category: meta.category,
+      added: meta.since,
+    }))
+    .sort((a, b) => a.slug.localeCompare(b.slug)),
+}, null, 2) + "\n");
 writeFileSync(`${root}web/src/generated/setup.json`, JSON.stringify({
   dependencies: read("fixtures/registry-install/Cargo.toml").split("[dependencies]\n")[1].split("\n[workspace]")[0].trim(),
   config: read("fixtures/registry-install/components.json").trim(),

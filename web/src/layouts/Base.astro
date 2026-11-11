@@ -8,12 +8,15 @@ interface Props {
   description?: string
   /** Running head: the part of the book this page belongs to. */
   part?: string
+  /** Leaves out the footer, for a page that fills the window. */
+  bare?: boolean
 }
 
 const {
   title,
   description = "Components for GPUI, installed as Rust source you own. A catalog of 58 components, the complete Lucide icon library, and live previews rendered by GPUI.",
   part,
+  bare = false,
 } = Astro.props
 const fullTitle = title ? `${title} · gpuicn` : "gpuicn · Components for GPUI, installed as source"
 const canonical = new URL(Astro.url.pathname, Astro.site)
@@ -78,6 +81,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
         <nav class="head__nav" aria-label="Main">
           <a href="/introduction/">Guide</a>
           <a href="/components/">Components</a>
+          <a href="/app/">Gallery app</a>
           <a href="/icons/">Icons</a>
           <a href="/registry/">Registry</a>
         </nav>
@@ -115,7 +119,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
       <slot />
     </main>
 
-    <footer class="colophon">
+    {!bare && <footer class="colophon">
       <div class="colophon__row">
         <p>
           gpuicn is open source under the MIT license. The site is static HTML built with Astro, set in Geist. Every preview is the real component, compiled to WebAssembly and drawn by
@@ -128,7 +132,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
           <a href="https://github.com/karyalabs/gpui-icons">gpui-icons</a>
         </nav>
       </div>
-    </footer>
+    </footer>}
 
     <Palette />
     <script src="../scripts/site.ts"></script>

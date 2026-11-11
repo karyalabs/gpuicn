@@ -3,7 +3,7 @@
   "name": "fieldset",
   "type": "registry:item",
   "title": "Fieldset",
-  "description": "The shadcn default Fieldset visual port backed by GPUI Kit behavior.",
+  "description": "Groups related form controls with a legend.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

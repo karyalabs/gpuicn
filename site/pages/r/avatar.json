@@ -3,7 +3,7 @@
   "name": "avatar",
   "type": "registry:item",
   "title": "Avatar",
-  "description": "The shadcn default Avatar visual port backed by GPUI Kit behavior.",
+  "description": "An image element with a fallback for representing a user.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "display"
   }
 }

@@ -3,7 +3,7 @@
   "name": "message-list",
   "type": "registry:item",
   "title": "Message List",
-  "description": "A virtualized, variable-height chat transcript that follows new messages, with a jump-to-latest pill.",
+  "description": "A chat transcript that only renders visible rows and follows new messages.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "chat"
   }
 }

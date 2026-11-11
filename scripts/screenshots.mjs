@@ -36,7 +36,7 @@ if (!existsSync(join(dist, "index.html"))) {
 }
 mkdirSync(out, { recursive: true });
 
-// The preview list is the catalog's; keep it in step with site/src/gallery.rs.
+// The preview list is the registry's, as the catalog and the gallery are.
 const registry = JSON.parse(readFileSync(resolve("registry.json"), "utf8"));
 const demos = registry.items.map((item) => item.name).filter((name) => name !== "theme" && (!only || only.has(name)));
 // Wide previews, as in site/src/main.rs.

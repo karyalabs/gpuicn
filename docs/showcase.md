@@ -8,6 +8,8 @@ themes use black, white and gray; the panels logo keeps orange.
 
 Open **Component gallery** from the sidebar or app menu to browse every component
 in a separate window. Search, reset and theme switching are available there.
+The same gallery runs in the browser at `/app/` on the website, compiled to
+WebAssembly; its entries and groups come from `registry.toml`.
 The website and native gallery use the same component examples. The app applies
 its monochrome theme through shared tokens; the website previews use the stock
 Neutral theme. Menu examples show which action ran and omit unbound shortcuts.

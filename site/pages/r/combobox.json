@@ -3,7 +3,7 @@
   "name": "combobox",
   "type": "registry:item",
   "title": "Combobox",
-  "description": "The shadcn default Combobox visual port backed by GPUI Kit behavior.",
+  "description": "An input paired with a searchable list of choices.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -49,6 +49,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

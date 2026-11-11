@@ -3,7 +3,7 @@
   "name": "composer",
   "type": "registry:item",
   "title": "Composer",
-  "description": "A growing chat composer with Enter to send, caret control, paste and key hooks, and autocomplete for mentions, channels, emoji and commands.",
+  "description": "A chat message box with autocomplete for mentions, channels and emoji.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.7.0"
+    "since": "0.7.0",
+    "category": "chat"
   }
 }

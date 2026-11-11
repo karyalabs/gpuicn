@@ -1,360 +1,84 @@
+//! The component gallery: every catalog preview in one window, grouped and
+//! searchable. It runs natively (`showcase --catalog`) and in the browser,
+//! where the website serves it as a full-page GPUI app.
+
 use super::*;
 use gpui_kit::{Entity, Pixels};
-use gpuicn::sidebar::{Sidebar, SidebarItem};
+use gpuicn::badge::Badge;
+use gpuicn::sidebar::{Sidebar, SidebarItem, sidebar_group_label};
 
 gpui_kit::actions!(gallery, [Quit]);
 
-// Matches the site catalog; both surfaces render Showcase examples.
-const COMPONENTS: &[(&str, &str, &str)] = &[
-    (
-        "accordion",
-        "Accordion",
-        "A vertically stacked set of interactive headings that reveal content.",
-    ),
-    (
-        "alert",
-        "Alert",
-        "An inline callout with an icon, title and description for form errors, warnings and notes.",
-    ),
-    (
-        "alert-dialog",
-        "Alert Dialog",
-        "A modal dialog that expects a response from the user.",
-    ),
-    (
-        "attachment",
-        "Attachment",
-        "File and image cards with upload progress, retry, and remove.",
-    ),
-    (
-        "autocomplete",
-        "Autocomplete",
-        "A text input that suggests matching values.",
-    ),
-    (
-        "avatar",
-        "Avatar",
-        "An image element with a fallback for representing a user.",
-    ),
-    (
-        "avatar-group",
-        "Avatar Group",
-        "Overlapping avatars with a +N overflow chip and one accessible list of names.",
-    ),
-    (
-        "badge",
-        "Badge",
-        "Labels and unread or mention counts in a compact pill.",
-    ),
-    (
-        "button",
-        "Button",
-        "Displays a button or a component that looks like a button.",
-    ),
-    (
-        "calendar",
-        "Calendar",
-        "A keyboard-driven month grid for picking a date, with limits and a configurable first weekday.",
-    ),
-    (
-        "carousel",
-        "Carousel",
-        "Cycles through content with buttons, pagination, keyboard controls, and pointer gestures.",
-    ),
-    (
-        "checkbox",
-        "Checkbox",
-        "A control that toggles between checked and unchecked.",
-    ),
-    (
-        "checkbox-group",
-        "Checkbox Group",
-        "Groups related checkboxes under shared state.",
-    ),
-    (
-        "collapsible",
-        "Collapsible",
-        "An interactive panel that expands and collapses.",
-    ),
-    (
-        "color-picker",
-        "Color Picker",
-        "Picks a color with hue, chroma and lightness sliders in OKLCH, plus optional swatches.",
-    ),
-    (
-        "combobox",
-        "Combobox",
-        "An input paired with a searchable list of choices.",
-    ),
-    (
-        "command",
-        "Command",
-        "A searchable command palette and quick switcher.",
-    ),
-    (
-        "composer",
-        "Composer",
-        "A chat message box with autocomplete for mentions, channels and emoji.",
-    ),
-    (
-        "context-menu",
-        "Context Menu",
-        "A menu opened by a secondary pointer action.",
-    ),
-    (
-        "date-picker",
-        "Date Picker",
-        "A trigger that opens a Calendar popover and shows the chosen date.",
-    ),
-    (
-        "date-time-picker",
-        "Date Time Picker",
-        "A date and time picker: a Calendar popover with an hour and minute field, 12- or 24-hour.",
-    ),
-    (
-        "dialog",
-        "Dialog",
-        "A window overlaid on the primary content.",
-    ),
-    (
-        "drawer",
-        "Drawer",
-        "A panel that slides from an edge of the window.",
-    ),
-    (
-        "embed",
-        "Embed",
-        "Link previews, message attachments and quoted posts under a chat message.",
-    ),
-    (
-        "emoji-picker",
-        "Emoji Picker",
-        "A searchable emoji grid with categories, recents and custom emoji.",
-    ),
-    (
-        "empty",
-        "Empty",
-        "Explains an empty state and offers a clear next action.",
-    ),
-    (
-        "item",
-        "Item",
-        "Rows with media, a title, a description and actions, grouped into cards.",
-    ),
-    (
-        "kbd",
-        "Kbd",
-        "Shows a keyboard key or shortcut with platform modifier names.",
-    ),
-    (
-        "lightbox",
-        "Lightbox",
-        "A full-window image viewer with zoom, pan and previous and next.",
-    ),
-    (
-        "markdown",
-        "Markdown",
-        "Renders Markdown with themed code blocks and inline entity chips.",
-    ),
-    (
-        "menu",
-        "Dropdown Menu",
-        "Displays a menu of actions from a trigger.",
-    ),
-    (
-        "field",
-        "Field",
-        "Composes a control with its label, description, and errors.",
-    ),
-    (
-        "fieldset",
-        "Fieldset",
-        "Groups related form controls with a legend.",
-    ),
-    (
-        "form",
-        "Form",
-        "Coordinates validation and submission for fields.",
-    ),
-    (
-        "message",
-        "Message",
-        "A chat message row with grouping, reactions, and hover actions.",
-    ),
-    (
-        "message-list",
-        "Message List",
-        "A chat transcript that only renders visible rows and follows new messages.",
-    ),
-    (
-        "preview-card",
-        "Hover Card",
-        "Previews content behind a link or trigger.",
-    ),
-    (
-        "input",
-        "Input",
-        "A styled text input backed by native GPUI editing.",
-    ),
-    (
-        "input-group",
-        "Input Group",
-        "Combines an input or textarea with inline addons and actions.",
-    ),
-    (
-        "otp-field",
-        "Input OTP",
-        "A segmented input for one-time passcodes.",
-    ),
-    (
-        "menubar",
-        "Menubar",
-        "A persistent horizontal set of menus.",
-    ),
-    (
-        "meter",
-        "Meter",
-        "Shows a scalar value within a known range.",
-    ),
-    (
-        "navigation-menu",
-        "Navigation Menu",
-        "A collection of links for navigating a site or app.",
-    ),
-    (
-        "number-field",
-        "Number Field",
-        "A numeric input with step controls.",
-    ),
-    (
-        "popover",
-        "Popover",
-        "Displays rich content in a portal from a trigger.",
-    ),
-    (
-        "progress",
-        "Progress",
-        "Displays completion progress for a task.",
-    ),
-    (
-        "radio-group",
-        "Radio Group",
-        "A set of checkable options where one value is selected.",
-    ),
-    (
-        "resizable",
-        "Resizable",
-        "Controlled panes with pointer and keyboard resizing.",
-    ),
-    (
-        "scroll-area",
-        "Scroll Area",
-        "Adds styled scrolling to overflowing content.",
-    ),
-    (
-        "select",
-        "Select",
-        "Displays a list of options for the user to pick from.",
-    ),
-    ("separator", "Separator", "Visually separates content."),
-    (
-        "sidebar",
-        "Sidebar",
-        "Application navigation with responsive layouts, icon rails, nested menus, and mobile sheets.",
-    ),
-    (
-        "skeleton",
-        "Skeleton",
-        "A placeholder that stands in for content while it loads.",
-    ),
-    (
-        "slider",
-        "Slider",
-        "Selects a value or range along a track.",
-    ),
-    ("switch", "Switch", "Toggles a setting on or off."),
-    (
-        "spinner",
-        "Spinner",
-        "An animated indicator that shows work in progress.",
-    ),
-    (
-        "sortable",
-        "Sortable",
-        "Rows people drag, or move with the keyboard, to reorder them and move them between groups.",
-    ),
-    (
-        "tabs",
-        "Tabs",
-        "Shows one panel from a set of layered sections.",
-    ),
-    (
-        "tag",
-        "Tag",
-        "A compact chip for a status, role, or removable filter.",
-    ),
-    (
-        "textarea",
-        "Textarea",
-        "A styled multi-line editor backed by native GPUI editing.",
-    ),
-    (
-        "title-bar",
-        "Title Bar",
-        "A draggable custom window title bar with window controls.",
-    ),
-    (
-        "toast",
-        "Toast",
-        "A brief notification shown above the application.",
-    ),
-    (
-        "toggle",
-        "Toggle",
-        "A two-state button that can be on or off.",
-    ),
-    (
-        "toggle-group",
-        "Toggle Group",
-        "Groups two-state buttons with shared selection.",
-    ),
-    (
-        "toolbar",
-        "Toolbar",
-        "Groups controls for a related set of actions.",
-    ),
-    (
-        "tooltip",
-        "Tooltip",
-        "Shows short information on hover or keyboard focus.",
-    ),
-    (
-        "virtual-list",
-        "Virtual List",
-        "Large lists with stable selection, keyboard navigation, and fast fixed-height rows.",
-    ),
-    (
-        "icons",
-        "Icons",
-        "Browse the Lucide icons used throughout the components.",
-    ),
-];
+/// One gallery entry. `build.rs` writes the table from registry.toml.
+pub(crate) struct Entry {
+    pub(crate) slug: &'static str,
+    pub(crate) title: &'static str,
+    pub(crate) description: &'static str,
+    pub(crate) category: &'static str,
+    pub(crate) new: bool,
+}
+
+include!(concat!(env!("OUT_DIR"), "/catalog.rs"));
+
+/// The icon browser has a preview but is not a registry component.
+const ICONS: Entry = Entry {
+    slug: "icons",
+    title: "Icons",
+    description: "Browse the Lucide icons used throughout the components.",
+    category: "foundations",
+    new: false,
+};
+
+/// Entries are addressed by position; the icon browser follows the catalog.
+fn entry(index: usize) -> &'static Entry {
+    COMPONENTS.get(index).unwrap_or(&ICONS)
+}
+
+fn entries() -> impl Iterator<Item = (usize, &'static Entry)> {
+    (0..=COMPONENTS.len()).map(|index| (index, entry(index)))
+}
+
+fn position(slug: &str) -> Option<usize> {
+    entries().find_map(|(index, entry)| (entry.slug == slug).then_some(index))
+}
+
+/// The gallery's theme: the Workspace app's monochrome pair natively, the
+/// stock Neutral pair in the browser, where the Workspace app is not built.
+#[cfg(not(target_family = "wasm"))]
+fn gallery_theme(mode: ThemeMode) -> UiTheme {
+    super::workspace::workspace_theme(mode)
+}
+#[cfg(target_family = "wasm")]
+fn gallery_theme(mode: ThemeMode) -> UiTheme {
+    match mode {
+        ThemeMode::Dark => UiTheme::neutral_dark(),
+        _ => UiTheme::neutral_light(),
+    }
+}
+
+/// Switches the gallery between its light and dark theme.
+pub(super) fn set_mode(cx: &mut App, mode: ThemeMode) {
+    if UiTheme::read(cx).mode != mode {
+        UiTheme::set(cx, gallery_theme(mode));
+        cx.refresh_windows();
+    }
+}
 
 pub(super) fn launch(cx: &mut App) {
-    UiTheme::set(
-        cx,
-        super::workspace::workspace_theme(UiTheme::read(cx).mode),
-    );
-    cx.on_window_closed(|cx, _| {
-        if cx.windows().is_empty() {
-            cx.quit();
-        }
-    })
-    .detach();
-    cx.on_action(|_: &Quit, cx| cx.quit());
-    cx.bind_keys([gpui_kit::KeyBinding::new("cmd-q", Quit, None)]);
-    cx.set_menus([gpui_kit::Menu::new("gpuicn Showcase")
-        .items([gpui_kit::MenuItem::action("Quit gpuicn Showcase", Quit)])]);
+    UiTheme::set(cx, gallery_theme(UiTheme::read(cx).mode));
+    #[cfg(not(target_family = "wasm"))]
+    {
+        cx.on_window_closed(|cx, _| {
+            if cx.windows().is_empty() {
+                cx.quit();
+            }
+        })
+        .detach();
+        cx.on_action(|_: &Quit, cx| cx.quit());
+        cx.bind_keys([gpui_kit::KeyBinding::new("cmd-q", Quit, None)]);
+        cx.set_menus([gpui_kit::Menu::new("gpuicn Showcase")
+            .items([gpui_kit::MenuItem::action("Quit gpuicn Showcase", Quit)])]);
+    }
     open(cx);
 }
 
@@ -371,7 +95,7 @@ pub(super) fn open(cx: &mut App) {
             cx.new(Gallery::new)
         },
     )
-    .expect("failed to open gallery");
+    .expect("failed to open the gallery window");
     cx.activate(true);
 }
 
@@ -384,17 +108,25 @@ struct Gallery {
 
 impl Gallery {
     fn new(cx: &mut Context<Self>) -> Self {
+        // In the browser `?component=calendar` opens the gallery on that entry.
+        let selected = requested_value("component")
+            .and_then(|slug| position(&slug))
+            .or_else(|| position("button"))
+            .unwrap_or(0);
+        let demo = Demo::parse(entry(selected).slug).unwrap_or_default();
         Self {
-            selected: 4,
+            selected,
             query: String::new(),
-            preview: cx.new(|_| Showcase::new(Demo::Button)),
+            preview: cx.new(|_| Showcase::new(demo)),
             sidebar_width: px(240.),
         }
     }
 
     fn select(&mut self, index: usize, cx: &mut Context<Self>) {
         self.selected = index;
-        self.preview = cx.new(|_| Showcase::new(Demo::parse(COMPONENTS[index].0).unwrap()));
+        self.preview = cx.new(|_| Showcase::new(Demo::parse(entry(index).slug).unwrap()));
+        #[cfg(target_family = "wasm")]
+        super::gallery_selected(entry(index).slug);
         cx.notify();
     }
 }
@@ -415,7 +147,7 @@ impl Render for Gallery {
             },
         );
         let theme = UiTheme::read(cx).clone();
-        let (_, name, description) = COMPONENTS[self.selected];
+        let current = entry(self.selected);
         let dark = theme.mode == ThemeMode::Dark;
         let query = self.query.trim().to_lowercase();
         let mut sidebar = Sidebar::new("gallery.components", "Components")
@@ -438,21 +170,43 @@ impl Render for Gallery {
                     .py(px(4.))
                     .text_size(px(12.))
                     .text_color(theme.colors.muted_foreground)
-                    .child(format!("{} components · Native GPUI", COMPONENTS.len() - 1)),
+                    .child(format!("{} components · drawn by GPUI", COMPONENTS.len())),
             );
         let mut matches = 0;
-        for (index, (_, label, description)) in COMPONENTS.iter().enumerate() {
-            if !label.to_lowercase().contains(&query)
-                && !description.to_lowercase().contains(&query)
-            {
-                continue;
+        let item = |index: usize, entry: &'static Entry, cx: &mut Context<Self>| {
+            SidebarItem::new(("gallery.item", index), entry.title)
+                .selected(index == self.selected)
+                .when(entry.new, |item| {
+                    item.trailing(Badge::new("New").variant(gpuicn::badge::BadgeVariant::Secondary))
+                })
+                .on_activate(cx.listener(move |this, _, _, cx| this.select(index, cx)))
+        };
+        if query.is_empty() {
+            // Browsing: one labelled group per category, in registry.toml order.
+            for (id, title) in CATEGORIES {
+                let group: Vec<_> = entries()
+                    .filter(|(_, entry)| entry.category == *id)
+                    .collect();
+                if group.is_empty() {
+                    continue;
+                }
+                sidebar = sidebar.child(sidebar_group_label(*title, cx));
+                for (index, entry) in group {
+                    matches += 1;
+                    sidebar = sidebar.child(item(index, entry, cx));
+                }
             }
-            matches += 1;
-            sidebar = sidebar.child(
-                SidebarItem::new(("gallery.item", index), *label)
-                    .selected(index == self.selected)
-                    .on_activate(cx.listener(move |this, _, _, cx| this.select(index, cx))),
-            );
+        } else {
+            // Searching: a flat A to Z list of the matches.
+            for (index, entry) in entries() {
+                if entry.title.to_lowercase().contains(&query)
+                    || entry.description.to_lowercase().contains(&query)
+                    || entry.slug.contains(&query)
+                {
+                    matches += 1;
+                    sidebar = sidebar.child(item(index, entry, cx));
+                }
+            }
         }
         if matches == 0 {
             sidebar = sidebar.child(
@@ -480,16 +234,32 @@ impl Render for Gallery {
                     .gap(px(4.))
                     .child(
                         div()
-                            .text_size(px(20.))
-                            .font_weight(gpui_kit::FontWeight::SEMIBOLD)
-                            .child(name),
+                            .flex()
+                            .items_center()
+                            .gap(px(8.))
+                            .child(
+                                div()
+                                    .text_size(px(20.))
+                                    .font_weight(gpui_kit::FontWeight::SEMIBOLD)
+                                    .child(current.title),
+                            )
+                            .when(current.new, |row| row.child(Badge::new("New"))),
                     )
                     .child(
                         div()
                             .text_size(px(13.))
                             .text_color(theme.colors.muted_foreground)
-                            .child(description),
+                            .child(current.description),
                     ),
+            )
+            .child(
+                Button::new("gallery.docs")
+                    .aria_label(format!("Open the {} documentation", current.title))
+                    .variant(ButtonVariant::Outline)
+                    .label("Docs")
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        open_docs(entry(this.selected).slug, cx);
+                    })),
             )
             .child(
                 Button::new("gallery.reset")
@@ -498,23 +268,25 @@ impl Render for Gallery {
                     .label("Reset")
                     .on_click(cx.listener(|this, _, _, cx| this.select(this.selected, cx))),
             )
-            .child(
-                Button::new("gallery.theme")
-                    .aria_label("Toggle light and dark theme")
-                    .variant(ButtonVariant::Outline)
-                    .child(if dark { "Light" } else { "Dark" })
-                    .on_click(cx.listener(move |_, _, _, cx| {
-                        UiTheme::set(
-                            cx,
-                            super::workspace::workspace_theme(if dark {
-                                ThemeMode::Light
-                            } else {
-                                ThemeMode::Dark
-                            }),
-                        );
-                        cx.refresh_windows();
-                    })),
-            );
+            // In the browser the site's header has the theme switch.
+            .when(cfg!(not(target_family = "wasm")), |header| {
+                header.child(
+                    Button::new("gallery.theme")
+                        .aria_label("Toggle light and dark theme")
+                        .variant(ButtonVariant::Outline)
+                        .child(if dark { "Light" } else { "Dark" })
+                        .on_click(cx.listener(move |_, _, _, cx| {
+                            set_mode(
+                                cx,
+                                if dark {
+                                    ThemeMode::Light
+                                } else {
+                                    ThemeMode::Dark
+                                },
+                            );
+                        })),
+                )
+            });
         let content = div()
             .size_full()
             .min_w_0()
@@ -522,7 +294,7 @@ impl Render for Gallery {
             .flex()
             .flex_col()
             .child(header)
-            .when(COMPONENTS[self.selected].0 == "sidebar", |el| {
+            .when(current.slug == "sidebar", |el| {
                 el.child(
                     div()
                         .flex()
@@ -594,6 +366,23 @@ impl Render for Gallery {
     }
 }
 
+/// Opens a component's page on the website. The icon browser's page is /icons/.
+fn open_docs(slug: &str, cx: &mut App) {
+    let path = if slug == "icons" {
+        "/icons/".to_owned()
+    } else {
+        format!("/components/{slug}/")
+    };
+    // In the browser the gallery is framed by the site, which follows the link.
+    #[cfg(target_family = "wasm")]
+    {
+        let _ = cx;
+        super::gallery_open(&path);
+    }
+    #[cfg(not(target_family = "wasm"))]
+    cx.open_url(&format!("https://ui.imajha.com{path}"));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -601,23 +390,27 @@ mod tests {
 
     #[test]
     fn gallery_navigates_the_full_catalog_and_searches_without_reborrowing() {
-        let site: Vec<&str> = include_str!("../../web/src/lib/catalog.ts")
-            .lines()
-            .filter_map(|line| line.trim().strip_prefix("slug: \""))
-            .filter_map(|line| line.split('"').next())
-            .collect();
-        for slug in &site {
+        // Every catalog entry has a preview and every preview has an entry, so
+        // a component in registry.toml can never ship unseen.
+        for (_, entry) in entries() {
             assert!(
-                COMPONENTS.iter().any(|entry| entry.0 == *slug),
-                "gallery missing {slug}"
+                Demo::parse(entry.slug).is_some(),
+                "no preview for {}",
+                entry.slug
+            );
+            assert!(
+                CATEGORIES.iter().any(|(id, _)| *id == entry.category),
+                "{} has an unknown category",
+                entry.slug
             );
         }
-        // Every preview needs a website page too, or it ships unseen. Icons
-        // has its own page outside the component list.
-        for (slug, _, _) in COMPONENTS.iter().filter(|entry| entry.0 != "icons") {
+        // App is the starter window: it has a preview for the screenshot
+        // sheet but no catalog entry.
+        for demo in Demo::ALL.iter().filter(|demo| demo.slug() != "app") {
             assert!(
-                site.contains(slug),
-                "web/src/lib/catalog.ts has no page for {slug}"
+                position(&demo.slug().replace('_', "-")).is_some(),
+                "registry.toml has no entry for the {} preview",
+                demo.slug()
             );
         }
         // Declared first so it is dropped after `cx`: GPUI Kit 0.8 deadlocks when
@@ -633,8 +426,7 @@ mod tests {
         visual.simulate_resize(size(px(1180.), px(780.)));
         for mode in [ThemeMode::Light, ThemeMode::Dark] {
             cx.update(|cx| UiTheme::switch(cx, mode));
-            for (index, (slug, _, _)) in COMPONENTS.iter().enumerate() {
-                assert!(Demo::parse(slug).is_some(), "missing {slug}");
+            for (index, _) in entries() {
                 window
                     .update(&mut cx, |view, _, cx| view.select(index, cx))
                     .unwrap();
@@ -655,7 +447,7 @@ mod tests {
         visual.simulate_click(point(px(100.), px(126.)), Modifiers::default());
         visual.update(|window, cx| window.draw(cx).clear(cx));
         assert_eq!(
-            cx.read_window(&window, |view, cx| COMPONENTS[view.read(cx).selected].0)
+            cx.read_window(&window, |view, cx| entry(view.read(cx).selected).slug)
                 .unwrap(),
             "virtual-list"
         );

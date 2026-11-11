@@ -3,7 +3,7 @@
   "name": "skeleton",
   "type": "registry:item",
   "title": "Skeleton",
-  "description": "Muted pulsing placeholders for content that is still loading.",
+  "description": "A placeholder that stands in for content while it loads.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "display"
   }
 }

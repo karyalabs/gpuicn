@@ -2,8 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "otp-field",
   "type": "registry:item",
-  "title": "OTP Field",
-  "description": "The shadcn default OTP Field visual port backed by GPUI Kit behavior.",
+  "title": "Input OTP",
+  "description": "A segmented input for one-time passcodes.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

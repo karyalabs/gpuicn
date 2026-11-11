@@ -3,7 +3,7 @@
   "name": "toggle-group",
   "type": "registry:item",
   "title": "Toggle Group",
-  "description": "The shadcn default Toggle Group visual port backed by GPUI Kit behavior.",
+  "description": "Groups two-state buttons with shared selection.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "actions"
   }
 }

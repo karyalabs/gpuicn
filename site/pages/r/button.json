@@ -3,7 +3,7 @@
   "name": "button",
   "type": "registry:item",
   "title": "Button",
-  "description": "The shadcn default Button visual port backed by GPUI Kit behavior.",
+  "description": "Displays a button or a component that looks like a button.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.1.0"
+    "since": "0.1.0",
+    "category": "actions"
   }
 }

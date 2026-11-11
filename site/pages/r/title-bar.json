@@ -3,7 +3,7 @@
   "name": "title-bar",
   "type": "registry:item",
   "title": "Title Bar",
-  "description": "A draggable custom window title bar with platform window controls.",
+  "description": "A draggable custom window title bar with window controls.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "foundations"
   }
 }

@@ -3,7 +3,7 @@
   "name": "field",
   "type": "registry:item",
   "title": "Field",
-  "description": "The shadcn default Field visual port backed by GPUI Kit behavior.",
+  "description": "Composes a control with its label, description, and errors.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

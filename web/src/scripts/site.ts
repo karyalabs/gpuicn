@@ -203,11 +203,13 @@ class Preview {
     this.host.dataset.status = value
   }
   src() {
+    const box = this.host.getBoundingClientRect()
     const query = new URLSearchParams({
       demo: this.host.dataset.demo ?? "button",
       theme: theme(),
-      width: String(Math.max(1, Math.round(this.host.getBoundingClientRect().width))),
-      height: this.host.dataset.height ?? "288",
+      width: String(Math.max(1, Math.round(box.width))),
+      // A `data-fill` host, such as the gallery app, takes its height from CSS.
+      height: "fill" in this.host.dataset ? String(Math.round(box.height)) : (this.host.dataset.height ?? "288"),
     })
     const icon = this.host.dataset.icon
     const example = this.host.dataset.example
@@ -216,6 +218,9 @@ class Preview {
     // The preview falls back to WebGL by itself. `?backend=webgl` on the page
     // skips WebGPU, which the screenshot scripts use.
     const page = new URLSearchParams(location.search)
+    // The gallery app opens on `?c=<component>` and keeps the address in step.
+    const component = page.get("c")
+    if (component && this.host.dataset.demo === "gallery") query.set("component", component)
     // `?dir=rtl` on the page previews the component in a right-to-left layout.
     if (page.get("dir") === "rtl") query.set("dir", "rtl")
     const backend = page.get("backend")
@@ -253,6 +258,12 @@ for (const host of document.querySelectorAll<HTMLElement>(".gpu[data-demo]")) {
 window.addEventListener("message", (event) => {
   if (event.origin !== window.location.origin) return
   const kind = event.data?.gpuicn
+  if (kind === "gallery-select" && /^[a-z0-9-]+$/.test(event.data.slug ?? "")) {
+    const url = new URL(location.href)
+    url.searchParams.set("c", event.data.slug)
+    history.replaceState(null, "", url)
+    return
+  }
   if (kind !== "preview-ready" && kind !== "preview-error") return
   for (const preview of hosts) {
     if (preview.frame?.contentWindow === event.source) {

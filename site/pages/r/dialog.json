@@ -3,7 +3,7 @@
   "name": "dialog",
   "type": "registry:item",
   "title": "Dialog",
-  "description": "The shadcn default Dialog visual port backed by GPUI Kit behavior.",
+  "description": "A window overlaid on the primary content.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.1.0"
+    "since": "0.1.0",
+    "category": "overlays"
   }
 }

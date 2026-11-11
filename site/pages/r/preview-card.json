@@ -2,8 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "preview-card",
   "type": "registry:item",
-  "title": "Preview Card",
-  "description": "The shadcn default Preview Card visual port backed by GPUI Kit behavior.",
+  "title": "Hover Card",
+  "description": "Previews content behind a link or trigger.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "overlays"
   }
 }

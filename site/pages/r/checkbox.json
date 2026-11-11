@@ -3,7 +3,7 @@
   "name": "checkbox",
   "type": "registry:item",
   "title": "Checkbox",
-  "description": "The shadcn default Checkbox visual port backed by GPUI Kit behavior.",
+  "description": "A control that toggles between checked and unchecked.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.1.0"
+    "since": "0.1.0",
+    "category": "forms"
   }
 }

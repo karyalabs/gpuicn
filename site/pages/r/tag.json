@@ -3,7 +3,7 @@
   "name": "tag",
   "type": "registry:item",
   "title": "Tag",
-  "description": "Compact chips for statuses and roles, with an optional status dot and remove button.",
+  "description": "A compact chip for a status, role, or removable filter.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "display"
   }
 }

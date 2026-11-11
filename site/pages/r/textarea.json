@@ -3,7 +3,7 @@
   "name": "textarea",
   "type": "registry:item",
   "title": "Textarea",
-  "description": "Nova-styled multi-line text editor with retained native editing state.",
+  "description": "A styled multi-line editor backed by native GPUI editing.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.5.0"
+    "since": "0.5.0",
+    "category": "forms"
   }
 }

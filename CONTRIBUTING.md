@@ -9,11 +9,11 @@ requests are welcome; say which checks you ran.
 | Path | What lives there |
 | --- | --- |
 | `crates/ui/registry/<module>/` | Component source. `gpuicn add` copies it into apps, and the `gpuicn` crate compiles it for crate mode. Mark cross-module helpers `#[doc(hidden)] pub`, never `pub(crate)`: an ejected component reaches them from outside the crate. |
-| `registry.toml` | Component titles, descriptions, source dependencies and the release each one first shipped in (`since`). |
+| `registry.toml` | The one list of components: title, description, category, source dependencies and the release each first shipped in (`since`). The registry JSON, the website's pages and the gallery app are generated from it. |
 | `crates/ui` | The `gpuicn` crate: compiles the registry via `#[path]` modules, plus tests and examples. It is published for crate mode. |
 | `crates/cli` | The `gpuicn` CLI (`init`, `new`, `add`, `status`, `diff`, `remove`, `build`). |
-| `site/` | The GPUI/WASM previews (one file per component under `site/src/previews/`) and the gpuicn Workspace example app. |
-| `xtask/` | `cargo xtask new-component <name>` scaffolds a component in every place above. |
+| `site/` | The GPUI/WASM previews (one file per component under `site/src/previews/`), the gallery app (`site/src/gallery.rs`, native and at `/app/` on the website) and the gpuicn Workspace example app. |
+| `xtask/` | `cargo xtask new-component <name> --category <id>` scaffolds a component in every place above. |
 | `web/` | The catalog website: static Astro pages with plain CSS, built with Bun. `bun run build` regenerates the catalog data first. |
 | `fixtures/registry-install` | A consumer app CI installs every component into. |
 | `docs/` | User docs; `docs/internal/` holds plans and validation records. |
@@ -89,16 +89,19 @@ bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v<next
    builds its API reference from these comments. Read colors, spacing, radius
    and motion from `UiTheme`, never hard-coded values, and keep application
    data, routing and persistence caller-owned (see [CONTEXT.md](CONTEXT.md)).
-2. Add `[components.<module>]` to `registry.toml` with `since = "next"` and any
-   `dependencies`. The release bump replaces `next` with the version, and the
-   website shows a "New" badge from it for three minor versions. Nothing else
-   marks a component as new.
+2. Add `[components.<module>]` to `registry.toml` with a `description`, a
+   `category` (one of the `[[categories]]` ids), `since = "next"` and any
+   `dependencies`. That entry is the component's website page and gallery
+   entry; no other file lists components. The release bump replaces `next`
+   with the version, and the site and the gallery show a "New" badge from it
+   for three minor versions.
 3. Add the `#[path]` module to `crates/ui/src/lib.rs` and tests under
    `crates/ui/tests/` or in the source file.
 4. Add `mod <module> { … fn example(…) }` to `crates/ui/examples/usage.rs`,
    importing only from `crate::ui::<module>::…`. This is the usage shown on the
    site and compiled in CI.
-5. Add `fn <module>_preview(` to `site/src/main.rs`.
+5. Add `site/src/previews/<module>.rs` with `fn <module>_preview(` and list it in
+   `site/src/previews/mod.rs`.
 6. Add platform notes in `docs/parity/<name>.md`: how it differs from shadcn
    and what was verified.
 7. Run the checks above and commit the regenerated registry.

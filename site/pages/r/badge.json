@@ -3,7 +3,7 @@
   "name": "badge",
   "type": "registry:item",
   "title": "Badge",
-  "description": "Nova pills for labels and capped unread or mention counts.",
+  "description": "Labels and unread or mention counts in a compact pill.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "display"
   }
 }

@@ -3,7 +3,7 @@
   "name": "radio-group",
   "type": "registry:item",
   "title": "Radio Group",
-  "description": "The shadcn default Radio Group visual port backed by GPUI Kit behavior.",
+  "description": "A set of checkable options where one value is selected.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

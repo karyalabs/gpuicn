@@ -3,7 +3,7 @@
   "name": "sidebar",
   "type": "registry:item",
   "title": "Sidebar",
-  "description": "Shadcn-styled navigation composed from GPUI Kit buttons and scroll areas.",
+  "description": "Application navigation with responsive layouts, icon rails, nested menus, and mobile sheets.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -79,6 +79,7 @@
     }
   ],
   "meta": {
-    "since": "0.5.0"
+    "since": "0.5.0",
+    "category": "navigation"
   }
 }

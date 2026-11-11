@@ -3,7 +3,7 @@
   "name": "toast",
   "type": "registry:item",
   "title": "Toast",
-  "description": "The shadcn default Toast visual port backed by GPUI Kit behavior.",
+  "description": "A brief notification shown above the application.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "overlays"
   }
 }

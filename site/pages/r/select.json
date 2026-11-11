@@ -3,7 +3,7 @@
   "name": "select",
   "type": "registry:item",
   "title": "Select",
-  "description": "The shadcn default Select visual port backed by GPUI Kit behavior.",
+  "description": "Displays a list of options for the user to pick from.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

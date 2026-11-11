@@ -3,7 +3,7 @@
   "name": "command",
   "type": "registry:item",
   "title": "Command",
-  "description": "A Nova command palette and quick switcher with grouped, fuzzy-filtered, virtualized results.",
+  "description": "A searchable command palette and quick switcher.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -61,6 +61,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "overlays"
   }
 }

@@ -281,6 +281,9 @@ struct Item {
 struct ItemMeta {
     /// The release that first shipped the component, or "next" before it ships.
     since: String,
+    /// The catalog group, one of registry.toml's `categories` ids.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    category: Option<String>,
 }
 #[derive(Serialize, Deserialize)]
 struct Registry {
@@ -295,8 +298,18 @@ struct Registry {
 struct Manifest {
     name: String,
     homepage: String,
+    /// The catalog groups, in the order the site and the gallery show them.
+    #[serde(default)]
+    categories: Vec<Category>,
     #[serde(default)]
     components: BTreeMap<String, Metadata>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Category {
+    id: String,
+    #[allow(dead_code)] // The site and the gallery read the title.
+    title: String,
 }
 #[derive(Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -305,6 +318,8 @@ struct Metadata {
     description: Option<String>,
     /// The release that first shipped the component; "next" until it ships.
     since: Option<String>,
+    /// The catalog group; one of the manifest's `categories` ids.
+    category: Option<String>,
     dependencies: Vec<String>,
 }
 
@@ -1586,6 +1601,13 @@ fn build(source: &Path, output: &Path) -> Result<()> {
             since == "next" || semver_like(&since),
             "registry.toml: [components.{name}] since = \"{since}\" is neither a version nor \"next\""
         );
+        let category = metadata
+            .and_then(|meta| meta.category.clone())
+            .with_context(|| format!("registry.toml: add `category` under [components.{name}]"))?;
+        ensure!(
+            manifest.categories.iter().any(|known| known.id == category),
+            "registry.toml: [components.{name}] category = \"{category}\" is not listed under [[categories]]"
+        );
         let title = metadata
             .and_then(|meta| meta.title.clone())
             .unwrap_or_else(|| {
@@ -1606,7 +1628,10 @@ fn build(source: &Path, output: &Path) -> Result<()> {
                     format!("The shadcn default {title} visual port backed by GPUI Kit behavior.")
                 }),
             files,
-            meta: Some(ItemMeta { since }),
+            meta: Some(ItemMeta {
+                since,
+                category: Some(category),
+            }),
         });
     }
     fs::create_dir_all(output)?;

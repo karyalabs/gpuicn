@@ -1,0 +1,96 @@
+---
+import Base from "../layouts/Base.astro"
+import { components, componentHref } from "../lib/catalog"
+---
+
+<Base
+  title="Gallery app"
+  part="Gallery app"
+  bare
+  description="Every gpuicn component in one GPUI application, running in the browser as WebAssembly: grouped, searchable, in light and dark."
+>
+  <div class="app">
+    <div
+      class="gpu app__frame"
+      data-demo="gallery"
+      data-name="gpuicn gallery"
+      data-fill
+      data-status="loading"
+    >
+      <div class="gpu__status" role="status">
+        <span class="gpu__pulse" aria-hidden="true"></span>
+        <p>
+          <span data-when="loading">Starting the gallery. It is one GPUI application compiled to WebAssembly, so the first load takes a few seconds.</span>
+          <span data-when="unsupported">This browser has neither WebGPU nor WebGL 2, so the gallery cannot run. The component pages still work.</span>
+          <span data-when="failed">The gallery did not start.</span>
+        </p>
+        <button class="btn" type="button" data-retry>Try again</button>
+      </div>
+    </div>
+    <!-- The gallery is drawn on a canvas, so this list is what search engines,
+         screen readers and narrow screens get instead. -->
+    <section class="app__fallback" aria-label="Components">
+      <h1 class="h2">Gallery app</h1>
+      <p class="small">
+        The gallery is a desktop-sized GPUI application and needs a wider window. Every component
+        also has its own page:
+      </p>
+      <ul>
+        {components.map((component) => (
+          <li><a href={componentHref(component.slug)}>{component.name}</a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .app {
+    height: calc(100dvh - var(--head) - 1px);
+    min-height: 30rem;
+    display: flex;
+  }
+  .app__frame {
+    flex: 1;
+    height: 100%;
+  }
+  .app__frame [data-when] {
+    display: none;
+  }
+  .app__frame[data-status="loading"] [data-when="loading"],
+  .app__frame[data-status="unsupported"] [data-when="unsupported"],
+  .app__frame[data-status="failed"] [data-when="failed"] {
+    display: inline;
+  }
+  /* Visually hidden while the gallery has room; shown in its place below 800px,
+     the gallery window's minimum width. */
+  .app__fallback {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  @media (max-width: 49.99rem) {
+    .app {
+      height: auto;
+      display: block;
+    }
+    .app__frame {
+      display: none;
+    }
+    .app__fallback {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+      padding: 2rem 1.5rem;
+    }
+    .app__fallback ul {
+      columns: 2;
+      margin-top: 1rem;
+      padding-left: 1.1rem;
+      line-height: 1.9;
+    }
+  }
+</style>

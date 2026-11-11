@@ -9,14 +9,15 @@ use std::{
 
 const USAGE: &str = "\
 Usage:
-  cargo xtask new-component <snake_name> [--title \"Title\"] [--description \"One sentence.\"]
+  cargo xtask new-component <snake_name> --category <id> [--title \"Title\"] [--description \"One sentence.\"]
 
 Creates crates/ui/registry/<name>/<name>.rs, declares it in crates/ui/src/lib.rs
 and registry.toml, writes docs/parity/<name>.md, a Usage example in
-crates/ui/examples/usage.rs, a catalog preview in site/src/previews/<name>.rs
-(listed in site/src/previews/mod.rs and site/src/gallery.rs), a website page
-(listed in web/src/lib/catalog.ts), then prints the commands that refresh the
-registry snapshot.";
+crates/ui/examples/usage.rs and a catalog preview in
+site/src/previews/<name>.rs (listed in site/src/previews/mod.rs), then prints
+the commands that refresh the registry snapshot. The website page and the
+gallery entry come from registry.toml; --category is one of its [[categories]]
+ids, such as forms or overlays.";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -59,6 +60,8 @@ pub struct Component {
     pub title: String,
     /// One-sentence catalog description.
     pub description: String,
+    /// The catalog group, one of registry.toml's `[[categories]]` ids.
+    pub category: String,
 }
 
 impl Component {
@@ -66,6 +69,7 @@ impl Component {
         module: &str,
         title: Option<&str>,
         description: Option<&str>,
+        category: &str,
     ) -> Result<Self, String> {
         let valid = !module.is_empty()
             && module
@@ -96,6 +100,7 @@ impl Component {
                 || "Describe the component in one sentence.".to_owned(),
                 str::to_owned,
             ),
+            category: category.to_owned(),
         })
     }
 
@@ -109,6 +114,7 @@ fn parse_new_component(args: &[String]) -> Result<Component, String> {
     let mut module = None;
     let mut title = None;
     let mut description = None;
+    let mut category = None;
     let mut rest = args.iter();
     while let Some(arg) = rest.next() {
         match arg.as_str() {
@@ -116,12 +122,20 @@ fn parse_new_component(args: &[String]) -> Result<Component, String> {
             "--description" => {
                 description = Some(rest.next().ok_or("--description needs a value")?.as_str())
             }
+            "--category" => {
+                category = Some(rest.next().ok_or("--category needs a value")?.as_str())
+            }
             flag if flag.starts_with("--") => return Err(format!("unknown flag {flag}")),
             name if module.is_none() => module = Some(name),
             extra => return Err(format!("unexpected argument {extra:?}")),
         }
     }
-    Component::new(module.ok_or("name the component")?, title, description)
+    Component::new(
+        module.ok_or("name the component")?,
+        title,
+        description,
+        category.ok_or("--category is required, for example --category forms")?,
+    )
 }
 
 type Edit = fn(&str, &Component) -> Result<String, String>;
@@ -137,8 +151,6 @@ fn new_component(root: &Path, component: &Component) -> Result<(), String> {
         (root.join("registry.toml"), declare_in_registry),
         (root.join("crates/ui/examples/usage.rs"), add_usage_example),
         (root.join("site/src/previews/mod.rs"), list_preview),
-        (root.join("site/src/gallery.rs"), list_in_gallery),
-        (root.join("web/src/lib/catalog.ts"), list_in_site_catalog),
     ];
     // Compute every edit before writing anything, so a failure changes no file.
     let mut writes = Vec::new();
@@ -216,19 +228,57 @@ pub fn declare_in_lib(text: &str, component: &Component) -> Result<String, Strin
     Ok(lines.concat())
 }
 
-/// Appends `[components.<module>]` with the description. `since = "next"`
-/// marks it new; `scripts/release-version.py bump` stamps the release.
+/// Appends `[components.<module>]` to the end of its category's block.
+/// `since = "next"` marks it new; `scripts/release-version.py bump` stamps
+/// the release.
 pub fn declare_in_registry(text: &str, component: &Component) -> Result<String, String> {
     let header = format!("[components.{}]", component.module);
     if text.contains(&header) {
         return Err(format!("already has {header}"));
     }
-    let mut text = text.trim_end().to_owned();
-    text.push_str(&format!(
-        "\n{header}\nsince = \"next\"\ndescription = \"{}\"\n",
+    let category = &component.category;
+    let known: Vec<&str> = text
+        .lines()
+        .filter_map(|line| line.strip_prefix("id = \""))
+        .filter_map(|rest| rest.strip_suffix('"'))
+        .collect();
+    if !known.contains(&category.as_str()) {
+        return Err(format!(
+            "unknown category {category:?}; choose one of {}",
+            known.join(", ")
+        ));
+    }
+    let default_title: String = component
+        .module
+        .split('_')
+        .map(|word| format!("{}{}", word[..1].to_uppercase(), &word[1..]))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let mut entry = format!("{header}\n");
+    if component.title != default_title {
+        entry.push_str(&format!(
+            "title = \"{}\"\n",
+            component.title.replace('"', "\\\"")
+        ));
+    }
+    entry.push_str(&format!(
+        "description = \"{}\"\ncategory = \"{category}\"\nsince = \"next\"\n",
         component.description.replace('"', "\\\"")
     ));
-    Ok(text)
+    // After the last component already in this category, or at the end.
+    let marker = format!("category = \"{category}\"\n");
+    let Some(last) = text.rfind(&marker) else {
+        return Ok(format!("{}\n\n{entry}", text.trim_end()));
+    };
+    let block_end = text[last..]
+        .find("\n\n")
+        .map_or(text.len(), |offset| last + offset);
+    Ok(format!(
+        "{}\n\n{}{}",
+        text[..block_end].trim_end(),
+        entry.trim_end(),
+        &text[block_end..]
+    ))
 }
 
 /// Appends a compile-checked Usage example module.
@@ -274,100 +324,13 @@ pub fn list_preview(text: &str, component: &Component) -> Result<String, String>
     ))
 }
 
-/// Adds the catalog entry to `COMPONENTS` in alphabetical slug order.
-pub fn list_in_gallery(text: &str, component: &Component) -> Result<String, String> {
-    let slug = component.slug();
-    let entry = format!(
-        "    (\n        \"{slug}\",\n        \"{}\",\n        \"{}\",\n    ),\n",
-        component.title.replace('"', "\\\""),
-        component.description.replace('"', "\\\"")
-    );
-    if text.contains(&format!("\"{slug}\",\n")) {
-        return Err(format!("already lists {slug}"));
-    }
-    let start = text
-        .find("const COMPONENTS: &[(&str, &str, &str)] = &[\n")
-        .ok_or("found no COMPONENTS list")?;
-    let start = start + text[start..].find('\n').unwrap() + 1;
-    let end = start
-        + text[start..]
-            .find("\n];")
-            .ok_or("unterminated COMPONENTS list")?;
-    let body = &text[start..=end];
-    // Entries are `(\n "slug",\n …\n ),\n` blocks.
-    let mut blocks = Vec::new();
-    let mut rest = body;
-    while let Some(close) = rest.find("    ),\n") {
-        let (block, tail) = rest.split_at(close + "    ),\n".len());
-        blocks.push(block);
-        rest = tail;
-    }
-    let slug_of = |block: &str| {
-        block
-            .lines()
-            .nth(1)
-            .map(|line| line.trim().trim_matches(|c| c == '"' || c == ','))
-            .unwrap_or("")
-            .to_owned()
-    };
-    let at = blocks
-        .iter()
-        .position(|block| slug_of(block) > slug)
-        .unwrap_or(blocks.len());
-    blocks.insert(at, &entry);
-    Ok(format!(
-        "{}{}{}{}",
-        &text[..start],
-        blocks.concat(),
-        rest,
-        &text[end + 1..]
-    ))
-}
-
-/// Adds the website's component page to `components` in web/src/lib/catalog.ts,
-/// in alphabetical slug order. Without it the catalog preview exists but the
-/// website has no page for it.
-pub fn list_in_site_catalog(text: &str, component: &Component) -> Result<String, String> {
-    let slug = component.slug();
-    if text.contains(&format!("slug: \"{slug}\",")) {
-        return Err(format!("already lists {slug}"));
-    }
-    let start = text
-        .find("const entries: Omit<CatalogComponent, \"added\">[] = [\n")
-        .ok_or("found no `components` list")?;
-    let start = start + text[start..].find('\n').unwrap() + 1;
-    let end = start
-        + text[start..]
-            .find("\n]")
-            .ok_or("unterminated `components` list")?;
-    let entry = format!(
-        "  {{\n    slug: \"{slug}\",\n    name: \"{}\",\n    description:\n      \"{}\",\n  }},\n",
-        component.title.replace('"', "\\\""),
-        component.description.replace('"', "\\\"")
-    );
-    // Insert before the first entry whose slug sorts after this one.
-    let mut at = end + 1;
-    let mut offset = start;
-    for line in text[start..=end].split_inclusive('\n') {
-        if let Some(other) = line.trim().strip_prefix("slug: \"") {
-            let other = other.split('"').next().unwrap_or("");
-            if other > slug.as_str() {
-                // Back up to the `  {` line that opens this entry.
-                at = text[..offset].rfind("  {\n").ok_or("malformed entry")?;
-                break;
-            }
-        }
-        offset += line.len();
-    }
-    Ok(format!("{}{}{}", &text[..at], entry, &text[at..]))
-}
-
 pub fn component_source(component: &Component) -> String {
     let Component {
         module,
         type_name,
         title,
         description,
+        ..
     } = component;
     format!(
         r#"//! {title}: {description}
@@ -469,7 +432,7 @@ mod tests {
     use super::*;
 
     fn component() -> Component {
-        Component::new("date_picker", None, Some("Picks a date.")).unwrap()
+        Component::new("date_picker", None, Some("Picks a date."), "forms").unwrap()
     }
 
     #[test]
@@ -478,15 +441,22 @@ mod tests {
         assert_eq!(component.type_name, "DatePicker");
         assert_eq!(component.title, "Date Picker");
         assert_eq!(component.slug(), "date-picker");
-        assert!(Component::new("DatePicker", None, None).is_err());
-        assert!(Component::new("date-picker", None, None).is_err());
-        assert!(Component::new("_x", None, None).is_err());
+        assert!(Component::new("DatePicker", None, None, "forms").is_err());
+        assert!(Component::new("date-picker", None, None, "forms").is_err());
+        assert!(Component::new("_x", None, None, "forms").is_err());
         assert_eq!(
-            parse_new_component(&["x".into(), "--title".into(), "X marks".into()])
-                .unwrap()
-                .title,
+            parse_new_component(&[
+                "x".into(),
+                "--title".into(),
+                "X marks".into(),
+                "--category".into(),
+                "forms".into(),
+            ])
+            .unwrap()
+            .title,
             "X marks"
         );
+        assert!(parse_new_component(&["x".into()]).is_err());
         assert!(parse_new_component(&["--bogus".into()]).is_err());
     }
 
@@ -500,19 +470,23 @@ mod tests {
             "//! crate\n#[path = \"../registry/button/button.rs\"]\npub mod button;\n#[path = \"../registry/date_picker/date_picker.rs\"]\npub mod date_picker;\n#[path = \"../registry/dialog/dialog.rs\"]\npub mod dialog;\n"
         );
         assert!(declare_in_lib(&edited, &component).is_err());
-        let late = Component::new("zoom", None, None).unwrap();
+        let late = Component::new("zoom", None, None, "forms").unwrap();
         assert!(
             declare_in_lib(lib, &late)
                 .unwrap()
                 .ends_with("pub mod zoom;\n")
         );
 
-        let registry = "[components.button]\ndescription = \"A button.\"\n";
+        let registry = "[[categories]]\nid = \"forms\"\ntitle = \"Forms\"\n\n[[categories]]\nid = \"chat\"\ntitle = \"Chat\"\n\n# Forms\n\n[components.button]\ndescription = \"A button.\"\ncategory = \"forms\"\nsince = \"0.1.0\"\n\n# Chat\n\n[components.message]\ndescription = \"A message.\"\ncategory = \"chat\"\nsince = \"0.6.0\"\n";
         let edited = declare_in_registry(registry, &component).unwrap();
-        assert!(edited.ends_with(
-            "[components.date_picker]\nsince = \"next\"\ndescription = \"Picks a date.\"\n"
+        // The new entry closes the Forms block, ahead of the Chat heading.
+        assert!(edited.contains(
+            "since = \"0.1.0\"\n\n[components.date_picker]\ndescription = \"Picks a date.\"\ncategory = \"forms\"\nsince = \"next\"\n\n# Chat\n"
         ));
         assert!(declare_in_registry(&edited, &component).is_err());
+        let mut unknown = component.clone();
+        unknown.category = "widgets".into();
+        assert!(declare_in_registry(registry, &unknown).is_err());
 
         let usage = "use gpuicn as ui;\n\nmod button {\n    fn example() {}\n}\n";
         let edited = add_usage_example(usage, &component).unwrap();
@@ -527,36 +501,6 @@ mod tests {
             "previews! {\n    button => Button,\n    date_picker => DatePicker,\n    dialog => Dialog,\n}\n"
         );
         assert!(list_preview(&edited, &component).is_err());
-
-        let gallery = "const COMPONENTS: &[(&str, &str, &str)] = &[\n    (\n        \"button\",\n        \"Button\",\n        \"A button.\",\n    ),\n    (\n        \"dialog\",\n        \"Dialog\",\n        \"A dialog.\",\n    ),\n];\n";
-        let edited = list_in_gallery(gallery, &component).unwrap();
-        let slugs: Vec<&str> = edited
-            .lines()
-            .filter(|line| line.starts_with("        \"") && line.ends_with("\","))
-            .step_by(3)
-            .collect();
-        assert_eq!(
-            slugs,
-            [
-                "        \"button\",",
-                "        \"date-picker\",",
-                "        \"dialog\","
-            ]
-        );
-        assert!(edited.ends_with("    ),\n];\n"));
-        assert!(list_in_gallery(&edited, &component).is_err());
-
-        let catalog = "const entries: Omit<CatalogComponent, \"added\">[] = [\n  {\n    slug: \"button\",\n    name: \"Button\",\n    description: \"A button.\",\n  },\n  {\n    slug: \"dialog\",\n    name: \"Dialog\",\n    description: \"A dialog.\",\n  },\n]\n";
-        let edited = list_in_site_catalog(catalog, &component).unwrap();
-        let slugs: Vec<&str> = edited
-            .lines()
-            .filter_map(|line| line.trim().strip_prefix("slug: "))
-            .collect();
-        assert_eq!(slugs, ["\"button\",", "\"date-picker\",", "\"dialog\","]);
-        assert!(edited.contains("    name: \"Date Picker\",\n"));
-        assert!(list_in_site_catalog(&edited, &component).is_err());
-        let last = list_in_site_catalog(catalog, &late).unwrap();
-        assert!(last.ends_with("    slug: \"zoom\",\n    name: \"Zoom\",\n    description:\n      \"Describe the component in one sentence.\",\n  },\n]\n"));
 
         assert!(component_source(&component).contains("pub struct DatePicker"));
         assert!(component_source(&component).contains("#[cfg(test)]"));

@@ -3,7 +3,7 @@
   "name": "toolbar",
   "type": "registry:item",
   "title": "Toolbar",
-  "description": "The shadcn default Toolbar visual port backed by GPUI Kit behavior.",
+  "description": "Groups controls for a related set of actions.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "actions"
   }
 }

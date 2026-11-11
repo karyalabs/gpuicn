@@ -1,4 +1,3 @@
-#[cfg(not(target_family = "wasm"))]
 mod gallery;
 mod previews;
 #[cfg(not(target_family = "wasm"))]
@@ -10,13 +9,19 @@ use previews::prelude::*;
 
 #[cfg(target_family = "wasm")]
 #[wasm_bindgen::prelude::wasm_bindgen(
-    inline_js = "export function previewReady(){let sent=false;const send=()=>{if(sent)return;sent=true;document.documentElement.dataset.gpuicnReady='true';window.parent.postMessage({gpuicn:'preview-ready'},'*')};requestAnimationFrame(()=>requestAnimationFrame(send));setTimeout(send,1000)} export function installPreviewUpdates(update){window.gpuicnPreviewUpdates(update)}"
+    inline_js = "export function previewReady(){let sent=false;const send=()=>{if(sent)return;sent=true;document.documentElement.dataset.gpuicnReady='true';window.parent.postMessage({gpuicn:'preview-ready'},'*')};requestAnimationFrame(()=>requestAnimationFrame(send));setTimeout(send,1000)} export function installPreviewUpdates(update){window.gpuicnPreviewUpdates(update)} export function gallerySelected(slug){if(window.parent!==window)window.parent.postMessage({gpuicn:'gallery-select',slug},window.location.origin)} export function galleryOpen(path){(window.parent!==window?window.parent:window).location.assign(path)}"
 )]
 extern "C" {
     #[wasm_bindgen::prelude::wasm_bindgen(js_name = previewReady)]
     fn preview_ready();
     #[wasm_bindgen::prelude::wasm_bindgen(js_name = installPreviewUpdates)]
     fn install_preview_updates(update: wasm_bindgen::JsValue);
+    /// Tells the framing page which gallery entry is showing, so its URL can follow.
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name = gallerySelected)]
+    fn gallery_selected(slug: &str);
+    /// Navigates the framing page to a path on the website.
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name = galleryOpen)]
+    fn gallery_open(path: &str);
 }
 
 fn main() {
@@ -84,9 +89,29 @@ fn launch(cx: &mut App) {
         workspace::launch(cx);
         return;
     }
-    #[cfg(not(target_family = "wasm"))]
-    if requested_value("demo").as_deref() == Some("--catalog") {
+    // The gallery app: `showcase --catalog` natively, `?demo=gallery` in the browser.
+    if matches!(
+        requested_value("demo").as_deref(),
+        Some("--catalog" | "gallery")
+    ) {
         gallery::launch(cx);
+        #[cfg(target_family = "wasm")]
+        {
+            // The framing page owns the light and dark switch.
+            let async_cx = cx.to_async();
+            let update = wasm_bindgen::closure::Closure::<dyn FnMut(String, String)>::new(
+                move |theme: String, _icon: String| {
+                    let mode = match theme.as_str() {
+                        "light" => ThemeMode::Light,
+                        "dark" => ThemeMode::Dark,
+                        _ => return,
+                    };
+                    async_cx.update(|cx| gallery::set_mode(cx, mode));
+                },
+            );
+            install_preview_updates(update.into_js_value());
+            preview_ready();
+        }
         return;
     }
 

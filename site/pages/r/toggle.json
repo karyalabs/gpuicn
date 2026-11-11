@@ -3,7 +3,7 @@
   "name": "toggle",
   "type": "registry:item",
   "title": "Toggle",
-  "description": "The shadcn default Toggle visual port backed by GPUI Kit behavior.",
+  "description": "A two-state button that can be on or off.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "actions"
   }
 }

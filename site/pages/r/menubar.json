@@ -3,7 +3,7 @@
   "name": "menubar",
   "type": "registry:item",
   "title": "Menubar",
-  "description": "The shadcn default Menubar visual port backed by GPUI Kit behavior.",
+  "description": "A persistent horizontal set of menus.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -49,6 +49,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "overlays"
   }
 }

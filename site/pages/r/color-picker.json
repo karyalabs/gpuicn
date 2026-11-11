@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.9.12"
+    "since": "0.9.12",
+    "category": "forms"
   }
 }

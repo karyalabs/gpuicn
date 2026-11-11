@@ -3,7 +3,7 @@
   "name": "checkbox-group",
   "type": "registry:item",
   "title": "Checkbox Group",
-  "description": "The shadcn default Checkbox Group visual port backed by GPUI Kit behavior.",
+  "description": "Groups related checkboxes under shared state.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

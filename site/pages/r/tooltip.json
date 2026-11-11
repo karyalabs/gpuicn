@@ -3,7 +3,7 @@
   "name": "tooltip",
   "type": "registry:item",
   "title": "Tooltip",
-  "description": "The shadcn default Tooltip visual port backed by GPUI Kit behavior.",
+  "description": "Shows short information on hover or keyboard focus.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "overlays"
   }
 }

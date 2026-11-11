@@ -3,7 +3,7 @@
   "name": "input",
   "type": "registry:item",
   "title": "Input",
-  "description": "Nova-styled native text input with accessible labels, IME and standard editing shortcuts.",
+  "description": "A styled text input backed by native GPUI editing.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }
