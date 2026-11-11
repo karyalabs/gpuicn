@@ -376,6 +376,7 @@ since = "0.6.0"
 description = "Explains an empty state and offers a clear next action."
 category = "display"
 since = "0.5.0"
+preview_height = 352
 
 [components.item]
 description = "Rows with media, a title, a description and actions, grouped into cards."

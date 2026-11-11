@@ -3,7 +3,9 @@
 use crate::*;
 
 impl Showcase {
-    pub(crate) fn empty_preview(&self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    pub(crate) fn empty_preview(&self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // The framed media slot does not size or color an icon; do both here.
+        let color = UiTheme::read(cx).colors.foreground;
         Empty::new()
             .w(px(420.))
             .h(px(320.))
@@ -13,7 +15,7 @@ impl Showcase {
                     .media(
                         EmptyMedia::new()
                             .with_variant(EmptyMediaVariant::Icon)
-                            .child(lucide(LucideIcon::FolderPlus)),
+                            .child(lucide(LucideIcon::FolderPlus).size(px(16.)).text_color(color)),
                     )
                     .title(EmptyTitle::new().child("No projects yet"))
                     .description(
