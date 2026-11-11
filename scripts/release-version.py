@@ -31,6 +31,9 @@ REFERENCES = [
 ]
 
 
+NEXT = 'since = "next"'
+
+
 def current():
     data = tomllib.loads((ROOT / "Cargo.toml").read_text())
     return data["workspace"]["package"]["version"]
@@ -49,6 +52,13 @@ def check():
         problems.append(f"docs/releases/v{version}.md is missing")
     if not re.search(rf"^## {re.escape(version)}$", (ROOT / "CHANGELOG.md").read_text(), re.M):
         problems.append(f"CHANGELOG.md has no '## {version}' entry")
+    as_tuple = lambda v: tuple(int(part) for part in v.split("-")[0].split("."))
+    for module, meta in tomllib.loads((ROOT / "registry.toml").read_text())["components"].items():
+        since = meta.get("since")
+        if since is None:
+            problems.append(f'registry.toml: [components.{module}] needs since = "next"')
+        elif since != "next" and (not re.fullmatch(r"\d+\.\d+\.\d+", since) or as_tuple(since) > as_tuple(version)):
+            problems.append(f'registry.toml: [components.{module}] since = "{since}" is not a release up to {version}; write "next"')
     if problems:
         print(f"Release version {version} is inconsistent:", *problems, sep="\n  ")
         print("Run: python3 scripts/release-version.py bump <version>")
@@ -67,6 +77,13 @@ def bump(version):
             if file == name:
                 text = re.sub(pattern, lambda m: m.group(0).replace(m.group(1), version), text)
         path.write_text(text)
+    # Components added since the last release carry `since = "next"`; this
+    # release is the one that ships them, and the site's "New" badges read it.
+    registry = ROOT / "registry.toml"
+    text = registry.read_text()
+    stamped = text.count(NEXT)
+    registry.write_text(text.replace(NEXT, f'since = "{version}"'))
+    print(f"Stamped {stamped} new component(s) with since = \"{version}\"")
     subprocess.run(["cargo", "update", "--workspace"], cwd=ROOT, check=True)
     notes = ROOT / f"docs/releases/v{version}.md"
     if not notes.exists():

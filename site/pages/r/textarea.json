@@ -35,5 +35,8 @@
       "target": "~/src/ui/textarea.rs",
       "content": "//! Discoverable Nova textarea built on the shared Kit-backed input source.\n\npub use super::input::{Textarea, TextareaState};\nuse gpui_kit::Entity;\n\n/// Creates a textarea using the caller's retained editing state.\npub fn textarea(state: &Entity<TextareaState>) -> Textarea {\n    Textarea::new(state)\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.5.0"
+  }
 }

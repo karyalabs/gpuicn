@@ -24,7 +24,10 @@
           "type": "registry:file",
           "target": "~/src/ui/theme.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.1.0"
+      }
     },
     {
       "name": "accordion",
@@ -52,7 +55,10 @@
           "type": "registry:file",
           "target": "~/src/ui/accordion.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "alert",
@@ -80,7 +86,10 @@
           "type": "registry:file",
           "target": "~/src/ui/alert.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.6"
+      }
     },
     {
       "name": "alert-dialog",
@@ -123,7 +132,10 @@
           "type": "registry:file",
           "target": "~/src/ui/alert_dialog.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "app",
@@ -151,7 +163,10 @@
           "type": "registry:file",
           "target": "~/src/ui/app.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.0"
+      }
     },
     {
       "name": "attachment",
@@ -184,7 +199,10 @@
           "type": "registry:file",
           "target": "~/src/ui/attachment.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "autocomplete",
@@ -227,7 +245,10 @@
           "type": "registry:file",
           "target": "~/src/ui/autocomplete.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "avatar",
@@ -255,7 +276,10 @@
           "type": "registry:file",
           "target": "~/src/ui/avatar.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "avatar-group",
@@ -293,7 +317,10 @@
           "type": "registry:file",
           "target": "~/src/ui/avatar_group.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.6"
+      }
     },
     {
       "name": "badge",
@@ -321,7 +348,10 @@
           "type": "registry:file",
           "target": "~/src/ui/badge.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "button",
@@ -349,7 +379,10 @@
           "type": "registry:file",
           "target": "~/src/ui/button.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.1.0"
+      }
     },
     {
       "name": "calendar",
@@ -377,7 +410,10 @@
           "type": "registry:file",
           "target": "~/src/ui/calendar.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.6"
+      }
     },
     {
       "name": "carousel",
@@ -405,7 +441,10 @@
           "type": "registry:file",
           "target": "~/src/ui/carousel.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     },
     {
       "name": "checkbox",
@@ -443,7 +482,10 @@
           "type": "registry:file",
           "target": "~/src/ui/checkbox.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.1.0"
+      }
     },
     {
       "name": "checkbox-group",
@@ -471,7 +513,10 @@
           "type": "registry:file",
           "target": "~/src/ui/checkbox_group.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "collapsible",
@@ -499,7 +544,10 @@
           "type": "registry:file",
           "target": "~/src/ui/collapsible.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "color-picker",
@@ -532,7 +580,10 @@
           "type": "registry:file",
           "target": "~/src/ui/color_picker.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.12"
+      }
     },
     {
       "name": "combobox",
@@ -575,7 +626,10 @@
           "type": "registry:file",
           "target": "~/src/ui/combobox.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "command",
@@ -628,7 +682,10 @@
           "type": "registry:file",
           "target": "~/src/ui/command.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "composer",
@@ -666,7 +723,10 @@
           "type": "registry:file",
           "target": "~/src/ui/composer.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.7.0"
+      }
     },
     {
       "name": "context-menu",
@@ -709,7 +769,10 @@
           "type": "registry:file",
           "target": "~/src/ui/context_menu.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "date-picker",
@@ -747,7 +810,10 @@
           "type": "registry:file",
           "target": "~/src/ui/date_picker.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.6"
+      }
     },
     {
       "name": "date-time-picker",
@@ -795,7 +861,10 @@
           "type": "registry:file",
           "target": "~/src/ui/date_time_picker.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.6"
+      }
     },
     {
       "name": "dialog",
@@ -833,7 +902,10 @@
           "type": "registry:file",
           "target": "~/src/ui/modal_focus.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.1.0"
+      }
     },
     {
       "name": "drawer",
@@ -876,7 +948,10 @@
           "type": "registry:file",
           "target": "~/src/ui/drawer.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "embed",
@@ -924,7 +999,10 @@
           "type": "registry:file",
           "target": "~/src/ui/embed.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.2"
+      }
     },
     {
       "name": "emoji-picker",
@@ -957,7 +1035,10 @@
           "type": "registry:file",
           "target": "~/src/ui/emoji_picker.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.7.0"
+      }
     },
     {
       "name": "empty",
@@ -985,7 +1066,10 @@
           "type": "registry:file",
           "target": "~/src/ui/empty.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     },
     {
       "name": "field",
@@ -1018,7 +1102,10 @@
           "type": "registry:file",
           "target": "~/src/ui/field.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "fieldset",
@@ -1046,7 +1133,10 @@
           "type": "registry:file",
           "target": "~/src/ui/fieldset.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "form",
@@ -1074,7 +1164,10 @@
           "type": "registry:file",
           "target": "~/src/ui/form.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "input",
@@ -1102,7 +1195,10 @@
           "type": "registry:file",
           "target": "~/src/ui/input.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "input-group",
@@ -1145,7 +1241,10 @@
           "type": "registry:file",
           "target": "~/src/ui/input_group.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     },
     {
       "name": "item",
@@ -1173,7 +1272,10 @@
           "type": "registry:file",
           "target": "~/src/ui/item.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.10.1"
+      }
     },
     {
       "name": "kbd",
@@ -1201,7 +1303,10 @@
           "type": "registry:file",
           "target": "~/src/ui/kbd.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "lightbox",
@@ -1244,7 +1349,10 @@
           "type": "registry:file",
           "target": "~/src/ui/lightbox.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.7.0"
+      }
     },
     {
       "name": "markdown",
@@ -1297,7 +1405,10 @@
           "type": "registry:file",
           "target": "~/src/ui/markdown.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "menu",
@@ -1335,7 +1446,10 @@
           "type": "registry:file",
           "target": "~/src/ui/menu.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "menubar",
@@ -1378,7 +1492,10 @@
           "type": "registry:file",
           "target": "~/src/ui/menubar.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "message",
@@ -1416,7 +1533,10 @@
           "type": "registry:file",
           "target": "~/src/ui/message.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "message-list",
@@ -1449,7 +1569,10 @@
           "type": "registry:file",
           "target": "~/src/ui/message_list.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "meter",
@@ -1477,7 +1600,10 @@
           "type": "registry:file",
           "target": "~/src/ui/meter.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "navigation-menu",
@@ -1525,7 +1651,10 @@
           "type": "registry:file",
           "target": "~/src/ui/navigation_menu.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "number-field",
@@ -1563,7 +1692,10 @@
           "type": "registry:file",
           "target": "~/src/ui/number_field.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "otp-field",
@@ -1591,7 +1723,10 @@
           "type": "registry:file",
           "target": "~/src/ui/otp_field.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "popover",
@@ -1624,7 +1759,10 @@
           "type": "registry:file",
           "target": "~/src/ui/popover.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "preview-card",
@@ -1652,7 +1790,10 @@
           "type": "registry:file",
           "target": "~/src/ui/preview_card.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "progress",
@@ -1680,7 +1821,10 @@
           "type": "registry:file",
           "target": "~/src/ui/progress.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "radio-group",
@@ -1718,7 +1862,10 @@
           "type": "registry:file",
           "target": "~/src/ui/radio_group.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "resizable",
@@ -1746,7 +1893,10 @@
           "type": "registry:file",
           "target": "~/src/ui/resizable.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     },
     {
       "name": "scroll-area",
@@ -1774,7 +1924,10 @@
           "type": "registry:file",
           "target": "~/src/ui/scroll_area.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "select",
@@ -1812,7 +1965,10 @@
           "type": "registry:file",
           "target": "~/src/ui/select.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "separator",
@@ -1840,7 +1996,10 @@
           "type": "registry:file",
           "target": "~/src/ui/separator.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "sidebar",
@@ -1908,7 +2067,10 @@
           "type": "registry:file",
           "target": "~/src/ui/sidebar.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     },
     {
       "name": "skeleton",
@@ -1936,7 +2098,10 @@
           "type": "registry:file",
           "target": "~/src/ui/skeleton.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "slider",
@@ -1964,7 +2129,10 @@
           "type": "registry:file",
           "target": "~/src/ui/slider.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "sortable",
@@ -1992,7 +2160,10 @@
           "type": "registry:file",
           "target": "~/src/ui/sortable.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.9.4"
+      }
     },
     {
       "name": "spinner",
@@ -2020,7 +2191,10 @@
           "type": "registry:file",
           "target": "~/src/ui/spinner.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "switch",
@@ -2048,7 +2222,10 @@
           "type": "registry:file",
           "target": "~/src/ui/switch.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "tabs",
@@ -2076,7 +2253,10 @@
           "type": "registry:file",
           "target": "~/src/ui/tabs.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "tag",
@@ -2109,7 +2289,10 @@
           "type": "registry:file",
           "target": "~/src/ui/tag.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "textarea",
@@ -2142,7 +2325,10 @@
           "type": "registry:file",
           "target": "~/src/ui/textarea.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     },
     {
       "name": "title-bar",
@@ -2170,7 +2356,10 @@
           "type": "registry:file",
           "target": "~/src/ui/title_bar.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.6.0"
+      }
     },
     {
       "name": "toast",
@@ -2203,7 +2392,10 @@
           "type": "registry:file",
           "target": "~/src/ui/toast.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "toggle",
@@ -2231,7 +2423,10 @@
           "type": "registry:file",
           "target": "~/src/ui/toggle.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "toggle-group",
@@ -2259,7 +2454,10 @@
           "type": "registry:file",
           "target": "~/src/ui/toggle_group.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "toolbar",
@@ -2292,7 +2490,10 @@
           "type": "registry:file",
           "target": "~/src/ui/toolbar.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "tooltip",
@@ -2320,7 +2521,10 @@
           "type": "registry:file",
           "target": "~/src/ui/tooltip.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.2.0"
+      }
     },
     {
       "name": "virtual-list",
@@ -2358,7 +2562,10 @@
           "type": "registry:file",
           "target": "~/src/ui/virtual_list.rs"
         }
-      ]
+      ],
+      "meta": {
+        "since": "0.5.0"
+      }
     }
   ]
 }

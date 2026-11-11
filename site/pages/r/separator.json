@@ -29,5 +29,8 @@
       "target": "~/src/ui/separator.rs",
       "content": "//! Nova-styled semantic separator.\n\nuse gpui_kit::{\n    App, Axis, ElementId, InteractiveElement as _, IntoElement, RenderOnce, Role,\n    StatefulInteractiveElement as _, Window, div,\n};\n\nuse super::theme::{UiTheme, primitives::surface};\n\n#[derive(IntoElement)]\n/// A Nova horizontal or vertical separator.\npub struct Separator {\n    style: gpui_kit::StyleRefinement,\n    id: ElementId,\n    orientation: Axis,\n}\n\nimpl Separator {\n    /// Creates a `Separator` with a stable caller-owned ID.\n    pub fn new(id: impl Into<ElementId>) -> Self {\n        Self {\n            style: gpui_kit::StyleRefinement::default(),\n            id: id.into(),\n            orientation: Axis::Horizontal,\n        }\n    }\n    /// Draws a horizontal separator.\n    pub fn horizontal(mut self) -> Self {\n        self.orientation = Axis::Horizontal;\n        self\n    }\n    /// Draws a vertical separator.\n    pub fn vertical(mut self) -> Self {\n        self.orientation = Axis::Vertical;\n        self\n    }\n}\n\nimpl RenderOnce for Separator {\n    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {\n        let theme = UiTheme::read(cx).clone();\n        let base =\n            div()\n                .id(self.id)\n                .role(Role::Splitter)\n                .aria_orientation(match self.orientation {\n                    Axis::Horizontal => gpui_kit::accesskit::Orientation::Horizontal,\n                    Axis::Vertical => gpui_kit::accesskit::Orientation::Vertical,\n                });\n        super::theme::apply_style(\n            surface::divider(base, &theme, self.orientation),\n            &self.style,\n        )\n    }\n}\n\nimpl gpui_kit::Styled for Separator {\n    fn style(&mut self) -> &mut gpui_kit::StyleRefinement {\n        &mut self.style\n    }\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }

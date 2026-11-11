@@ -47,5 +47,8 @@
       "target": "~/src/ui/autocomplete.rs",
       "content": "//! Nova text suggestions with optional free-text commits.\nuse super::select::{Mode, Select};\npub use super::select::{SelectEvent, SelectItem, SelectState};\nuse gpui_kit::Entity;\n\n/// Search suggestions or press Enter to commit text when no suggestion matches.\npub fn autocomplete(state: &Entity<SelectState>) -> Select {\n    let mut select = Select::new(state);\n    select.mode = Mode::Autocomplete;\n    select\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }

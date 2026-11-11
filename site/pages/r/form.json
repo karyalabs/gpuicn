@@ -29,5 +29,8 @@
       "target": "~/src/ui/form.rs",
       "content": "//! Nova form layout. The application owns values, validation and submission.\n\nuse super::theme::UiTheme;\nuse gpui_kit::{\n    App, Div, ElementId, InteractiveElement as _, Role, Stateful, StatefulInteractiveElement as _,\n    Styled, div,\n};\n\n/// Groups fields semantically without an implicit global form context.\n/// Subscribe to each input's `InputEvent` and submit through the application's state.\npub fn form(id: impl Into<ElementId>, cx: &App) -> Stateful<Div> {\n    let theme = UiTheme::read(cx);\n    div()\n        .id(id)\n        .role(Role::Form)\n        .flex()\n        .flex_col()\n        .w_full()\n        .gap(theme.space(6.))\n        .font_family(theme.fonts.body.clone())\n        .text_size(theme.text(14.))\n        .text_color(theme.colors.foreground)\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }
