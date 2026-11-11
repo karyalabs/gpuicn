@@ -102,7 +102,11 @@ bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v<next
    importing only from `crate::ui::<module>::…`. This is the usage shown on the
    site and compiled in CI.
 5. Add `site/src/previews/<module>.rs` with `fn <module>_preview(` and list it in
-   `site/src/previews/mod.rs`.
+   `site/src/previews/mod.rs`. This is the page's overview. For more examples
+   (sizes, states, one use each), add functions to
+   `site/src/examples/<module>.rs` and list them in `site/src/examples/mod.rs`;
+   each one's doc comment is its title, a blank line, and a sentence about it.
+   The page shows them as choices above the preview, with their source.
 6. Add platform notes in `docs/parity/<name>.md`: how it differs from shadcn
    and what was verified.
 7. Run the checks above and commit the regenerated registry.

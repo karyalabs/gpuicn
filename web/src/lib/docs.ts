@@ -1,6 +1,6 @@
 export type ComponentDocs = {
-  preview: string
-  examples?: Record<string, string>
+  /** What the page's preview can show: the overview first, then the named examples. `id` is the preview's `?example=`. */
+  examples: { id: string; title: string; blurb: string; code: string }[]
   usage: string
   usageCall: string
   installComponents: string[]

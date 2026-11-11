@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import { dirname } from "node:path";
@@ -16,6 +16,29 @@ const installedUsage = usageExamples.replace("use gpuicn as ui;", '#[path = "../
 assert.notEqual(installedUsage, usageExamples, "Missing Usage crate-alias anchor");
 mkdirSync(`${root}fixtures/registry-install/src/bin`, { recursive: true });
 writeFileSync(`${root}fixtures/registry-install/src/bin/generated-usage.rs`, installedUsage);
+const sidebarExamples = [
+  ["workspace", "Workspace", "An inset layout with a team switcher, nested projects, a toggle rail, and an account menu."],
+  ["docs", "Documentation", "A searchable documentation tree with independent sections and off-canvas navigation."],
+  ["mail", "Mail", "A folder rail beside a searchable message list. Filter unread mail and open a message."],
+  ["floating", "Floating right", "A rounded sidebar on the right with an icon-only collapsed state."],
+  ["mobile", "Mobile sheet", "Modal navigation with its own open state, focus containment, and Escape to dismiss."],
+  ["loading", "Loading", "Fixed navigation with stable placeholders until the menu loads."],
+];
+const exampleList = read("site/src/examples/mod.rs");
+const namedExamples = (module) => {
+  const path = `site/src/examples/${module}.rs`;
+  if (!existsSync(`${root}${path}`)) return [];
+  const found = [...read(path).matchAll(/((?:^\/\/\/.*\n)+)^pub\(crate\) (fn (\w+)\([\s\S]*?^\})/gm)].map(([, comment, code, name]) => {
+    const [title, ...rest] = comment.split("\n").map((line) => line.replace(/^\/\/\/ ?/, ""));
+    const blurb = rest.join(" ").trim();
+    assert(title && blurb, `${path}: ${name} needs a title line, a blank line, and a sentence`);
+    return { id: name.replaceAll("_", "-"), title, blurb, code };
+  });
+  // The showcase draws what `examples!` lists; the page shows what the file holds.
+  const listed = exampleList.match(new RegExp(`^    ${module}: ([^;]+);`, "m"))?.[1].split(",").map((name) => name.trim().replaceAll("_", "-"));
+  assert.deepEqual(found.map((example) => example.id), listed, `${path} and examples! in site/src/examples/mod.rs must list the same functions in the same order`);
+  return found;
+};
 const destination = `${root}web/src/generated/components`;
 mkdirSync(destination, { recursive: true });
 // The website's catalog: registry.toml in its own order, grouped by category.
@@ -91,16 +114,19 @@ for (const item of registry.items.filter((item) => item.name !== "theme")) {
     assert(method, `Missing Sidebar ${name} example`);
     return method.replace(/^    /gm, "");
   };
-  const examples = item.name === "sidebar" ? Object.fromEntries(
-    ["workspace", "docs", "mail", "floating", "mobile", "loading"].map((name) =>
-      [name, sidebarExample(name === "docs" || name === "mail" ? name : "application")])
-  ) : undefined;
+  // What a component page can show in its preview: the overview first, then
+  // the functions in site/src/examples/<module>.rs. Each function's doc
+  // comment is its title, a blank line, and a sentence about it. Sidebar's
+  // are whole layouts drawn by its own preview.
+  const examples = item.name === "sidebar"
+    ? sidebarExamples.map(([id, title, blurb]) =>
+      ({ id, title, blurb, code: sidebarExample(id === "docs" || id === "mail" ? id : "application") }))
+    : [{ id: "", title: "Overview", blurb: "", code: preview.replace(/^    /gm, "") }, ...namedExamples(module)];
 
   const helperModules = new Set(installFiles.flatMap((file) =>
     [...read(`crates/ui/${file.path}`).matchAll(/#\[path = "([^"/]+)\.rs"\]/g)].map((match) => match[1])
   ));
   writeFileSync(`${destination}/${item.name}.json`, `${JSON.stringify({
-    preview: preview.replace(/^    /gm, ""),
     examples,
     usage,
     usageCall: `example(${usage.match(/fn example\(([^)]*)\)/)?.[1].split(",").map((arg) => arg.trim().split(":")[0]).filter(Boolean).join(", ") ?? ""})`,
@@ -114,7 +140,7 @@ for (const item of registry.items.filter((item) => item.name !== "theme")) {
 
 mkdirSync(`${root}web/public/examples`, { recursive: true });
 // The downloadable showcase source: the shell plus every preview file.
-writeFileSync(`${root}web/public/examples/showcase.rs`, [read("site/src/main.rs"), ...readdirSync(`${root}site/src/previews`).sort().map((file) => `// ---- site/src/previews/${file} ----\n${read(`site/src/previews/${file}`)}`)].join("\n"));
+writeFileSync(`${root}web/public/examples/showcase.rs`, [read("site/src/main.rs"), ...["previews", "examples"].flatMap((folder) => readdirSync(`${root}site/src/${folder}`).sort().map((file) => `// ---- site/src/${folder}/${file} ----\n${read(`site/src/${folder}/${file}`)}`))].join("\n"));
 copyFileSync(`${root}fixtures/registry-install/src/main.rs`, `${root}web/public/examples/hello.rs`);
 mkdirSync(`${root}web/public/fonts`, { recursive: true });
 mkdirSync(`${root}fixtures/registry-install/assets/fonts`, { recursive: true });

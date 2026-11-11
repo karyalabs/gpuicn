@@ -18,15 +18,7 @@ const sidebarOrder = categories.flatMap((item) => item.components)
 const index = sidebarOrder.findIndex((item) => item.slug === component.slug)
 const previous = sidebarOrder[index - 1]
 const next = sidebarOrder[index + 1]
-const isSidebar = component.slug === "sidebar"
-const sidebarExamples = [
-  ["workspace", "Workspace", "An inset layout with a team switcher, nested projects, a toggle rail, and an account menu."],
-  ["docs", "Documentation", "A searchable documentation tree with independent sections and off-canvas navigation."],
-  ["mail", "Mail", "A folder rail beside a searchable message list. Filter unread mail and open a message."],
-  ["floating", "Floating right", "A rounded sidebar on the right with an icon-only collapsed state."],
-  ["mobile", "Mobile sheet", "Modal navigation with its own open state, focus containment, and Escape to dismiss."],
-  ["loading", "Loading", "Fixed navigation with stable placeholders until the menu loads."],
-] as const
+const [first, ...others] = docs.examples
 const command = `gpuicn add ${docs.installComponents.join(" ")}`
 const manual = `// src/ui/mod.rs\n${docs.modules.map((module) => `pub mod ${module};`).join("\n")}\n\n// src/main.rs\nmod ui;`
 const files = docs.modules.map((module) => `src/ui/${module}.rs`)
@@ -60,45 +52,39 @@ const lines = docs.source.split("\n").length
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
         </a>
       </div>
-      <div class="tabs__panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
-        {
-          isSidebar && (
-            <div class="examples" data-sidebar-examples>
-              <div class="examples__chips" role="group" aria-label="Sidebar examples">
-                {sidebarExamples.map(([value, label]) => (
-                  <button class="chip" type="button" data-example={value} aria-pressed={value === "workspace" ? "true" : "false"}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-              {sidebarExamples.map(([value, , blurb]) => (
-                <p class="small" data-example-blurb={value} hidden={value !== "workspace"}>
-                  {blurb}
-                </p>
+      {
+        others.length > 0 && (
+          <div class="examples" data-examples>
+            <div class="examples__chips" role="group" aria-label={`${component.name} examples`}>
+              {docs.examples.map((example) => (
+                <button class="chip" type="button" data-example={example.id} aria-pressed={example === first ? "true" : "false"}>
+                  {example.title}
+                </button>
               ))}
             </div>
-          )
-        }
-        <Preview id="component-preview" slug={component.slug} name={component.name} example={isSidebar ? "workspace" : undefined} />
+            {docs.examples.map((example) => example.blurb && (
+              <p class="small" data-example-blurb={example.id} hidden={example !== first}>
+                {example.blurb.split("`").map((part, index) => (index % 2 ? <code>{part}</code> : part))}
+              </p>
+            ))}
+          </div>
+        )
+      }
+      <div class="tabs__panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
+        <Preview id="component-preview" slug={component.slug} name={component.name} example={first.id || undefined} />
       </div>
       <div class="tabs__panel" role="tabpanel" id="panel-code" aria-labelledby="tab-code" hidden>
-        {
-          isSidebar && docs.examples ? (
-            Object.entries(docs.examples).map(([value, source]) => (
-              <div data-example-code={value} hidden={value !== "workspace"}>
-                <Code code={source} class="code--flush" />
-              </div>
-            ))
-          ) : (
-            <Code code={docs.preview} class="code--flush" />
-          )
-        }
+        {docs.examples.map((example) => (
+          <div data-example-code={example.id} hidden={example !== first}>
+            <Code code={example.code} class="code--flush" />
+          </div>
+        ))}
       </div>
     </div>
     <figcaption class="figure__caption">
       The real {component.name}, drawn by GPUI in your browser. It follows the theme menu in the header.
-      The second tab is the preview's own source
-      (<code>site/src/previews/{component.slug.replaceAll("-", "_")}.rs</code>);
+      {others.length > 0 && "Pick an example above to change what it shows. "}
+      The second tab is the source of what is showing, from the site's showcase crate;
       <a href="/examples/showcase.rs" download>download the whole showcase</a> for its imports and helpers.
     </figcaption>
   </figure>
@@ -198,8 +184,8 @@ const lines = docs.source.split("\n").length
     remount()
   })
 
-  // Sidebar examples: switch the preview and its source together.
-  const group = document.querySelector<HTMLElement>("[data-sidebar-examples]")
+  // Examples: switch the preview and its source together.
+  const group = document.querySelector<HTMLElement>("[data-examples]")
   if (group && preview) {
     for (const chip of group.querySelectorAll<HTMLButtonElement>("[data-example]")) {
       chip.addEventListener("click", () => {
@@ -213,7 +199,8 @@ const lines = docs.source.split("\n").length
         for (const code of document.querySelectorAll<HTMLElement>("[data-example-code]")) {
           code.hidden = code.dataset.exampleCode !== value
         }
-        preview.dataset.example = value
+        if (value) preview.dataset.example = value
+        else delete preview.dataset.example
         preview.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true, detail: "remount" }))
       })
     }

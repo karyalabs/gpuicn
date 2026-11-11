@@ -16,6 +16,12 @@ stock Neutral theme and follow the site's theme menu (base color, accent and
 radius, built in `site/src/site_theme.rs`). The home page's board of
 components is one more preview, `?demo=board` (`site/src/previews/board.rs`). Menu examples show which action ran and omit unbound shortcuts.
 
+A component page can offer more than its overview: each function in
+`site/src/examples/<module>.rs` is a named example, drawn by
+`?demo=<component>&example=<name>` and listed in `site/src/examples/mod.rs`.
+`scripts/sync-catalog.mjs` reads each function's title and sentence from its
+doc comment, and its source, for the page.
+
 ## Editing and persistence
 
 Task creation, saved edits, completion, priority, deletion/undo and sent messages

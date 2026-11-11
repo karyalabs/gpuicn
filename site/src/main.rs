@@ -1,3 +1,4 @@
+mod examples;
 mod gallery;
 mod previews;
 mod site_theme;
@@ -207,6 +208,8 @@ struct Showcase {
 
     pane_width: gpui_kit::Pixels,
     sidebar_state: gpuicn::sidebar::SidebarState,
+    /// The page's `?example=`: a Sidebar layout, or a function in `examples/`.
+    example: String,
     sidebar_example: String,
     sidebar_mobile: bool,
     sidebar_selected: usize,
@@ -273,6 +276,7 @@ impl Showcase {
 
             pane_width: px(160.),
             sidebar_state: Default::default(),
+            example: requested_value("example").unwrap_or_default(),
             sidebar_example: requested_value("example").unwrap_or_else(|| "workspace".into()),
             sidebar_mobile: false,
             sidebar_selected: 0,
@@ -403,6 +407,7 @@ mod audit_tests {
 
             pane_width: px(160.),
             sidebar_state: Default::default(),
+            example: String::new(),
             sidebar_example: "workspace".into(),
             sidebar_mobile: false,
             sidebar_selected: 0,
@@ -590,6 +595,41 @@ mod audit_tests {
                             cx.run_until_parked();
                         }
                     }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn every_example_renders_in_both_themes() {
+        for theme in [UiTheme::neutral_light(), UiTheme::neutral_dark()] {
+            for &(component, example) in examples::ALL {
+                let demo = Demo::parse(component)
+                    .unwrap_or_else(|| panic!("{component} examples name no component"));
+                // Declared first so it is dropped after `cx`; see the Sidebar test.
+                let dispatcher = gpui_kit::TestDispatcher::new(0);
+                let mut cx = TestAppContext::build(dispatcher.clone(), None);
+                cx.update(|cx| {
+                    gpuicn::init(cx);
+                    UiTheme::set(cx, theme.clone());
+                });
+                let window = cx.add_window(|_, _| {
+                    let mut view = showcase(demo, false);
+                    view.example = example.into();
+                    view
+                });
+                for active in [false, true] {
+                    window
+                        .update(&mut cx, |view, _, cx| {
+                            view.checked = active;
+                            view.pressed = active;
+                            view.count = usize::from(active);
+                            cx.notify();
+                        })
+                        .unwrap();
+                    cx.update_window(window.into(), |_, window, cx| window.draw(cx).clear(cx))
+                        .unwrap();
+                    cx.run_until_parked();
                 }
             }
         }
