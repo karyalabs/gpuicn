@@ -2,135 +2,226 @@ name = "gpuicn"
 homepage = "https://ui.imajha.com/"
 
 # Every component includes theme. Dependencies are recursive and installed once.
+# `since` is the release that first shipped the component. Write "next" for a
+# new one: `scripts/release-version.py bump` stamps the version, and the
+# website derives its "New" badges from it.
 [components.theme]
+since = "0.1.0"
 description = "The app-owned shadcn Neutral theme and shared native motion tokens for GPUI."
 [components.app]
+since = "0.9.0"
 description = "One-call application start: icon assets, bundled Geist fonts, the theme pair and the first window."
 [components.field]
+since = "0.2.0"
 dependencies = ["input"]
 [components.input]
+since = "0.2.0"
 description = "Nova-styled native text input with accessible labels, IME and standard editing shortcuts."
 [components.textarea]
+since = "0.5.0"
 description = "Nova-styled multi-line text editor with retained native editing state."
 dependencies = ["input"]
 [components.input_group]
+since = "0.5.0"
 title = "Input Group"
 description = "Inputs, textareas, addons and actions sharing one accessible frame."
 dependencies = ["input", "button", "field"]
 [components.carousel]
+since = "0.5.0"
 description = "Native snapping carousel with pointer, trackpad and keyboard navigation."
 [components.empty]
+since = "0.5.0"
 description = "Composable empty-state media, copy and action layout."
 [components.otp_field]
+since = "0.2.0"
 title = "OTP Field"
 [components.alert_dialog]
+since = "0.2.0"
 dependencies = ["button", "dialog"]
 [components.dialog]
+since = "0.1.0"
 dependencies = ["button"]
 [components.drawer]
+since = "0.2.0"
 dependencies = ["button", "dialog"]
 [components.popover]
+since = "0.2.0"
 dependencies = ["button"]
 [components.toast]
+since = "0.2.0"
 dependencies = ["button"]
 [components.menu]
+since = "0.2.0"
 dependencies = ["button", "kbd"]
 [components.menubar]
+since = "0.2.0"
 dependencies = ["menu"]
 [components.context_menu]
+since = "0.2.0"
 dependencies = ["menu"]
 [components.autocomplete]
+since = "0.2.0"
 dependencies = ["select"]
 [components.combobox]
+since = "0.2.0"
 dependencies = ["select"]
 [components.select]
+since = "0.2.0"
 dependencies = ["field"]
 [components.navigation_menu]
+since = "0.2.0"
 dependencies = ["menubar"]
 [components.sidebar]
+since = "0.5.0"
 description = "Shadcn-styled navigation composed from GPUI Kit buttons and scroll areas."
 dependencies = ["scroll_area", "tooltip", "button", "dialog", "input", "menu"]
 [components.resizable]
+since = "0.5.0"
 description = "Controlled shadcn-styled native GPUI resizable panes."
 [components.virtual_list]
+since = "0.5.0"
 description = "Virtualized native rows with stable identity, selection, keyboard navigation and fixed row heights."
 dependencies = ["scroll_area", "tooltip"]
 
 [components.toolbar]
+since = "0.2.0"
 dependencies = ["input"]
 [components.number_field]
+since = "0.2.0"
 dependencies = ["field"]
 
 [components.kbd]
+since = "0.6.0"
 description = "Nova key caps that show shortcuts with each platform's modifier names."
 [components.badge]
+since = "0.6.0"
 description = "Nova pills for labels and capped unread or mention counts."
 [components.tag]
+since = "0.6.0"
 description = "Compact chips for statuses and roles, with an optional status dot and remove button."
 dependencies = ["button"]
 [components.spinner]
+since = "0.6.0"
 description = "A rotating Lucide loader announced as a status; it holds still under reduced motion."
 [components.skeleton]
+since = "0.6.0"
 description = "Muted pulsing placeholders for content that is still loading."
 [components.command]
+since = "0.6.0"
 description = "A Nova command palette and quick switcher with grouped, fuzzy-filtered, virtualized results."
 dependencies = ["input", "dialog", "kbd"]
 [components.composer]
+since = "0.7.0"
 description = "A growing chat composer with Enter to send, caret control, paste and key hooks, and autocomplete for mentions, channels, emoji and commands."
 dependencies = ["textarea"]
 [components.emoji_picker]
+since = "0.7.0"
 title = "Emoji Picker"
 description = "Searchable emoji grid with category tabs, recently used and custom emoji images."
 dependencies = ["input"]
 [components.lightbox]
+since = "0.7.0"
 description = "A full-window image viewer with zoom, pan and keyboard previous and next."
 dependencies = ["button", "dialog"]
 [components.message]
+since = "0.6.0"
 title = "Message"
 description = "Team-chat message rows with grouping, mention highlights, reactions, hover actions and dividers."
 dependencies = ["button", "tooltip"]
 [components.message_list]
+since = "0.6.0"
 title = "Message List"
 description = "A virtualized, variable-height chat transcript that follows new messages, with a jump-to-latest pill."
 dependencies = ["button"]
 [components.attachment]
+since = "0.6.0"
 description = "File and image attachment cards with upload progress, retry and remove."
 dependencies = ["button"]
 [components.title_bar]
+since = "0.6.0"
 title = "Title Bar"
 description = "A draggable custom window title bar with platform window controls."
 
 [components.markdown]
+since = "0.6.0"
 description = "Nova-styled Markdown with themed code blocks, tables, quotes and inline entity chips for mentions and channels."
 dependencies = ["embed"]
 
 [components.embed]
+since = "0.9.2"
 description = "Link previews, message attachments and quoted posts under a chat message."
 dependencies = ["avatar", "button", "message"]
 [components.sortable]
+since = "0.9.4"
 description = "Rows people drag, or move with the keyboard, to reorder them and move them between groups."
 [components.alert]
+since = "0.9.6"
 description = "An inline callout with an icon, title and description for form errors, warnings and notes."
 [components.avatar_group]
+since = "0.9.6"
 title = "Avatar Group"
 description = "Overlapping avatars with a +N overflow chip and one accessible list of names."
 dependencies = ["avatar", "tooltip"]
 [components.calendar]
+since = "0.9.6"
 description = "A keyboard-driven month grid for picking a date, with limits and a configurable first weekday."
 [components.date_picker]
+since = "0.9.6"
 title = "Date Picker"
 description = "A trigger that opens a Calendar popover and shows the chosen date."
 dependencies = ["calendar", "button"]
 [components.date_time_picker]
+since = "0.9.6"
 title = "Date Time Picker"
 description = "A date and time picker: a Calendar popover with an hour and minute field, 12- or 24-hour."
 dependencies = ["date_picker", "calendar", "button", "input"]
 [components.checkbox]
+since = "0.1.0"
 dependencies = ["field"]
 [components.radio_group]
+since = "0.2.0"
 dependencies = ["field"]
 [components.color_picker]
+since = "0.9.12"
 description = "Picks a color with hue, chroma and lightness sliders in OKLCH, plus optional swatches."
 dependencies = ["slider"]
 [components.item]
+since = "0.10.1"
 description = "Rows with media, a title, a description and actions, grouped into cards."
+
+[components.accordion]
+since = "0.2.0"
+[components.avatar]
+since = "0.2.0"
+[components.button]
+since = "0.1.0"
+[components.checkbox_group]
+since = "0.2.0"
+[components.collapsible]
+since = "0.2.0"
+[components.fieldset]
+since = "0.2.0"
+[components.form]
+since = "0.2.0"
+[components.meter]
+since = "0.2.0"
+[components.preview_card]
+since = "0.2.0"
+[components.progress]
+since = "0.2.0"
+[components.scroll_area]
+since = "0.2.0"
+[components.separator]
+since = "0.2.0"
+[components.slider]
+since = "0.2.0"
+[components.switch]
+since = "0.2.0"
+[components.tabs]
+since = "0.2.0"
+[components.toggle]
+since = "0.2.0"
+[components.toggle_group]
+since = "0.2.0"
+[components.tooltip]
+since = "0.2.0"

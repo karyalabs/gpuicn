@@ -29,5 +29,8 @@
       "target": "~/src/ui/preview_card.rs",
       "content": "//! Nova hover-card surfaces using Kit's delayed hover lifecycle.\nuse super::theme::{UiTheme, primitives::surface};\npub use gpui_kit::base::{HoverCard, HoverCardState};\nuse gpui_kit::{App, Div, ElementId, InteractiveElement as _, Stateful, Styled, div};\n\n/// Supply a trigger and a content builder to the Kit hover card.\npub fn preview_card(id: impl Into<ElementId>) -> HoverCard {\n    HoverCard::new(id)\n}\n/// The 256px Nova preview surface.\npub fn preview_card_popup(id: impl Into<ElementId>, cx: &App) -> Stateful<Div> {\n    let t = UiTheme::read(cx);\n    surface::popover(div().id(id).w(t.space(64.)).p(t.space(2.5)), t)\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }

@@ -47,5 +47,8 @@
       "target": "~/src/ui/combobox.rs",
       "content": "//! Editable Nova selection using the shared Kit-backed collection state.\nuse super::select::{Mode, Select};\npub use super::select::{SelectEvent, SelectItem, SelectState};\nuse gpui_kit::Entity;\n\n/// Search the options and commit a listed value; subscribe to the state's change events.\npub fn combobox(state: &Entity<SelectState>) -> Select {\n    let mut select = Select::new(state);\n    select.mode = Mode::Combobox;\n    select\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }

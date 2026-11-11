@@ -216,7 +216,8 @@ pub fn declare_in_lib(text: &str, component: &Component) -> Result<String, Strin
     Ok(lines.concat())
 }
 
-/// Appends `[components.<module>]` with the description.
+/// Appends `[components.<module>]` with the description. `since = "next"`
+/// marks it new; `scripts/release-version.py bump` stamps the release.
 pub fn declare_in_registry(text: &str, component: &Component) -> Result<String, String> {
     let header = format!("[components.{}]", component.module);
     if text.contains(&header) {
@@ -224,7 +225,7 @@ pub fn declare_in_registry(text: &str, component: &Component) -> Result<String, 
     }
     let mut text = text.trim_end().to_owned();
     text.push_str(&format!(
-        "\n{header}\ndescription = \"{}\"\n",
+        "\n{header}\nsince = \"next\"\ndescription = \"{}\"\n",
         component.description.replace('"', "\\\"")
     ));
     Ok(text)
@@ -332,7 +333,7 @@ pub fn list_in_site_catalog(text: &str, component: &Component) -> Result<String,
         return Err(format!("already lists {slug}"));
     }
     let start = text
-        .find("export const components: CatalogComponent[] = [\n")
+        .find("const entries: Omit<CatalogComponent, \"added\">[] = [\n")
         .ok_or("found no `components` list")?;
     let start = start + text[start..].find('\n').unwrap() + 1;
     let end = start
@@ -508,7 +509,9 @@ mod tests {
 
         let registry = "[components.button]\ndescription = \"A button.\"\n";
         let edited = declare_in_registry(registry, &component).unwrap();
-        assert!(edited.ends_with("[components.date_picker]\ndescription = \"Picks a date.\"\n"));
+        assert!(edited.ends_with(
+            "[components.date_picker]\nsince = \"next\"\ndescription = \"Picks a date.\"\n"
+        ));
         assert!(declare_in_registry(&edited, &component).is_err());
 
         let usage = "use gpuicn as ui;\n\nmod button {\n    fn example() {}\n}\n";
@@ -543,7 +546,7 @@ mod tests {
         assert!(edited.ends_with("    ),\n];\n"));
         assert!(list_in_gallery(&edited, &component).is_err());
 
-        let catalog = "export const components: CatalogComponent[] = [\n  {\n    slug: \"button\",\n    name: \"Button\",\n    description: \"A button.\",\n  },\n  {\n    slug: \"dialog\",\n    name: \"Dialog\",\n    description: \"A dialog.\",\n  },\n]\n";
+        let catalog = "const entries: Omit<CatalogComponent, \"added\">[] = [\n  {\n    slug: \"button\",\n    name: \"Button\",\n    description: \"A button.\",\n  },\n  {\n    slug: \"dialog\",\n    name: \"Dialog\",\n    description: \"A dialog.\",\n  },\n]\n";
         let edited = list_in_site_catalog(catalog, &component).unwrap();
         let slugs: Vec<&str> = edited
             .lines()

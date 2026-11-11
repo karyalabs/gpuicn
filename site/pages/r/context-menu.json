@@ -47,5 +47,8 @@
       "target": "~/src/ui/context_menu.rs",
       "content": "//! Right-click and Shift-F10 menus using the shared Nova menu state.\nuse super::menu::{Menu, MenuState};\nuse gpui_kit::{Entity, IntoElement, SharedString};\n/// Attach a context menu to a focusable area. The caller owns its menu state.\npub fn context_menu(\n    state: &Entity<MenuState>,\n    label: impl Into<SharedString>,\n    area: impl IntoElement,\n) -> Menu {\n    Menu::new(state, label).context_area(area)\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }

@@ -53,5 +53,8 @@
       "target": "~/src/ui/navigation_menu.rs",
       "content": "//! Navigation menus composed from Nova menus and link items.\nuse super::menubar::Menubar;\nuse gpui_kit::{ElementId, Role, SharedString};\n/// Create a named navigation landmark; supply menus of `MenuItem::link` entries with caller-owned navigation handlers.\npub fn navigation_menu(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Menubar {\n    let mut menu = Menubar::new(id, label);\n    menu.role = Role::Navigation;\n    menu\n}\n"
     }
-  ]
+  ],
+  "meta": {
+    "since": "0.2.0"
+  }
 }

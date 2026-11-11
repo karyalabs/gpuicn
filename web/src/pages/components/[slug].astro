@@ -3,7 +3,7 @@ import Chapter from "../../layouts/Chapter.astro"
 import Aside from "../../components/Aside.astro"
 import Code from "../../components/Code.astro"
 import Preview from "../../components/Preview.astro"
-import { components, componentHref, componentNumber, isNew } from "../../lib/catalog"
+import { addedLabel, components, componentHref, componentNumber, isNew } from "../../lib/catalog"
 import { componentDocs } from "../../lib/docs"
 
 export function getStaticPaths() {
@@ -39,7 +39,7 @@ const lines = docs.source.split("\n").length
   <nav class="pager" slot="head" aria-label="Neighbouring components">
     {previous && <a href={componentHref(previous.slug)} rel="prev">← {previous.name}</a>}
     {next && <a href={componentHref(next.slug)} rel="next">{next.name} →</a>}
-    {isNew(component) && <span class="badge">Added in {component.added}</span>}
+    <span class:list={["badge", !isNew(component) && "badge--quiet"]}>{addedLabel(component)}</span>
   </nav>
 
   <figure class="figure wide" id="preview" data-tabs>

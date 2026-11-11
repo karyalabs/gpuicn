@@ -273,6 +273,14 @@ struct Item {
     title: String,
     description: String,
     files: Vec<SourceFile>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    meta: Option<ItemMeta>,
+}
+/// Extra facts about a component, in the registry item's free-form `meta`.
+#[derive(Clone, Serialize, Deserialize)]
+struct ItemMeta {
+    /// The release that first shipped the component, or "next" before it ships.
+    since: String,
 }
 #[derive(Serialize, Deserialize)]
 struct Registry {
@@ -295,6 +303,8 @@ struct Manifest {
 struct Metadata {
     title: Option<String>,
     description: Option<String>,
+    /// The release that first shipped the component; "next" until it ships.
+    since: Option<String>,
     dependencies: Vec<String>,
 }
 
@@ -1487,6 +1497,15 @@ fn dependencies(
     result.push(name.to_owned());
     Ok(())
 }
+/// True for `1.2.3`, the only form a released `since` takes.
+fn semver_like(version: &str) -> bool {
+    let parts: Vec<_> = version.split('.').collect();
+    parts.len() == 3
+        && parts
+            .iter()
+            .all(|part| !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit()))
+}
+
 fn json_file(path: &Path, value: &impl Serialize) -> Result<()> {
     let mut bytes = serde_json::to_vec_pretty(value)?;
     bytes.push(b'\n');
@@ -1556,6 +1575,17 @@ fn build(source: &Path, output: &Path) -> Result<()> {
             }
         }
         let metadata = manifest.components.get(name);
+        let since = metadata
+            .and_then(|meta| meta.since.clone())
+            .with_context(|| {
+                format!(
+                    "registry.toml: add `since = \"next\"` under [components.{name}]; the release stamps the version"
+                )
+            })?;
+        ensure!(
+            since == "next" || semver_like(&since),
+            "registry.toml: [components.{name}] since = \"{since}\" is neither a version nor \"next\""
+        );
         let title = metadata
             .and_then(|meta| meta.title.clone())
             .unwrap_or_else(|| {
@@ -1576,6 +1606,7 @@ fn build(source: &Path, output: &Path) -> Result<()> {
                     format!("The shadcn default {title} visual port backed by GPUI Kit behavior.")
                 }),
             files,
+            meta: Some(ItemMeta { since }),
         });
     }
     fs::create_dir_all(output)?;
@@ -1626,6 +1657,7 @@ mod tests {
                 target: "../../outside.rs".into(),
                 content: Some("pub struct Button;\n".into()),
             }],
+            meta: None,
         };
         json_file(&registry.join("button.json"), &item)?;
         let source = Source::new("r", root)?;
@@ -1712,6 +1744,7 @@ mod tests {
                 title: String::new(),
                 description: String::new(),
                 files,
+                meta: None,
             };
             json_file(&registry.join(format!("{name}.json")), &item)?;
         }
@@ -1788,6 +1821,7 @@ mod tests {
                 title: "Alert Dialog".into(),
                 description: String::new(),
                 files: Vec::new(),
+                meta: None,
             }],
         };
         json_file(&registry.join("registry.json"), &index)?;
@@ -1907,6 +1941,7 @@ mod tests {
             title: name.into(),
             description: String::new(),
             files: modules.iter().map(|module| file(module)).collect(),
+            meta: None,
         };
         let items = vec![
             item("theme", &["theme"]),

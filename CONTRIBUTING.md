@@ -9,7 +9,7 @@ requests are welcome; say which checks you ran.
 | Path | What lives there |
 | --- | --- |
 | `crates/ui/registry/<module>/` | Component source. `gpuicn add` copies it into apps, and the `gpuicn` crate compiles it for crate mode. Mark cross-module helpers `#[doc(hidden)] pub`, never `pub(crate)`: an ejected component reaches them from outside the crate. |
-| `registry.toml` | Component titles, descriptions and source dependencies. |
+| `registry.toml` | Component titles, descriptions, source dependencies and the release each one first shipped in (`since`). |
 | `crates/ui` | The `gpuicn` crate: compiles the registry via `#[path]` modules, plus tests and examples. It is published for crate mode. |
 | `crates/cli` | The `gpuicn` CLI (`init`, `new`, `add`, `status`, `diff`, `remove`, `build`). |
 | `site/` | The GPUI/WASM previews (one file per component under `site/src/previews/`) and the gpuicn Workspace example app. |
@@ -89,7 +89,10 @@ bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v<next
    builds its API reference from these comments. Read colors, spacing, radius
    and motion from `UiTheme`, never hard-coded values, and keep application
    data, routing and persistence caller-owned (see [CONTEXT.md](CONTEXT.md)).
-2. Add `[components.<module>]` to `registry.toml` with any `dependencies`.
+2. Add `[components.<module>]` to `registry.toml` with `since = "next"` and any
+   `dependencies`. The release bump replaces `next` with the version, and the
+   website shows a "New" badge from it for three minor versions. Nothing else
+   marks a component as new.
 3. Add the `#[path]` module to `crates/ui/src/lib.rs` and tests under
    `crates/ui/tests/` or in the source file.
 4. Add `mod <module> { … fn example(…) }` to `crates/ui/examples/usage.rs`,
@@ -107,6 +110,7 @@ Merging a version bump to `main` is the release; nothing runs on a laptop.
 1. Run `python3 scripts/release-version.py bump <version>`. It rewrites every
    place the version is written (Cargo.toml, the install lines, the registry
    URLs in the docs and the site's `release` constant) and updates Cargo.lock.
+   It also stamps every `since = "next"` in `registry.toml` with the version.
    CI fails while any of them disagree.
 2. Write `docs/releases/v<version>.md` (the GitHub release notes) and the
    `## <version>` entry in `CHANGELOG.md`, then run
