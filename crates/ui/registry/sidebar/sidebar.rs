@@ -1330,7 +1330,7 @@ pub fn sidebar_menu_action(
     let t = UiTheme::read(cx);
     super::button::Button::new(id)
         .aria_label(label)
-        .variant(super::button::ButtonVariant::Ghost)
+        .variant(super::button::ButtonVariant::Sidebar)
         .size(super::button::ButtonSize::IconXs)
         .text_color(t.colors.sidebar_foreground)
 }

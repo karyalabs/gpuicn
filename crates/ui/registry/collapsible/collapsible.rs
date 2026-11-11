@@ -205,7 +205,7 @@ impl gpui_kit::RenderOnce for ShowMore {
                         .rounded(theme.radius.sm)
                         .text_size(theme.text(13.))
                         .font_weight(gpui_kit::FontWeight::MEDIUM)
-                        .text_color(colors.primary)
+                        .text_color(colors.link())
                         .cursor_pointer()
                         .hover(|style| style.underline())
                         .focus_visible(move |style| {
@@ -218,7 +218,7 @@ impl gpui_kit::RenderOnce for ShowMore {
                                 LucideIcon::ChevronDown
                             })
                             .size(theme.space(3.5))
-                            .text_color(colors.primary),
+                            .text_color(colors.link()),
                         )
                         .child(label)
                         .on_click(move |_, window, cx| {

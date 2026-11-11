@@ -37,6 +37,10 @@ pub enum ButtonVariant {
     Destructive,
     /// Link-styled action.
     Link,
+    /// A low-emphasis action on the sidebar: clear at rest and hovering in
+    /// the sidebar's own colors, so it reads on a sidebar that is darker or
+    /// lighter than the page.
+    Sidebar,
 }
 
 /// The pinned shadcn Button size.
@@ -324,8 +328,18 @@ fn style_button_with<
             }),
         ButtonVariant::Link => base
             .bg(colors.background.opacity(0.0))
-            .text_color(colors.primary)
+            .text_color(colors.link())
             .when(!disabled, |base| base.hover(|style| style.underline())),
+        ButtonVariant::Sidebar => base
+            .bg(colors.sidebar.opacity(0.0))
+            .text_color(colors.sidebar_foreground)
+            .when(!disabled, |base| {
+                base.hover(move |style| {
+                    style
+                        .bg(colors.sidebar_accent)
+                        .text_color(colors.sidebar_accent_foreground)
+                })
+            }),
     };
 
     disabled_style::interactive(base, disabled)
@@ -420,6 +434,7 @@ mod tests {
                 ButtonVariant::Ghost,
                 ButtonVariant::Destructive,
                 ButtonVariant::Link,
+                ButtonVariant::Sidebar,
             ] {
                 for disabled in [false, true] {
                     let mut button = style_button(

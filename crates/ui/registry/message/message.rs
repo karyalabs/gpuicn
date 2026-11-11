@@ -1060,7 +1060,7 @@ fn reaction_chip(
                 .text_size(theme.text(12.))
                 .font_weight(FontWeight::MEDIUM)
                 .text_color(if reaction.reacted {
-                    colors.primary
+                    colors.link()
                 } else {
                     colors.muted_foreground
                 })

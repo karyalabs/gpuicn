@@ -35,6 +35,10 @@ pub struct Oklch {
 /// The largest chroma the picker offers; past it most hues leave sRGB.
 pub const MAX_CHROMA: f32 = 0.37;
 
+/// The lightness and chroma the hue track is drawn at, whatever the color
+/// picked: a hue reads on a vivid track and not on a near-grey one.
+const HUE_TRACK: (f32, f32) = (0.72, 0.15);
+
 impl Oklch {
     /// Creates a color from lightness, chroma and hue.
     pub fn new(lightness: f32, chroma: f32, hue: f32) -> Self {
@@ -317,9 +321,8 @@ impl RenderOnce for ColorPicker {
                 Slider::new(&hue)
                     .disabled(self.disabled)
                     .aria_label(locale::text(cx, UiText::ColorHue))
-                    .gradient(stops(13, |t| Oklch {
-                        hue: t * 360.,
-                        ..value
+                    .gradient(stops(13, |t| {
+                        Oklch::new(HUE_TRACK.0, HUE_TRACK.1, t * 360.)
                     })),
             ))
             .child(row(
@@ -329,6 +332,7 @@ impl RenderOnce for ColorPicker {
                     .aria_label(locale::text(cx, UiText::ColorChroma))
                     .gradient(stops(6, |t| Oklch {
                         chroma: t * MAX_CHROMA,
+                        lightness: value.lightness.clamp(0.45, 0.8),
                         ..value
                     })),
             ))
