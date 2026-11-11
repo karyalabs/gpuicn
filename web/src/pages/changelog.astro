@@ -1,13 +1,12 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import { changelog } from "../lib/docs"
 ---
 
-<Chapter
+<Docs
   title="Changelog"
   part="Reference"
-  kicker="Chapter 8"
   lede="Every release, newest first. Installed source never updates itself, so read the entry for a release before you overwrite files with it."
 >
   <Aside top>
@@ -17,7 +16,7 @@ import { changelog } from "../lib/docs"
     </ul>
   </Aside>
   <div class="text changelog" set:html={changelog.html} />
-</Chapter>
+</Docs>
 
 <style>
   .versions {

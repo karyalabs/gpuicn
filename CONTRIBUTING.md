@@ -91,7 +91,8 @@ bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v<next
    data, routing and persistence caller-owned (see [CONTEXT.md](CONTEXT.md)).
 2. Add `[components.<module>]` to `registry.toml` with a `description`, a
    `category` (one of the `[[categories]]` ids), `since = "next"` and any
-   `dependencies`. That entry is the component's website page and gallery
+   `dependencies`, plus `preview_height` when the preview needs more than
+   288 pixels. That entry is the component's website page and gallery
    entry; no other file lists components. The release bump replaces `next`
    with the version, and the site and the gallery show a "New" badge from it
    for three minor versions.

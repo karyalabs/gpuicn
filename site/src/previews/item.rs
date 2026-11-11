@@ -10,7 +10,8 @@ impl Showcase {
             .flex()
             .flex_col()
             .gap(px(16.0))
-            .w(px(440.0))
+            .w_full()
+            .max_w(px(440.0))
             .child(
                 ItemGroup::new("preview.item.group")
                     .child(

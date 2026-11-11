@@ -16,6 +16,72 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("[data-theme-t
   })
 }
 
+// Theme menu: base color, accent and radius -----------------------------------
+//
+// The choice lives in `data-style` on <html> as `<base>-<accent>-<radius>`.
+// The page's own accent and radius follow it through CSS; the GPUI previews
+// receive it below and rebuild their theme.
+
+const defaultStyle = "neutral-none-0.625"
+const stylePattern = /^([a-z]+)-([a-z]+)-(\d(?:\.\d+)?)$/
+const currentStyle = () => {
+  const [, base = "neutral", accent = "none", radius = "0.625"] =
+    stylePattern.exec(root.dataset.style ?? "") ?? []
+  return { base, accent, radius }
+}
+const showStyle = () => {
+  const { base, accent, radius } = currentStyle()
+  for (const [key, value] of [["base", base], ["accent", accent], ["radius", radius]] as const) {
+    for (const option of document.querySelectorAll<HTMLElement>(`[data-style-${key}]`)) {
+      option.setAttribute("aria-checked", String(option.dataset[`style${key[0]!.toUpperCase()}${key.slice(1)}`] === value))
+    }
+  }
+  for (const command of document.querySelectorAll<HTMLElement>("[data-style-command]")) {
+    command.textContent = `gpuicn theme set --base-color ${base} --radius ${radius}rem`
+  }
+}
+const setStyle = (next: Partial<ReturnType<typeof currentStyle>>) => {
+  const now = currentStyle()
+  const base = next.base ?? now.base
+  const accent = next.accent ?? now.accent
+  const radius = next.radius ?? now.radius
+  const value = `${base}-${accent}-${radius}`
+  if (value === defaultStyle) delete root.dataset.style
+  else root.dataset.style = value
+  root.dataset.accent = accent
+  root.style.setProperty("--radius", `${radius}rem`)
+  try {
+    if (value === defaultStyle) localStorage.removeItem("gpuicn-style")
+    else localStorage.setItem("gpuicn-style", value)
+  } catch {}
+  showStyle()
+}
+document.addEventListener("click", (event) => {
+  const target = event.target as Element
+  const option = target.closest<HTMLElement>("[data-style-base], [data-style-accent], [data-style-radius]")
+  if (option) {
+    setStyle({
+      base: option.dataset.styleBase,
+      accent: option.dataset.styleAccent,
+      radius: option.dataset.styleRadius,
+    })
+  } else if (target.closest("[data-style-reset]")) {
+    setStyle({ base: "neutral", accent: "none", radius: "0.625" })
+  }
+  // The header's theme menu closes on a click outside it.
+  for (const menu of document.querySelectorAll<HTMLDetailsElement>("[data-theme-menu][open]")) {
+    if (!menu.contains(target)) menu.open = false
+  }
+})
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return
+  for (const menu of document.querySelectorAll<HTMLDetailsElement>("[data-theme-menu][open]")) {
+    menu.open = false
+    menu.querySelector("summary")?.focus()
+  }
+})
+showStyle()
+
 // Docs rail on small screens ---------------------------------------------------
 
 const railToggle = document.querySelector<HTMLButtonElement>("[data-rail-toggle]")
@@ -215,6 +281,9 @@ class Preview {
     const example = this.host.dataset.example
     if (icon) query.set("icon", icon)
     if (example) query.set("example", example)
+    if (root.dataset.style) query.set("style", root.dataset.style)
+    // A host can ask for a right-to-left layout with `data-dir="rtl"`.
+    if (this.host.dataset.dir === "rtl") query.set("dir", "rtl")
     // The preview falls back to WebGL by itself. `?backend=webgl` on the page
     // skips WebGPU, which the screenshot scripts use.
     const page = new URLSearchParams(location.search)
@@ -245,7 +314,7 @@ class Preview {
   update() {
     if (this.host.dataset.status !== "ready") return
     this.frame?.contentWindow?.postMessage(
-      { gpuicn: "preview-update", theme: theme(), icon: this.host.dataset.icon ?? "" },
+      { gpuicn: "preview-update", theme: theme(), icon: this.host.dataset.icon ?? "", style: root.dataset.style ?? "" },
       window.location.origin
     )
   }
@@ -276,7 +345,7 @@ window.addEventListener("message", (event) => {
 
 new MutationObserver(() => {
   for (const preview of hosts) preview.update()
-}).observe(root, { attributes: true, attributeFilter: ["data-theme"] })
+}).observe(root, { attributes: true, attributeFilter: ["data-theme", "data-style"] })
 
 // Pages that change a preview's icon or example set the attribute and
 // dispatch this event on the host.

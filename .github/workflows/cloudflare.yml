@@ -106,6 +106,16 @@ jobs:
             echo "::error::These files exceed Cloudflare Workers' 25 MiB asset limit, so the site can't deploy."
             exit 1
           fi
+      - name: Shoot the component thumbnails
+        # Stills of every preview for the cards on the home page and the
+        # component index. The site shows plain cards without them, so a
+        # failure here must not block the deploy.
+        continue-on-error: true
+        run: |
+          mkdir -p "$RUNNER_TEMP/playwright"
+          printf '{"name":"thumbnails","private":true}\n' > "$RUNNER_TEMP/playwright/package.json"
+          (cd "$RUNNER_TEMP/playwright" && bun add playwright@1.56.1 && bunx playwright install --with-deps chromium)
+          NODE_PATH="$RUNNER_TEMP/playwright/node_modules" bun scripts/thumbnails.mjs
       - name: Build the Astro site
         working-directory: web
         run: |

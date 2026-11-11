@@ -22,7 +22,7 @@ mkdirSync(destination, { recursive: true });
 // web/src/lib/catalog.ts reads this file and names no component itself.
 const manifest = Bun.TOML.parse(read("registry.toml"));
 // These have no page: theme installs with every component, and app is the
-// starter covered by the Installation chapter.
+// starter covered by the Installation page.
 const withoutPage = new Set(["theme", "app"]);
 const titleCase = (module) => module.split("_").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
 writeFileSync(`${root}web/src/generated/catalog.json`, JSON.stringify({
@@ -35,6 +35,7 @@ writeFileSync(`${root}web/src/generated/catalog.json`, JSON.stringify({
       description: meta.description,
       category: meta.category,
       added: meta.since,
+      previewHeight: meta.preview_height ?? 288,
     }))
     .sort((a, b) => a.slug.localeCompare(b.slug)),
 }, null, 2) + "\n");

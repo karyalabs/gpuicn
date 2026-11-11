@@ -42,25 +42,22 @@ fn position(slug: &str) -> Option<usize> {
     entries().find_map(|(index, entry)| (entry.slug == slug).then_some(index))
 }
 
-/// The gallery's theme: the Workspace app's monochrome pair natively, the
-/// stock Neutral pair in the browser, where the Workspace app is not built.
+/// The gallery's theme: the Workspace app's monochrome pair natively, and in
+/// the browser whatever the site's theme menu asks for.
 #[cfg(not(target_family = "wasm"))]
 fn gallery_theme(mode: ThemeMode) -> UiTheme {
     super::workspace::workspace_theme(mode)
 }
 #[cfg(target_family = "wasm")]
 fn gallery_theme(mode: ThemeMode) -> UiTheme {
-    match mode {
-        ThemeMode::Dark => UiTheme::neutral_dark(),
-        _ => UiTheme::neutral_light(),
-    }
+    super::site_theme::theme(mode, &requested_value("style").unwrap_or_default())
 }
 
-/// Switches the gallery between its light and dark theme.
-pub(super) fn set_mode(cx: &mut App, mode: ThemeMode) {
-    if UiTheme::read(cx).mode != mode {
-        UiTheme::set(cx, gallery_theme(mode));
-        cx.refresh_windows();
+/// Installs the theme the framing page asked for.
+#[cfg(target_family = "wasm")]
+pub(super) fn set_theme(cx: &mut App, theme: UiTheme) {
+    if *UiTheme::read(cx) != theme {
+        UiTheme::set(cx, theme);
     }
 }
 
@@ -276,13 +273,13 @@ impl Render for Gallery {
                         .variant(ButtonVariant::Outline)
                         .child(if dark { "Light" } else { "Dark" })
                         .on_click(cx.listener(move |_, _, _, cx| {
-                            set_mode(
+                            UiTheme::set(
                                 cx,
-                                if dark {
+                                gallery_theme(if dark {
                                     ThemeMode::Light
                                 } else {
                                     ThemeMode::Dark
-                                },
+                                }),
                             );
                         })),
                 )

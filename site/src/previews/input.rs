@@ -8,7 +8,8 @@ impl Showcase {
         let readonly = demo_input("input.readonly", "read-only@example.com", "", window, cx);
         let disabled = demo_input("input.disabled", "disabled@example.com", "", window, cx);
         div()
-            .w(px(320.))
+            .w_full()
+            .max_w(px(320.))
             .flex()
             .flex_col()
             .gap(px(12.))

@@ -314,6 +314,9 @@ struct Category {
 #[derive(Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 struct Metadata {
+    /// Height of the site's preview frame; only the website reads it.
+    #[allow(dead_code)]
+    preview_height: Option<u32>,
     title: Option<String>,
     description: Option<String>,
     /// The release that first shipped the component; "next" until it ships.

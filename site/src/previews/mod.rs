@@ -75,6 +75,7 @@ pub(crate) mod prelude {
     pub(crate) use std::borrow::Cow;
 }
 
+pub(crate) mod board;
 pub(crate) mod button;
 
 use crate::Showcase;
@@ -87,6 +88,8 @@ macro_rules! previews {
         /// The catalog entry the showcase renders.
         #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
         pub(crate) enum Demo {
+            /// The home page's hero board; not a catalog entry, so not in `ALL`.
+            Board,
             Icons,
             #[default]
             Button,
@@ -100,6 +103,7 @@ macro_rules! previews {
             /// The registry name, such as `alert-dialog`.
             pub(crate) fn slug(self) -> &'static str {
                 match self {
+                    Demo::Board => "board",
                     Demo::Icons => "icons",
                     Demo::Button => "button",
                     $(Demo::$variant => stringify!($module),)*
@@ -109,6 +113,9 @@ macro_rules! previews {
             /// Parses a registry name (`alert-dialog`) or module name (`alert_dialog`).
             pub(crate) fn parse(value: &str) -> Option<Self> {
                 let value = value.replace('-', "_");
+                if value == "board" {
+                    return Some(Demo::Board);
+                }
                 Self::ALL.iter().copied().find(|demo| demo.slug() == value)
             }
         }
@@ -116,6 +123,7 @@ macro_rules! previews {
         impl Showcase {
             pub(crate) fn preview(&self, window: &mut Window, cx: &mut Context<Self>) -> gpui_kit::AnyElement {
                 match self.demo {
+                    Demo::Board => board::preview(self, window, cx),
                     Demo::Icons => self.icons_preview(cx).into_any_element(),
                     Demo::Button => button::preview(self, window, cx),
                     $(Demo::$variant => $module::preview(self, window, cx),)*
@@ -133,7 +141,7 @@ impl Demo {
 
     /// Previews that fill the window without the 16px frame.
     pub(crate) fn is_edge_to_edge(self) -> bool {
-        self.is_wide() || self == Demo::Message
+        self.is_wide() || matches!(self, Demo::Message | Demo::Board)
     }
 }
 

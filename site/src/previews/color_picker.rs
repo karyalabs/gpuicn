@@ -14,7 +14,8 @@ impl Showcase {
         });
         let swatch = state.read(cx).value(cx).to_rgba();
         div()
-            .w(px(300.))
+            .w_full()
+            .max_w(px(300.))
             .flex()
             .flex_col()
             .gap(px(12.))

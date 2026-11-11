@@ -19,7 +19,8 @@ impl Showcase {
         Select::new(&state)
             .aria_label("Fruit")
             .placeholder("Select a fruit…")
-            .w(px(240.))
+            .w_full()
+            .max_w(px(240.))
     }
 }
 

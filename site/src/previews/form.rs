@@ -50,7 +50,8 @@ impl Showcase {
         let submit_fruit = fruit.clone();
         let submit_quantity = quantity.clone();
         form("subscribe", cx)
-            .w(px(320.))
+            .w_full()
+            .max_w(px(320.))
             .aria_label("Fruit order")
             .child(
                 Field::new("subscribe-email", &email)

@@ -1,5 +1,5 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
 
@@ -10,10 +10,9 @@ const views = [
 ] as const
 ---
 
-<Chapter
+<Docs
   title="Example app"
-  part="Guide"
-  kicker="Chapter 4"
+  part="Get started"
   lede="gpuicn Workspace is a small desktop app built from this catalog: projects, tasks, and notes, saved on your computer."
 >
   <div class="downloads" slot="head" data-showcase>
@@ -102,7 +101,7 @@ const views = [
     <p>On Linux, with the build dependencies from <a href="/installation/">Installation</a>:</p>
   </div>
   <Code code="cargo run --release -p gpuicn-showcase --features gpui_platform/x11,gpui_platform/wayland" lang="bash" />
-</Chapter>
+</Docs>
 
 <script>
   // The release workflow writes /downloads/showcase.json beside the macOS

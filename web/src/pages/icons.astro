@@ -1,5 +1,5 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Preview from "../components/Preview.astro"
 import { icons } from "../lib/docs"
 import { highlight } from "../lib/highlight"
@@ -16,10 +16,9 @@ const snippet = (
 if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost its variant token")
 ---
 
-<Chapter
+<Docs
   title="Icons"
   part="Reference"
-  kicker="Chapter 6"
   lede={`The ${icons.length.toLocaleString("en")} icons of Lucide 1.63.0, as Rust names. gpui-icons renders the original SVGs with GPUI, on native targets and in WebAssembly.`}
 >
   <div class="text">
@@ -81,7 +80,7 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
       </p>
     </aside>
   </div>
-</Chapter>
+</Docs>
 
 <script>
   // Search terms are fetched once, on the first keystroke, so the page stays small.

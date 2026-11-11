@@ -11,6 +11,8 @@ homepage = "https://ui.imajha.com/"
 # since        The release that first shipped the component. Write "next" for
 #              a new one: `scripts/release-version.py bump` stamps the version
 #              and the site derives its "New" badges from it.
+# preview_height  Height in pixels of the preview frame on the component's
+#              page, when the default 288 is too short.
 # dependencies Other components its source needs. Every component includes
 #              theme; dependencies are recursive and installed once.
 
@@ -54,11 +56,6 @@ description = "The app-owned shadcn Neutral theme and shared native motion token
 category = "foundations"
 since = "0.1.0"
 
-[components.title_bar]
-description = "A draggable custom window title bar with window controls."
-category = "foundations"
-since = "0.6.0"
-
 # Actions
 
 [components.button]
@@ -93,12 +90,14 @@ dependencies = ["input"]
 description = "A text input that suggests matching values."
 category = "forms"
 since = "0.2.0"
+preview_height = 360
 dependencies = ["select"]
 
 [components.calendar]
 description = "A keyboard-driven month grid for picking a date, with limits and a configurable first weekday."
 category = "forms"
 since = "0.9.6"
+preview_height = 432
 
 [components.checkbox]
 description = "A control that toggles between checked and unchecked."
@@ -121,24 +120,28 @@ dependencies = ["slider"]
 description = "An input paired with a searchable list of choices."
 category = "forms"
 since = "0.2.0"
+preview_height = 360
 dependencies = ["select"]
 
 [components.date_picker]
 description = "A trigger that opens a Calendar popover and shows the chosen date."
 category = "forms"
 since = "0.9.6"
+preview_height = 520
 dependencies = ["calendar", "button"]
 
 [components.date_time_picker]
 description = "A date and time picker: a Calendar popover with an hour and minute field, 12- or 24-hour."
 category = "forms"
 since = "0.9.6"
+preview_height = 520
 dependencies = ["date_picker", "calendar", "button", "input"]
 
 [components.field]
 description = "Composes a control with its label, description, and errors."
 category = "forms"
 since = "0.2.0"
+preview_height = 360
 dependencies = ["input"]
 
 [components.fieldset]
@@ -150,6 +153,7 @@ since = "0.2.0"
 description = "Coordinates validation and submission for fields."
 category = "forms"
 since = "0.2.0"
+preview_height = 520
 
 [components.input]
 description = "A styled text input backed by native GPUI editing."
@@ -160,6 +164,7 @@ since = "0.2.0"
 description = "Combines an input or textarea with inline addons and actions."
 category = "forms"
 since = "0.5.0"
+preview_height = 520
 dependencies = ["input", "button", "field"]
 
 [components.number_field]
@@ -184,6 +189,7 @@ dependencies = ["field"]
 description = "Displays a list of options for the user to pick from."
 category = "forms"
 since = "0.2.0"
+preview_height = 360
 dependencies = ["field"]
 
 [components.slider]
@@ -208,30 +214,35 @@ dependencies = ["input"]
 description = "A modal dialog that expects a response from the user."
 category = "overlays"
 since = "0.2.0"
+preview_height = 432
 dependencies = ["button", "dialog"]
 
 [components.command]
 description = "A searchable command palette and quick switcher."
 category = "overlays"
 since = "0.6.0"
+preview_height = 432
 dependencies = ["input", "dialog", "kbd"]
 
 [components.context_menu]
 description = "A menu opened by a secondary pointer action."
 category = "overlays"
 since = "0.2.0"
+preview_height = 432
 dependencies = ["menu"]
 
 [components.dialog]
 description = "A window overlaid on the primary content."
 category = "overlays"
 since = "0.1.0"
+preview_height = 432
 dependencies = ["button"]
 
 [components.drawer]
 description = "A panel that slides from an edge of the window."
 category = "overlays"
 since = "0.2.0"
+preview_height = 560
 dependencies = ["button", "dialog"]
 
 [components.lightbox]
@@ -245,18 +256,21 @@ title = "Dropdown Menu"
 description = "Displays a menu of actions from a trigger."
 category = "overlays"
 since = "0.2.0"
+preview_height = 432
 dependencies = ["button", "kbd"]
 
 [components.menubar]
 description = "A persistent horizontal set of menus."
 category = "overlays"
 since = "0.2.0"
+preview_height = 432
 dependencies = ["menu"]
 
 [components.popover]
 description = "Displays rich content in a portal from a trigger."
 category = "overlays"
 since = "0.2.0"
+preview_height = 360
 dependencies = ["button"]
 
 [components.preview_card]
@@ -264,6 +278,7 @@ title = "Hover Card"
 description = "Previews content behind a link or trigger."
 category = "overlays"
 since = "0.2.0"
+preview_height = 360
 
 [components.toast]
 description = "A brief notification shown above the application."
@@ -287,6 +302,7 @@ since = "0.2.0"
 description = "Cycles through content with buttons, pagination, keyboard controls, and pointer gestures."
 category = "navigation"
 since = "0.5.0"
+preview_height = 520
 
 [components.collapsible]
 description = "An interactive panel that expands and collapses."
@@ -297,6 +313,7 @@ since = "0.2.0"
 description = "A collection of links for navigating a site or app."
 category = "navigation"
 since = "0.2.0"
+preview_height = 432
 dependencies = ["menubar"]
 
 [components.resizable]
@@ -318,6 +335,7 @@ since = "0.2.0"
 description = "Application navigation with responsive layouts, icon rails, nested menus, and mobile sheets."
 category = "navigation"
 since = "0.5.0"
+preview_height = 520
 dependencies = ["scroll_area", "tooltip", "button", "dialog", "input", "menu"]
 
 [components.tabs]
@@ -325,12 +343,18 @@ description = "Shows one panel from a set of layered sections."
 category = "navigation"
 since = "0.2.0"
 
+[components.title_bar]
+description = "A draggable custom window title bar with window controls."
+category = "navigation"
+since = "0.6.0"
+
 # Data display
 
 [components.alert]
 description = "An inline callout with an icon, title and description for form errors, warnings and notes."
 category = "display"
 since = "0.9.6"
+preview_height = 432
 
 [components.avatar]
 description = "An image element with a fallback for representing a user."
@@ -362,6 +386,7 @@ since = "0.10.1"
 description = "Renders Markdown with themed code blocks and inline entity chips."
 category = "display"
 since = "0.6.0"
+preview_height = 520
 dependencies = ["embed"]
 
 [components.meter]
@@ -383,6 +408,7 @@ since = "0.6.0"
 description = "Rows people drag, or move with the keyboard, to reorder them and move them between groups."
 category = "display"
 since = "0.9.4"
+preview_height = 520
 
 [components.spinner]
 description = "An animated indicator that shows work in progress."
@@ -399,6 +425,7 @@ dependencies = ["button"]
 description = "Large lists with stable selection, keyboard navigation, and fast fixed-height rows."
 category = "display"
 since = "0.5.0"
+preview_height = 520
 dependencies = ["scroll_area", "tooltip"]
 
 # Chat
@@ -413,28 +440,33 @@ dependencies = ["button"]
 description = "A chat message box with autocomplete for mentions, channels and emoji."
 category = "chat"
 since = "0.7.0"
+preview_height = 432
 dependencies = ["textarea"]
 
 [components.embed]
 description = "Link previews, message attachments and quoted posts under a chat message."
 category = "chat"
 since = "0.9.2"
+preview_height = 960
 dependencies = ["avatar", "button", "message"]
 
 [components.emoji_picker]
 description = "A searchable emoji grid with categories, recents and custom emoji."
 category = "chat"
 since = "0.7.0"
+preview_height = 432
 dependencies = ["input"]
 
 [components.message]
 description = "A chat message row with grouping, reactions, and hover actions."
 category = "chat"
 since = "0.6.0"
+preview_height = 520
 dependencies = ["button", "tooltip"]
 
 [components.message_list]
 description = "A chat transcript that only renders visible rows and follows new messages."
 category = "chat"
 since = "0.6.0"
+preview_height = 520
 dependencies = ["button"]

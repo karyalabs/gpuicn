@@ -7,7 +7,8 @@ impl Showcase {
         let value = window.use_keyed_state("tabs", cx, |_, _| SharedString::from("account"));
         let selected = value.read(cx).clone();
         div()
-            .w(px(320.))
+            .w_full()
+            .max_w(px(320.))
             .flex()
             .flex_col()
             .gap(px(16.))

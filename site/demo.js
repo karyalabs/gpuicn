@@ -18,7 +18,8 @@
           data?.gpuicn !== "preview-update" ||
           (data.theme !== "light" && data.theme !== "dark") ||
           typeof data.icon !== "string") return;
-      update(data.theme, data.icon);
+      // `style` is the site theme menu's `<base>-<accent>-<radius>`; anything else means the default.
+      update(data.theme, data.icon, /^[a-z]+-[a-z]+-\d(\.\d+)?$/.test(data.style) ? data.style : "");
     });
   };
 

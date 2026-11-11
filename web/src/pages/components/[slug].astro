@@ -1,9 +1,9 @@
 ---
-import Chapter from "../../layouts/Chapter.astro"
+import Docs from "../../layouts/Docs.astro"
 import Aside from "../../components/Aside.astro"
 import Code from "../../components/Code.astro"
 import Preview from "../../components/Preview.astro"
-import { addedLabel, components, componentHref, componentNumber, isNew } from "../../lib/catalog"
+import { addedLabel, categories, categoryOf, components, componentHref, isNew } from "../../lib/catalog"
 import { componentDocs } from "../../lib/docs"
 
 export function getStaticPaths() {
@@ -12,9 +12,12 @@ export function getStaticPaths() {
 
 const { component } = Astro.props
 const docs = componentDocs(component.slug)
-const index = components.findIndex((item) => item.slug === component.slug)
-const previous = components[index - 1]
-const next = components[index + 1]
+const category = categoryOf(component)
+// Previous and next follow the sidebar: category by category.
+const sidebarOrder = categories.flatMap((item) => item.components)
+const index = sidebarOrder.findIndex((item) => item.slug === component.slug)
+const previous = sidebarOrder[index - 1]
+const next = sidebarOrder[index + 1]
 const isSidebar = component.slug === "sidebar"
 const sidebarExamples = [
   ["workspace", "Workspace", "An inset layout with a team switcher, nested projects, a toggle rail, and an account menu."],
@@ -30,19 +33,19 @@ const files = docs.modules.map((module) => `src/ui/${module}.rs`)
 const lines = docs.source.split("\n").length
 ---
 
-<Chapter
+<Docs
   title={component.name}
-  part="Components"
-  kicker={`Component ${componentNumber(component.slug)} of ${components.length}`}
+  part={category.title}
+  partHref={`/components/#${category.id}`}
   lede={component.description}
 >
-  <nav class="pager" slot="head" aria-label="Neighbouring components">
-    {previous && <a href={componentHref(previous.slug)} rel="prev">← {previous.name}</a>}
-    {next && <a href={componentHref(next.slug)} rel="next">{next.name} →</a>}
-    <span class:list={["badge", !isNew(component) && "badge--quiet"]}>{addedLabel(component)}</span>
-  </nav>
+  <p class="meta" slot="head">
+    {isNew(component) && <span class="badge badge--new">New</span>}
+    <span class="badge badge--quiet">{addedLabel(component)}</span>
+    <span class="badge badge--quiet">{lines} lines of Rust</span>
+  </p>
 
-  <figure class="figure wide" id="preview" data-tabs>
+  <figure class="figure" id="preview" data-tabs>
     <div class="figure__frame">
       <div class="figure__bar">
         <div class="tabs__list" role="tablist" aria-label="Preview or its source">
@@ -50,7 +53,12 @@ const lines = docs.source.split("\n").length
           <button class="tabs__tab" type="button" role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1">Preview source</button>
         </div>
         <span class="spacer"></span>
-        <span class="mono">site/src/previews/{component.slug.replaceAll("-", "_")}.rs</span>
+        <button class="btn btn--ghost btn--sm" type="button" aria-pressed="false" data-preview-rtl title="Preview in a right-to-left layout">RTL</button>
+        <button class="btn btn--ghost btn--sm" type="button" data-preview-reset title="Start the preview again">Reset</button>
+        <a class="btn btn--ghost btn--sm" href={`/app/?c=${component.slug}`} title="Open this component in the gallery app">
+          Gallery
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+        </a>
       </div>
       <div class="tabs__panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
         {
@@ -88,9 +96,10 @@ const lines = docs.source.split("\n").length
       </div>
     </div>
     <figcaption class="figure__caption">
-      {component.name}, running in the browser. The second tab shows the preview's own source, which
-      includes its layout and demo state. For the smallest working example, see Usage below.
-      <a href="/examples/showcase.rs" download>Download the whole showcase</a> for its imports and helpers.
+      The real {component.name}, drawn by GPUI in your browser. It follows the theme menu in the header.
+      The second tab is the preview's own source
+      (<code>site/src/previews/{component.slug.replaceAll("-", "_")}.rs</code>);
+      <a href="/examples/showcase.rs" download>download the whole showcase</a> for its imports and helpers.
     </figcaption>
   </figure>
 
@@ -170,12 +179,27 @@ const lines = docs.source.split("\n").length
     </Aside>
     <div class="text platform-notes" set:html={docs.parityHtml} />
   </section>
-</Chapter>
+
+  <nav class="pager" aria-label="Neighbouring components">
+    {previous ? <a href={componentHref(previous.slug)} rel="prev"><span>Previous</span>{previous.name}</a> : <span></span>}
+    {next && <a class="pager__next" href={componentHref(next.slug)} rel="next"><span>Next</span>{next.name}</a>}
+  </nav>
+</Docs>
 
 <script>
+  const preview = document.getElementById("component-preview")
+  const remount = () => preview?.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true, detail: "remount" }))
+  document.querySelector("[data-preview-reset]")?.addEventListener("click", remount)
+  const rtl = document.querySelector<HTMLButtonElement>("[data-preview-rtl]")
+  rtl?.addEventListener("click", () => {
+    const on = rtl.getAttribute("aria-pressed") !== "true"
+    rtl.setAttribute("aria-pressed", String(on))
+    if (preview) preview.dataset.dir = on ? "rtl" : "ltr"
+    remount()
+  })
+
   // Sidebar examples: switch the preview and its source together.
   const group = document.querySelector<HTMLElement>("[data-sidebar-examples]")
-  const preview = document.getElementById("component-preview")
   if (group && preview) {
     for (const chip of group.querySelectorAll<HTMLButtonElement>("[data-example]")) {
       chip.addEventListener("click", () => {
@@ -197,17 +221,35 @@ const lines = docs.source.split("\n").length
 </script>
 
 <style>
-  .pager {
+  .meta {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 1.25rem;
-    font-family: var(--sans);
-    font-size: 0.8rem;
-    color: var(--ink-2);
+    gap: 0.4rem;
+  }
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 3.5rem;
+  }
+  .pager a {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    font-weight: 500;
   }
   .pager a:hover {
-    color: var(--rubric);
+    border-color: var(--ink-3);
+  }
+  .pager a span {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+  .pager__next {
+    text-align: right;
   }
   .section {
     margin-top: 2.75rem;

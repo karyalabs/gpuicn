@@ -1,119 +1,123 @@
 ---
-import Chapter from "../../layouts/Chapter.astro"
-import { components, componentHref, componentNumber, isNew } from "../../lib/catalog"
-import { componentDocs } from "../../lib/docs"
+import Docs from "../../layouts/Docs.astro"
+import ComponentCard from "../../components/ComponentCard.astro"
+import { categories, components, isNew } from "../../lib/catalog"
 
-const rows = components.map((component) => {
-  const docs = componentDocs(component.slug)
-  return {
-    ...component,
-    lines: docs.source.split("\n").length,
-    functions: docs.api.length,
-    modules: docs.modules.filter((module) => module !== "theme"),
-  }
-})
+const fresh = components.filter(isNew).length
 ---
 
-<Chapter
+<Docs
   title="Components"
   part="Reference"
-  kicker="Chapter 5"
-  lede={`All ${components.length} components in catalog order. Lines and functions are counted in the installed source at this release.`}
+  lede={`${components.length} components in ${categories.length} groups, ${fresh} of them new in recent releases. Every one has a live preview, a usage example, its API and platform notes.`}
   current="/components/"
 >
-  <table class="wide catalog">
-    <thead>
-      <tr>
-        <th scope="col">No.</th>
-        <th scope="col">Component</th>
-        <th scope="col" class="catalog__desc">Description</th>
-        <th scope="col" class="catalog__num">Lines</th>
-        <th scope="col" class="catalog__num">Public fns</th>
-        <th scope="col" class="catalog__mods">Modules</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        rows.map((row) => (
-          <tr>
-            <td class="catalog__no">{componentNumber(row.slug)}</td>
-            <td class="catalog__name">
-              <a href={componentHref(row.slug)}>{row.name}</a>
-              {isNew(row) && <span class="badge">New</span>}
-            </td>
-            <td class="catalog__desc">{row.description}</td>
-            <td class="catalog__num">{row.lines}</td>
-            <td class="catalog__num">{row.functions}</td>
-            <td class="catalog__mods">
-              <code>{row.modules.join(", ")}</code>
-            </td>
-          </tr>
-        ))
+  <div class="finder" slot="head">
+    <label class="finder__field">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input type="search" placeholder="Filter components" autocomplete="off" aria-label="Filter components" data-filter />
+    </label>
+    <a class="btn" href="/app/">Open the gallery app</a>
+  </div>
+
+  {
+    categories.map((category) => (
+      <section class="group" id={category.id} data-group>
+        <div class="group__head">
+          <h2 class="h2">{category.title}</h2>
+          <span class="group__count">{category.components.length}</span>
+        </div>
+        <div class="grid">
+          {category.components.map((component) => <ComponentCard component={component} />)}
+        </div>
+      </section>
+    ))
+  }
+  <p class="small" data-empty hidden>No component matches.</p>
+</Docs>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>("[data-filter]")
+  const groups = [...document.querySelectorAll<HTMLElement>("[data-group]")]
+  const empty = document.querySelector<HTMLElement>("[data-empty]")
+  input?.addEventListener("input", () => {
+    const terms = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean)
+    let any = false
+    for (const group of groups) {
+      let shown = 0
+      for (const card of group.querySelectorAll<HTMLElement>("[data-card]")) {
+        card.hidden = !terms.every((term) => (card.dataset.terms ?? "").includes(term))
+        if (!card.hidden) shown += 1
       }
-    </tbody>
-  </table>
-</Chapter>
+      group.hidden = shown === 0
+      any ||= shown > 0
+    }
+    if (empty) empty.hidden = any
+  })
+</script>
 
 <style>
-  .catalog {
-    border-collapse: collapse;
-    font-size: 0.9rem;
+  .finder {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
   }
-  .catalog th {
-    font-family: var(--sans);
-    font-weight: 500;
-    font-size: 0.74rem;
-    color: var(--ink-2);
-    text-align: left;
-    padding: 0.4rem 0.75rem 0.4rem 0;
-    border-bottom: 1px solid var(--rule-2);
-    white-space: nowrap;
-  }
-  .catalog td {
-    padding: 0.5rem 0.75rem 0.5rem 0;
-    border-bottom: 1px solid var(--rule);
-    vertical-align: top;
-  }
-  .catalog a {
-    font-weight: 600;
-  }
-  .catalog a:hover {
-    color: var(--rubric);
-  }
-  .catalog__name {
-    white-space: nowrap;
-  }
-  .catalog .badge {
-    margin-left: 0.4rem;
-  }
-  @media (max-width: 77.99rem) {
-    .catalog {
-      width: 100%;
-    }
-  }
-  .catalog__no {
-    font-family: var(--mono);
-    font-size: 0.72rem;
+  .finder__field {
+    flex: 1;
+    min-width: 12rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2rem;
+    padding: 0 0.7rem;
+    border: 1px solid var(--rule-2);
+    border-radius: var(--r-md);
     color: var(--ink-3);
-    padding-top: 0.7rem;
   }
-  .catalog__desc {
-    color: var(--ink-2);
-    font-size: 0.88rem;
+  .finder__field:focus-within {
+    border-color: var(--ink);
   }
-  .catalog__num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
+  .finder__field svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
   }
-  .catalog__mods code {
-    font-size: 0.72rem;
-    color: var(--ink-2);
+  .finder__field input {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    outline: 0;
   }
-  @media (max-width: 48rem) {
-    .catalog__desc,
-    .catalog__mods,
-    .catalog__num {
-      display: none;
-    }
+  .group {
+    margin-top: 2.5rem;
+    scroll-margin-top: calc(var(--head) + 1rem);
+  }
+  .group[hidden] {
+    display: none;
+  }
+  .group__head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .group__count {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
   }
 </style>

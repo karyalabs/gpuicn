@@ -12,7 +12,8 @@ impl Showcase {
                 .default_value(50.)
         });
         div()
-            .w(px(280.))
+            .w_full()
+            .max_w(px(280.))
             .flex()
             .flex_col()
             .gap(px(12.))

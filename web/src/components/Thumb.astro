@@ -1,0 +1,60 @@
+---
+import { existsSync } from "node:fs"
+import { join } from "node:path"
+
+/**
+ * A still picture of a component's preview, light and dark. The deploy shoots
+ * them from the built previews (web/scripts/thumbnails.mjs); where they are
+ * missing, such as a local build that skipped that step, the card shows the
+ * component's initial instead.
+ */
+interface Props {
+  slug: string
+  name: string
+}
+const { slug, name } = Astro.props
+// Astro builds from web/, where public/ lives.
+const has = existsSync(join(process.cwd(), "public/thumbs", `${slug}-light.png`))
+---
+
+<span class="thumb">
+  {
+    has ? (
+      <>
+        <img class="thumb__img thumb__img--light" src={`/thumbs/${slug}-light.png`} alt="" loading="lazy" decoding="async" />
+        <img class="thumb__img thumb__img--dark" src={`/thumbs/${slug}-dark.png`} alt="" loading="lazy" decoding="async" />
+      </>
+    ) : (
+      <span class="thumb__initial" aria-hidden="true">{name[0]}</span>
+    )
+  }
+</span>
+
+<style>
+  .thumb {
+    display: grid;
+    place-items: center;
+    height: 9.5rem;
+    padding: 0.9rem;
+    overflow: hidden;
+  }
+  .thumb__img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  .thumb__img--dark,
+  :global([data-theme="dark"]) .thumb__img--light {
+    display: none;
+  }
+  :global([data-theme="dark"]) .thumb__img--dark {
+    display: block;
+  }
+  .thumb__initial {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--rule-2);
+  }
+</style>

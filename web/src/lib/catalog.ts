@@ -12,6 +12,8 @@ export type CatalogComponent = {
    * before its first release. Read from `since` in registry.toml.
    */
   added: string
+  /** Height of the preview frame on the component's page, in pixels. */
+  previewHeight: number
 }
 
 /**
@@ -60,74 +62,26 @@ export const guide = [
 ] as const
 
 export const reference = [
-  { to: "/components/", label: "Components", blurb: "All 58 components, each with a live preview, usage, API, and platform notes." },
-  { to: "/icons/", label: "Icons", blurb: "The 1,924 Lucide icons as Rust names, rendered by GPUI." },
+  { to: "/components/", label: "Components", blurb: `All ${components.length} components, each with a live preview, usage, API, and platform notes.` },
+  { to: "/icons/", label: "Icons", blurb: "The complete Lucide library as Rust names, rendered by GPUI." },
   { to: "/registry/", label: "Registry", blurb: "The JSON files behind gpuicn add." },
   { to: "/changelog/", label: "Changelog", blurb: "What each release added, changed, and fixed." },
 ] as const
 
-/** Kept for the search palette and older links. */
-export const sections = [...guide, ...reference]
-
 export function componentHref(slug: string) {
   return `/components/${slug}/`
-}
-
-/** Zero-padded position in the catalog, such as "07". */
-export function componentNumber(slug: string) {
-  return String(components.findIndex((component) => component.slug === slug) + 1).padStart(2, "0")
 }
 
 export function findComponent(slug: string) {
   return components.find((component) => component.slug === slug)
 }
 
+export function categoryOf(component: CatalogComponent) {
+  return categories.find((category) => category.id === component.category)!
+}
+
 export function previewHeight(slug: string) {
-  if (slug === "drawer") return 560
-  if (slug === "embed") return 960
-  if (
-    [
-      "carousel",
-      "date-picker",
-      "date-time-picker",
-      "form",
-      "input-group",
-      "markdown",
-      "message",
-      "message-list",
-      "sidebar",
-      "sortable",
-      "virtual-list",
-    ].includes(slug)
-  )
-    return 520
-  if (
-    [
-      "alert-dialog",
-      "command",
-      "composer",
-      "context-menu",
-      "emoji-picker",
-      "dialog",
-      "menu",
-      "menubar",
-      "navigation-menu",
-    ].includes(slug)
-  )
-    return 432
-  if (
-    [
-      "autocomplete",
-      "combobox",
-      "field",
-      "popover",
-      "preview-card",
-      "select",
-    ].includes(slug)
-  )
-    return 360
-  if (["alert", "calendar"].includes(slug)) return 432
-  return 288
+  return findComponent(slug)?.previewHeight ?? 288
 }
 
 export function rustModule(slug: string) {
