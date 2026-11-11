@@ -34,6 +34,8 @@ const event = {
 };
 listeners.message(event);
 listeners.message({ ...event, data: { ...event.data, theme: "dark", icon: "house" } });
+listeners.message({ ...event, data: { ...event.data, style: "zinc-blue-0.5" } });
+listeners.message({ ...event, data: { ...event.data, style: "zinc,blue&x=1" } });
 for (const invalid of [
   { ...event, source: {} },
   { ...event, origin: "https://other.example" },
@@ -42,5 +44,5 @@ for (const invalid of [
   { ...event, data: { ...event.data, theme: "unknown" } },
   { ...event, data: { ...event.data, icon: null } },
 ]) listeners.message(invalid);
-assert.deepEqual(updates, [["light", "air-vent"], ["dark", "house"]]);
+assert.deepEqual(updates, [["light", "air-vent", ""], ["dark", "house", ""], ["light", "air-vent", "zinc-blue-0.5"], ["light", "air-vent", ""]]);
 console.log("Preview keys forward once; updates accept only valid same-origin parent messages.");

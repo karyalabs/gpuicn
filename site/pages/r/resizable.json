@@ -3,7 +3,7 @@
   "name": "resizable",
   "type": "registry:item",
   "title": "Resizable",
-  "description": "Controlled shadcn-styled native GPUI resizable panes.",
+  "description": "Controlled panes with pointer and keyboard resizing.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.5.0"
+    "since": "0.5.0",
+    "category": "navigation"
   }
 }

@@ -2,18 +2,20 @@
 import "../styles/global.css"
 import Palette from "../components/Palette.astro"
 import Logo from "../components/Logo.astro"
+import ThemeControls from "../components/ThemeControls.astro"
+import { components } from "../lib/catalog"
 
 interface Props {
   title?: string
   description?: string
-  /** Running head: the part of the book this page belongs to. */
-  part?: string
+  /** Leaves out the footer, for a page that fills the window. */
+  bare?: boolean
 }
 
 const {
   title,
-  description = "Components for GPUI, installed as Rust source you own. A catalog of 58 components, the complete Lucide icon library, and live previews rendered by GPUI.",
-  part,
+  description = `Components for GPUI, installed as Rust source you own. ${components.length} components, the complete Lucide icon library, and live previews rendered by GPUI.`,
+  bare = false,
 } = Astro.props
 const fullTitle = title ? `${title} · gpuicn` : "gpuicn · Components for GPUI, installed as source"
 const canonical = new URL(Astro.url.pathname, Astro.site)
@@ -62,7 +64,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
         var dark =
           stored === "dark" ||
           (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)
-        document.documentElement.dataset.theme = dark ? "dark" : "light"
+        var root = document.documentElement
+        root.dataset.theme = dark ? "dark" : "light"
+        // The theme menu's choice: base color, accent and radius.
+        var style = null
+        try {
+          style = localStorage.getItem("gpuicn-style")
+        } catch (_) {}
+        var parts = /^([a-z]+)-([a-z]+)-(\d(?:\.\d+)?)$/.exec(style || "")
+        if (parts) {
+          root.dataset.style = style
+          root.dataset.accent = parts[2]
+          root.style.setProperty("--radius", parts[3] + "rem")
+        }
       })()
     </script>
   </head>
@@ -74,14 +88,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
           <Logo size={20} />
           <span>gpuicn</span>
         </a>
-        {part && <span class="head__part">{part}</span>}
         <nav class="head__nav" aria-label="Main">
-          <a href="/introduction/">Guide</a>
+          <a href="/introduction/">Docs</a>
           <a href="/components/">Components</a>
           <a href="/icons/">Icons</a>
-          <a href="/registry/">Registry</a>
+          <a href="/app/">Gallery app</a>
         </nav>
         <div class="head__tools">
+          <details class="head__menu head__more" data-theme-menu>
+            <summary class="head__tool" aria-label="Menu">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+            </summary>
+            <nav class="head__popup head__links" aria-label="Main, small screens">
+              <a href="/introduction/">Docs</a>
+              <a href="/components/">Components</a>
+              <a href="/icons/">Icons</a>
+              <a href="/app/">Gallery app</a>
+            </nav>
+          </details>
           <button class="head__tool" type="button" data-open-palette>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="7"></circle>
@@ -90,7 +114,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
             <span class="head__tool-label">Search</span>
             <kbd class="head__kbd" aria-hidden="true">⌘K</kbd>
           </button>
-          <button class="head__tool" type="button" data-theme-toggle aria-label="Switch color theme">
+          <details class="head__menu" data-theme-menu>
+            <summary class="head__tool" aria-label="Theme: base color, accent and radius">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"></path>
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+              </svg>
+              <span class="head__tool-label">Theme</span>
+            </summary>
+            <div class="head__popup">
+              <p class="head__popup-title">Theme the previews</p>
+              <p class="head__popup-text">Every preview on the site is live GPUI and follows these.</p>
+              <ThemeControls command />
+            </div>
+          </details>
+          <button class="head__tool" type="button" data-theme-toggle aria-label="Switch between light and dark">
             <svg class="icon--sun" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="4"></circle>
               <path
@@ -115,11 +156,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
       <slot />
     </main>
 
-    <footer class="colophon">
+    {!bare && <footer class="colophon">
       <div class="colophon__row">
         <p>
-          gpuicn is open source under the MIT license. The site is static HTML built with Astro, set in Geist. Every preview is the real component, compiled to WebAssembly and drawn by
-          GPUI.
+          gpuicn is open source under the MIT license. Every preview on this site is the real component,
+          compiled to WebAssembly and drawn by GPUI.
         </p>
         <nav class="colophon__links" aria-label="Footer">
           <a href="https://github.com/karyalabs/gpuicn">GitHub</a>
@@ -128,7 +169,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
           <a href="https://github.com/karyalabs/gpui-icons">gpui-icons</a>
         </nav>
       </div>
-    </footer>
+    </footer>}
 
     <Palette />
     <script src="../scripts/site.ts"></script>
@@ -156,14 +197,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     top: 0;
     z-index: 40;
     height: var(--head);
-    background: var(--paper);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--rule);
-    font-family: var(--sans);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
   }
   .head__row {
     height: 100%;
-    max-width: calc(var(--spine) + var(--gap) + var(--measure) + var(--gap) + var(--margin) + 3rem);
+    max-width: var(--shell);
     margin-inline: auto;
     padding-inline: 1.5rem;
     display: flex;
@@ -174,22 +215,68 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-  .head__part {
-    color: var(--ink-3);
-    display: none;
-  }
-  .head__part::before {
-    content: "/";
-    margin-right: 1rem;
+    font-weight: 600;
+    font-size: 0.98rem;
+    letter-spacing: -0.01em;
   }
   .head__nav {
     display: none;
-    gap: 1.25rem;
-    margin-left: auto;
+    gap: 1.35rem;
+    margin-left: 1.25rem;
+    margin-right: auto;
     color: var(--ink-2);
+  }
+  .head__menu {
+    position: relative;
+  }
+  .head__menu > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .head__menu > summary::-webkit-details-marker {
+    display: none;
+  }
+  .head__menu[open] > summary {
+    color: var(--ink);
+    background: var(--paper-2);
+  }
+  .head__popup {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: -4rem;
+    width: min(19.5rem, calc(100vw - 2rem));
+    padding: 1rem;
+    border: 1px solid var(--rule-2);
+    border-radius: var(--radius);
+    background: var(--paper);
+    box-shadow: 0 16px 40px rgb(0 0 0 / 0.14);
+  }
+  .head__links {
+    width: 12rem;
+    padding: 0.4rem;
+    display: grid;
+  }
+  .head__links a {
+    padding: 0.45rem 0.6rem;
+    border-radius: var(--r-sm);
+  }
+  .head__links a:hover {
+    background: var(--paper-2);
+  }
+  @media (min-width: 48rem) {
+    .head__more {
+      display: none;
+    }
+  }
+  .head__popup-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .head__popup-text {
+    color: var(--ink-2);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.15rem 0 0.9rem;
   }
   .head__nav a:hover {
     color: var(--ink);
@@ -201,14 +288,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     gap: 0.25rem;
   }
   @media (min-width: 48rem) {
-    .head__part {
-      display: inline;
-    }
     .head__nav {
       display: flex;
     }
-    .head__tools {
-      margin-left: 1.5rem;
+    .head__popup {
+      right: 0;
     }
   }
   .head__tool {
@@ -217,7 +301,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     gap: 0.4rem;
     height: 1.9rem;
     padding: 0 0.5rem;
-    border-radius: 3px;
+    border-radius: var(--r-sm);
     color: var(--ink-2);
   }
   .head__tool:hover {
@@ -287,7 +371,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     line-height: 1.5;
   }
   .colophon__row {
-    max-width: calc(var(--spine) + var(--gap) + var(--measure) + var(--gap) + var(--margin) + 3rem);
+    max-width: var(--shell);
     margin-inline: auto;
     padding: 1.5rem;
     display: flex;

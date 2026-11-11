@@ -3,7 +3,7 @@
   "name": "alert-dialog",
   "type": "registry:item",
   "title": "Alert Dialog",
-  "description": "The shadcn default Alert Dialog visual port backed by GPUI Kit behavior.",
+  "description": "A modal dialog that expects a response from the user.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -49,6 +49,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "overlays"
   }
 }

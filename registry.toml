@@ -1,227 +1,472 @@
 name = "gpuicn"
 homepage = "https://ui.imajha.com/"
 
-# Every component includes theme. Dependencies are recursive and installed once.
-# `since` is the release that first shipped the component. Write "next" for a
-# new one: `scripts/release-version.py bump` stamps the version, and the
-# website derives its "New" badges from it.
-[components.theme]
-since = "0.1.0"
-description = "The app-owned shadcn Neutral theme and shared native motion tokens for GPUI."
-[components.app]
-since = "0.9.0"
-description = "One-call application start: icon assets, bundled Geist fonts, the theme pair and the first window."
-[components.field]
-since = "0.2.0"
-dependencies = ["input"]
-[components.input]
-since = "0.2.0"
-description = "Nova-styled native text input with accessible labels, IME and standard editing shortcuts."
-[components.textarea]
-since = "0.5.0"
-description = "Nova-styled multi-line text editor with retained native editing state."
-dependencies = ["input"]
-[components.input_group]
-since = "0.5.0"
-title = "Input Group"
-description = "Inputs, textareas, addons and actions sharing one accessible frame."
-dependencies = ["input", "button", "field"]
-[components.carousel]
-since = "0.5.0"
-description = "Native snapping carousel with pointer, trackpad and keyboard navigation."
-[components.empty]
-since = "0.5.0"
-description = "Composable empty-state media, copy and action layout."
-[components.otp_field]
-since = "0.2.0"
-title = "OTP Field"
-[components.alert_dialog]
-since = "0.2.0"
-dependencies = ["button", "dialog"]
-[components.dialog]
-since = "0.1.0"
-dependencies = ["button"]
-[components.drawer]
-since = "0.2.0"
-dependencies = ["button", "dialog"]
-[components.popover]
-since = "0.2.0"
-dependencies = ["button"]
-[components.toast]
-since = "0.2.0"
-dependencies = ["button"]
-[components.menu]
-since = "0.2.0"
-dependencies = ["button", "kbd"]
-[components.menubar]
-since = "0.2.0"
-dependencies = ["menu"]
-[components.context_menu]
-since = "0.2.0"
-dependencies = ["menu"]
-[components.autocomplete]
-since = "0.2.0"
-dependencies = ["select"]
-[components.combobox]
-since = "0.2.0"
-dependencies = ["select"]
-[components.select]
-since = "0.2.0"
-dependencies = ["field"]
-[components.navigation_menu]
-since = "0.2.0"
-dependencies = ["menubar"]
-[components.sidebar]
-since = "0.5.0"
-description = "Shadcn-styled navigation composed from GPUI Kit buttons and scroll areas."
-dependencies = ["scroll_area", "tooltip", "button", "dialog", "input", "menu"]
-[components.resizable]
-since = "0.5.0"
-description = "Controlled shadcn-styled native GPUI resizable panes."
-[components.virtual_list]
-since = "0.5.0"
-description = "Virtualized native rows with stable identity, selection, keyboard navigation and fixed row heights."
-dependencies = ["scroll_area", "tooltip"]
+# The one list of components. The registry JSON, the website's pages and the
+# gallery app are all generated from it; nothing else names a component.
+#
+# title        Shown on the site and in `gpuicn list`. Defaults to the module
+#              name in title case.
+# description  One sentence for the catalog.
+# category     One of the groups below; the site and the gallery group by it.
+# since        The release that first shipped the component. Write "next" for
+#              a new one: `scripts/release-version.py bump` stamps the version
+#              and the site derives its "New" badges from it.
+# preview_height  Height in pixels of the preview frame on the component's
+#              page, when the default 288 is too short.
+# dependencies Other components its source needs. Every component includes
+#              theme; dependencies are recursive and installed once.
 
-[components.toolbar]
-since = "0.2.0"
-dependencies = ["input"]
-[components.number_field]
-since = "0.2.0"
-dependencies = ["field"]
+[[categories]]
+id = "foundations"
+title = "Foundations"
+
+[[categories]]
+id = "actions"
+title = "Actions"
+
+[[categories]]
+id = "forms"
+title = "Forms"
+
+[[categories]]
+id = "overlays"
+title = "Overlays"
+
+[[categories]]
+id = "navigation"
+title = "Navigation and layout"
+
+[[categories]]
+id = "display"
+title = "Data display"
+
+[[categories]]
+id = "chat"
+title = "Chat"
+
+# Foundations
+
+[components.app]
+description = "One-call application start: icon assets, bundled Geist fonts, the theme pair and the first window."
+category = "foundations"
+since = "0.9.0"
+
+[components.theme]
+description = "The app-owned shadcn Neutral theme and shared native motion tokens for GPUI."
+category = "foundations"
+since = "0.1.0"
+
+# Actions
+
+[components.button]
+description = "Displays a button or a component that looks like a button."
+category = "actions"
+since = "0.1.0"
 
 [components.kbd]
+description = "Shows a keyboard key or shortcut with platform modifier names."
+category = "actions"
 since = "0.6.0"
-description = "Nova key caps that show shortcuts with each platform's modifier names."
-[components.badge]
-since = "0.6.0"
-description = "Nova pills for labels and capped unread or mention counts."
-[components.tag]
-since = "0.6.0"
-description = "Compact chips for statuses and roles, with an optional status dot and remove button."
-dependencies = ["button"]
-[components.spinner]
-since = "0.6.0"
-description = "A rotating Lucide loader announced as a status; it holds still under reduced motion."
-[components.skeleton]
-since = "0.6.0"
-description = "Muted pulsing placeholders for content that is still loading."
-[components.command]
-since = "0.6.0"
-description = "A Nova command palette and quick switcher with grouped, fuzzy-filtered, virtualized results."
-dependencies = ["input", "dialog", "kbd"]
-[components.composer]
-since = "0.7.0"
-description = "A growing chat composer with Enter to send, caret control, paste and key hooks, and autocomplete for mentions, channels, emoji and commands."
-dependencies = ["textarea"]
-[components.emoji_picker]
-since = "0.7.0"
-title = "Emoji Picker"
-description = "Searchable emoji grid with category tabs, recently used and custom emoji images."
+
+[components.toggle]
+description = "A two-state button that can be on or off."
+category = "actions"
+since = "0.2.0"
+
+[components.toggle_group]
+description = "Groups two-state buttons with shared selection."
+category = "actions"
+since = "0.2.0"
+
+[components.toolbar]
+description = "Groups controls for a related set of actions."
+category = "actions"
+since = "0.2.0"
 dependencies = ["input"]
-[components.lightbox]
-since = "0.7.0"
-description = "A full-window image viewer with zoom, pan and keyboard previous and next."
-dependencies = ["button", "dialog"]
-[components.message]
-since = "0.6.0"
-title = "Message"
-description = "Team-chat message rows with grouping, mention highlights, reactions, hover actions and dividers."
-dependencies = ["button", "tooltip"]
-[components.message_list]
-since = "0.6.0"
-title = "Message List"
-description = "A virtualized, variable-height chat transcript that follows new messages, with a jump-to-latest pill."
-dependencies = ["button"]
-[components.attachment]
-since = "0.6.0"
-description = "File and image attachment cards with upload progress, retry and remove."
-dependencies = ["button"]
-[components.title_bar]
-since = "0.6.0"
-title = "Title Bar"
-description = "A draggable custom window title bar with platform window controls."
 
-[components.markdown]
-since = "0.6.0"
-description = "Nova-styled Markdown with themed code blocks, tables, quotes and inline entity chips for mentions and channels."
-dependencies = ["embed"]
+# Forms
 
-[components.embed]
-since = "0.9.2"
-description = "Link previews, message attachments and quoted posts under a chat message."
-dependencies = ["avatar", "button", "message"]
-[components.sortable]
-since = "0.9.4"
-description = "Rows people drag, or move with the keyboard, to reorder them and move them between groups."
-[components.alert]
-since = "0.9.6"
-description = "An inline callout with an icon, title and description for form errors, warnings and notes."
-[components.avatar_group]
-since = "0.9.6"
-title = "Avatar Group"
-description = "Overlapping avatars with a +N overflow chip and one accessible list of names."
-dependencies = ["avatar", "tooltip"]
+[components.autocomplete]
+description = "A text input that suggests matching values."
+category = "forms"
+since = "0.2.0"
+preview_height = 360
+dependencies = ["select"]
+
 [components.calendar]
-since = "0.9.6"
 description = "A keyboard-driven month grid for picking a date, with limits and a configurable first weekday."
-[components.date_picker]
+category = "forms"
 since = "0.9.6"
-title = "Date Picker"
-description = "A trigger that opens a Calendar popover and shows the chosen date."
-dependencies = ["calendar", "button"]
-[components.date_time_picker]
-since = "0.9.6"
-title = "Date Time Picker"
-description = "A date and time picker: a Calendar popover with an hour and minute field, 12- or 24-hour."
-dependencies = ["date_picker", "calendar", "button", "input"]
+preview_height = 432
+
 [components.checkbox]
+description = "A control that toggles between checked and unchecked."
+category = "forms"
 since = "0.1.0"
 dependencies = ["field"]
-[components.radio_group]
+
+[components.checkbox_group]
+description = "Groups related checkboxes under shared state."
+category = "forms"
+since = "0.2.0"
+
+[components.color_picker]
+description = "Picks a color with hue, chroma and lightness sliders in OKLCH, plus optional swatches."
+category = "forms"
+since = "0.9.12"
+dependencies = ["slider"]
+
+[components.combobox]
+description = "An input paired with a searchable list of choices."
+category = "forms"
+since = "0.2.0"
+preview_height = 360
+dependencies = ["select"]
+
+[components.date_picker]
+description = "A trigger that opens a Calendar popover and shows the chosen date."
+category = "forms"
+since = "0.9.6"
+preview_height = 520
+dependencies = ["calendar", "button"]
+
+[components.date_time_picker]
+description = "A date and time picker: a Calendar popover with an hour and minute field, 12- or 24-hour."
+category = "forms"
+since = "0.9.6"
+preview_height = 520
+dependencies = ["date_picker", "calendar", "button", "input"]
+
+[components.field]
+description = "Composes a control with its label, description, and errors."
+category = "forms"
+since = "0.2.0"
+preview_height = 360
+dependencies = ["input"]
+
+[components.fieldset]
+description = "Groups related form controls with a legend."
+category = "forms"
+since = "0.2.0"
+
+[components.form]
+description = "Coordinates validation and submission for fields."
+category = "forms"
+since = "0.2.0"
+preview_height = 520
+
+[components.input]
+description = "A styled text input backed by native GPUI editing."
+category = "forms"
+since = "0.2.0"
+
+[components.input_group]
+description = "Combines an input or textarea with inline addons and actions."
+category = "forms"
+since = "0.5.0"
+preview_height = 520
+dependencies = ["input", "button", "field"]
+
+[components.number_field]
+description = "A numeric input with step controls."
+category = "forms"
 since = "0.2.0"
 dependencies = ["field"]
-[components.color_picker]
-since = "0.9.12"
-description = "Picks a color with hue, chroma and lightness sliders in OKLCH, plus optional swatches."
-dependencies = ["slider"]
-[components.item]
-since = "0.10.1"
-description = "Rows with media, a title, a description and actions, grouped into cards."
+
+[components.otp_field]
+title = "Input OTP"
+description = "A segmented input for one-time passcodes."
+category = "forms"
+since = "0.2.0"
+
+[components.radio_group]
+description = "A set of checkable options where one value is selected."
+category = "forms"
+since = "0.2.0"
+dependencies = ["field"]
+
+[components.select]
+description = "Displays a list of options for the user to pick from."
+category = "forms"
+since = "0.2.0"
+preview_height = 360
+dependencies = ["field"]
+
+[components.slider]
+description = "Selects a value or range along a track."
+category = "forms"
+since = "0.2.0"
+
+[components.switch]
+description = "Toggles a setting on or off."
+category = "forms"
+since = "0.2.0"
+
+[components.textarea]
+description = "A styled multi-line editor backed by native GPUI editing."
+category = "forms"
+since = "0.5.0"
+dependencies = ["input"]
+
+# Overlays
+
+[components.alert_dialog]
+description = "A modal dialog that expects a response from the user."
+category = "overlays"
+since = "0.2.0"
+preview_height = 432
+dependencies = ["button", "dialog"]
+
+[components.command]
+description = "A searchable command palette and quick switcher."
+category = "overlays"
+since = "0.6.0"
+preview_height = 432
+dependencies = ["input", "dialog", "kbd"]
+
+[components.context_menu]
+description = "A menu opened by a secondary pointer action."
+category = "overlays"
+since = "0.2.0"
+preview_height = 432
+dependencies = ["menu"]
+
+[components.dialog]
+description = "A window overlaid on the primary content."
+category = "overlays"
+since = "0.1.0"
+preview_height = 432
+dependencies = ["button"]
+
+[components.drawer]
+description = "A panel that slides from an edge of the window."
+category = "overlays"
+since = "0.2.0"
+preview_height = 560
+dependencies = ["button", "dialog"]
+
+[components.lightbox]
+description = "A full-window image viewer with zoom, pan and previous and next."
+category = "overlays"
+since = "0.7.0"
+dependencies = ["button", "dialog"]
+
+[components.menu]
+title = "Dropdown Menu"
+description = "Displays a menu of actions from a trigger."
+category = "overlays"
+since = "0.2.0"
+preview_height = 432
+dependencies = ["button", "kbd"]
+
+[components.menubar]
+description = "A persistent horizontal set of menus."
+category = "overlays"
+since = "0.2.0"
+preview_height = 432
+dependencies = ["menu"]
+
+[components.popover]
+description = "Displays rich content in a portal from a trigger."
+category = "overlays"
+since = "0.2.0"
+preview_height = 360
+dependencies = ["button"]
+
+[components.preview_card]
+title = "Hover Card"
+description = "Previews content behind a link or trigger."
+category = "overlays"
+since = "0.2.0"
+preview_height = 360
+
+[components.toast]
+description = "A brief notification shown above the application."
+category = "overlays"
+since = "0.2.0"
+dependencies = ["button"]
+
+[components.tooltip]
+description = "Shows short information on hover or keyboard focus."
+category = "overlays"
+since = "0.2.0"
+
+# Navigation and layout
 
 [components.accordion]
+description = "A vertically stacked set of interactive headings that reveal content."
+category = "navigation"
 since = "0.2.0"
-[components.avatar]
-since = "0.2.0"
-[components.button]
-since = "0.1.0"
-[components.checkbox_group]
-since = "0.2.0"
+
+[components.carousel]
+description = "Cycles through content with buttons, pagination, keyboard controls, and pointer gestures."
+category = "navigation"
+since = "0.5.0"
+preview_height = 520
+
 [components.collapsible]
+description = "An interactive panel that expands and collapses."
+category = "navigation"
 since = "0.2.0"
-[components.fieldset]
+
+[components.navigation_menu]
+description = "A collection of links for navigating a site or app."
+category = "navigation"
 since = "0.2.0"
-[components.form]
-since = "0.2.0"
-[components.meter]
-since = "0.2.0"
-[components.preview_card]
-since = "0.2.0"
-[components.progress]
-since = "0.2.0"
+preview_height = 432
+dependencies = ["menubar"]
+
+[components.resizable]
+description = "Controlled panes with pointer and keyboard resizing."
+category = "navigation"
+since = "0.5.0"
+
 [components.scroll_area]
+description = "Adds styled scrolling to overflowing content."
+category = "navigation"
 since = "0.2.0"
+
 [components.separator]
+description = "Visually separates content."
+category = "navigation"
 since = "0.2.0"
-[components.slider]
-since = "0.2.0"
-[components.switch]
-since = "0.2.0"
+
+[components.sidebar]
+description = "Application navigation with responsive layouts, icon rails, nested menus, and mobile sheets."
+category = "navigation"
+since = "0.5.0"
+preview_height = 520
+dependencies = ["scroll_area", "tooltip", "button", "dialog", "input", "menu"]
+
 [components.tabs]
+description = "Shows one panel from a set of layered sections."
+category = "navigation"
 since = "0.2.0"
-[components.toggle]
+
+[components.title_bar]
+description = "A draggable custom window title bar with window controls."
+category = "navigation"
+since = "0.6.0"
+
+# Data display
+
+[components.alert]
+description = "An inline callout with an icon, title and description for form errors, warnings and notes."
+category = "display"
+since = "0.9.6"
+preview_height = 432
+
+[components.avatar]
+description = "An image element with a fallback for representing a user."
+category = "display"
 since = "0.2.0"
-[components.toggle_group]
+
+[components.avatar_group]
+description = "Overlapping avatars with a +N overflow chip and one accessible list of names."
+category = "display"
+since = "0.9.6"
+dependencies = ["avatar", "tooltip"]
+
+[components.badge]
+description = "Labels and unread or mention counts in a compact pill."
+category = "display"
+since = "0.6.0"
+
+[components.empty]
+description = "Explains an empty state and offers a clear next action."
+category = "display"
+since = "0.5.0"
+
+[components.item]
+description = "Rows with media, a title, a description and actions, grouped into cards."
+category = "display"
+since = "0.10.1"
+
+[components.markdown]
+description = "Renders Markdown with themed code blocks and inline entity chips."
+category = "display"
+since = "0.6.0"
+preview_height = 520
+dependencies = ["embed"]
+
+[components.meter]
+description = "Shows a scalar value within a known range."
+category = "display"
 since = "0.2.0"
-[components.tooltip]
+
+[components.progress]
+description = "Displays completion progress for a task."
+category = "display"
 since = "0.2.0"
+
+[components.skeleton]
+description = "A placeholder that stands in for content while it loads."
+category = "display"
+since = "0.6.0"
+
+[components.sortable]
+description = "Rows people drag, or move with the keyboard, to reorder them and move them between groups."
+category = "display"
+since = "0.9.4"
+preview_height = 520
+
+[components.spinner]
+description = "An animated indicator that shows work in progress."
+category = "display"
+since = "0.6.0"
+
+[components.tag]
+description = "A compact chip for a status, role, or removable filter."
+category = "display"
+since = "0.6.0"
+dependencies = ["button"]
+
+[components.virtual_list]
+description = "Large lists with stable selection, keyboard navigation, and fast fixed-height rows."
+category = "display"
+since = "0.5.0"
+preview_height = 520
+dependencies = ["scroll_area", "tooltip"]
+
+# Chat
+
+[components.attachment]
+description = "File and image cards with upload progress, retry, and remove."
+category = "chat"
+since = "0.6.0"
+dependencies = ["button"]
+
+[components.composer]
+description = "A chat message box with autocomplete for mentions, channels and emoji."
+category = "chat"
+since = "0.7.0"
+preview_height = 432
+dependencies = ["textarea"]
+
+[components.embed]
+description = "Link previews, message attachments and quoted posts under a chat message."
+category = "chat"
+since = "0.9.2"
+preview_height = 960
+dependencies = ["avatar", "button", "message"]
+
+[components.emoji_picker]
+description = "A searchable emoji grid with categories, recents and custom emoji."
+category = "chat"
+since = "0.7.0"
+preview_height = 432
+dependencies = ["input"]
+
+[components.message]
+description = "A chat message row with grouping, reactions, and hover actions."
+category = "chat"
+since = "0.6.0"
+preview_height = 520
+dependencies = ["button", "tooltip"]
+
+[components.message_list]
+description = "A chat transcript that only renders visible rows and follows new messages."
+category = "chat"
+since = "0.6.0"
+preview_height = 520
+dependencies = ["button"]

@@ -3,7 +3,7 @@
   "name": "lightbox",
   "type": "registry:item",
   "title": "Lightbox",
-  "description": "A full-window image viewer with zoom, pan and keyboard previous and next.",
+  "description": "A full-window image viewer with zoom, pan and previous and next.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -49,6 +49,7 @@
     }
   ],
   "meta": {
-    "since": "0.7.0"
+    "since": "0.7.0",
+    "category": "overlays"
   }
 }

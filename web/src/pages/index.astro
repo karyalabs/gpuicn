@@ -1,11 +1,10 @@
 ---
 import Base from "../layouts/Base.astro"
-import Spine from "../components/Spine.astro"
-import Figure from "../components/Figure.astro"
 import Preview from "../components/Preview.astro"
 import Code from "../components/Code.astro"
-import Aside from "../components/Aside.astro"
-import { components, componentHref, componentNumber, isNew, guide, reference } from "../lib/catalog"
+import ComponentCard from "../components/ComponentCard.astro"
+import ThemeControls from "../components/ThemeControls.astro"
+import { categories, components, isNew } from "../lib/catalog"
 import { componentDocs, icons } from "../lib/docs"
 import { release } from "../lib/release"
 
@@ -15,206 +14,324 @@ const newest = components.filter(isNew)
 ---
 
 <Base>
-  <div class="page">
-    <Spine current="/" />
-    <article class="body">
-      <header class="front">
-        <p class="kicker">gpuicn {release} · experimental</p>
-        <h1 class="h1">Components for GPUI, installed as source.</h1>
-        <p class="lede">
-          A catalog of {components.length} user-interface components for GPUI, the Rust framework behind
-          Zed. Each one follows the shadcn/ui design. You copy the ones you need into your app and edit
-          them there.
-        </p>
-      </header>
-
-      <Aside>
-        <p>
-          GPUI draws every pixel itself and reads input from the operating system. There is no web view
-          and no bridge. Pointer, keyboard, and accessibility behavior come from GPUI Kit.
-        </p>
-      </Aside>
-      <div class="text">
-        <p>
-          <code>gpuicn add button</code> writes <code>src/ui/button.rs</code> ({buttonLines} lines) and
-          <code>src/ui/theme.rs</code> into your app, then adds both to <code>src/ui/mod.rs</code>. The
-          files are ordinary Rust. You can rename a variant or delete half the file, and the compiler
-          checks the result like any other code you own.
-        </p>
-        <p>
-          Every preview in this book is the same code you install, compiled to WebAssembly. The figure
-          below is a real Button. Click it.
-        </p>
+  <div class="home">
+    <section class="hero">
+      <a class="hero__pill" href="/changelog/">
+        <span class="badge badge--new">{release}</span>
+        {newest.length} new components
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+      <h1 class="hero__title">Components for GPUI, installed as source.</h1>
+      <p class="lede hero__lede">
+        {components.length} native components for GPUI, the Rust framework behind Zed, in the shadcn/ui
+        design. Copy the ones you need into your app and edit them there.
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--primary btn--lg" href="/components/">Browse components</a>
+        <a class="btn btn--lg" href="/app/">Open the gallery app</a>
+        <a class="btn btn--ghost btn--lg" href="/installation/">Get started</a>
       </div>
+    </section>
 
-      <Figure caption="Button, drawn by GPUI in the browser. The counter is application state inside the preview.">
-        <Preview slug="button" name="Button" height={240} />
-      </Figure>
+    <section class="stage" aria-label="Live components">
+      <div class="stage__bar">
+        <p class="stage__live">
+          <span class="stage__dot" aria-hidden="true"></span>
+          Live. Real components, drawn by GPUI in your browser. Try them, then restyle them.
+        </p>
+        <ThemeControls inline />
+      </div>
+      <Preview slug="board" name="component board" height={600} />
+    </section>
 
-      <h2 class="h2" id="start">Start</h2>
-      <Aside>
-        <p>
-          The CLI, the registry, and the fonts are pinned to one release, so the three commands always
-          agree with each other.
+    <section class="steps">
+      <article class="step">
+        <p class="step__num">1</p>
+        <h2 class="h3">Add a component</h2>
+        <p class="small">
+          The CLI writes <code>src/ui/button.rs</code> ({buttonLines} lines) and the shared theme into
+          your app, and keeps <code>src/ui/mod.rs</code> in step.
         </p>
-        <p>
-          <a href="/installation/">Installation</a> covers each step, including the Cargo dependencies and
-          the starter window.
+        <Code code="gpuicn add button" lang="bash" />
+      </article>
+      <article class="step">
+        <p class="step__num">2</p>
+        <h2 class="h3">Use it like your own code</h2>
+        <p class="small">
+          Because it is. Rename a variant or delete half the file; the compiler checks the result like
+          anything else you wrote.
         </p>
-      </Aside>
-      <div class="text">
-        <p>With Rust 1.98 or newer installed, these three commands produce a running window:</p>
+        <Code code={`Button::new("save")\n    .label("Save changes")\n    .on_click(|_, _, cx| save(cx))`} />
+      </article>
+      <article class="step">
+        <p class="step__num">3</p>
+        <h2 class="h3">Make it yours</h2>
+        <p class="small">
+          One theme struct feeds every component. Start from a shadcn base color, or import theme CSS
+          from the shadcn picker or tweakcn.
+        </p>
+        <Code code="gpuicn theme set --base-color zinc" lang="bash" />
+      </article>
+    </section>
+
+    <section class="block">
+      <header class="block__head">
+        <h2 class="h2">{components.length} components, by kind</h2>
+        <a class="block__more" href="/components/">See them all</a>
+      </header>
+      <div class="kinds">
+        {
+          categories.map((category) => (
+            <a class="kind" href={`/components/#${category.id}`}>
+              <span class="kind__title">
+                {category.title}
+                <span class="kind__count">{category.components.length}</span>
+              </span>
+              <span class="kind__names">{category.components.map((component) => component.name).join(", ")}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="block">
+      <header class="block__head">
+        <h2 class="h2">New</h2>
+        <a class="block__more" href="/changelog/">Changelog</a>
+      </header>
+      <div class="fresh">
+        {newest.slice(0, 8).map((component) => <ComponentCard component={component} />)}
+      </div>
+    </section>
+
+    <section class="block start">
+      <div>
+        <h2 class="h2">Start in three commands</h2>
+        <p class="small start__text">
+          With Rust 1.98 or newer, these produce a running window with a button that counts clicks.
+          <a href="/installation/">Installation</a> covers each step.
+        </p>
+        <p class="small start__text">
+          Also here: {icons.length.toLocaleString("en")} Lucide <a href="/icons/">icons</a> as Rust
+          names, and <a href="/showcase/">gpuicn Workspace</a>, an example app for macOS and Linux built
+          from this catalog.
+        </p>
       </div>
       <Code
         code={`cargo install gpuicn-cli --version ${release.slice(1)} --locked\ngpuicn new my-app\ncd my-app && cargo run`}
         lang="bash"
-        class="start-code"
       />
-      <div class="text">
-        <p>
-          You should see a window titled "My App" with a button that counts clicks. The window follows
-          the system appearance.
-        </p>
-      </div>
-
-      <h2 class="h2" id="contents">Contents</h2>
-      <section class="wide toc">
-        <div class="toc__part">
-          <p class="toc__label">Guide</p>
-          <ol class="contents">
-            {
-              guide.map((chapter, index) => (
-                <li>
-                  <span class="num">{index + 1}</span>
-                  <a href={chapter.to}>
-                    <span class="title">{chapter.label}</span>
-                    <span class="leader"></span>
-                    <span class="desc">{chapter.blurb}</span>
-                  </a>
-                </li>
-              ))
-            }
-          </ol>
-          <p class="toc__label">Reference</p>
-          <ol class="contents">
-            {
-              reference.map((chapter, index) => (
-                <li>
-                  <span class="num">{guide.length + index + 1}</span>
-                  <a href={chapter.to}>
-                    <span class="title">{chapter.label}</span>
-                    <span class="leader"></span>
-                    <span class="desc">{chapter.blurb}</span>
-                  </a>
-                </li>
-              ))
-            }
-          </ol>
-        </div>
-        <div class="toc__part">
-          <p class="toc__label">Components</p>
-          <ol class="toc__components">
-            {
-              components.map((component) => (
-                <li>
-                  <a href={componentHref(component.slug)}>
-                    <span class="num">{componentNumber(component.slug)}</span>
-                    {component.name}
-                    {isNew(component) && <span class="badge">New</span>}
-                  </a>
-                </li>
-              ))
-            }
-          </ol>
-        </div>
-      </section>
-
-      <h2 class="h2" id="whats-new">New in {release}</h2>
-      <Aside>
-        <p>
-          The <a href="https://github.com/karyalabs/gpuicn/releases">release notes</a> list every change,
-          including the ones that alter installed source.
-        </p>
-      </Aside>
-      <div class="text">
-        <p>
-          Recent releases added {newest.length} components:
-          {newest.map((component, index) => (
-            <>
-              <a href={componentHref(component.slug)}>{component.name}</a>{index < newest.length - 1 ? ", " : "."}
-            </>
-          ))}
-          The icon library has {icons.length.toLocaleString("en")} icons from Lucide 1.63.0, and the
-          <a href="/showcase/">example app</a> ships as a notarized macOS build and two Linux archives.
-        </p>
-      </div>
-    </article>
+    </section>
   </div>
 </Base>
 
 <style>
-  .front {
+  .home {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding: 0 1.5rem 6rem;
+  }
+  .hero {
+    display: grid;
+    justify-items: start;
+    gap: 1.1rem;
+    padding: 4.5rem 0 2.75rem;
+  }
+  .hero__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.7rem 0.2rem 0.25rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font-size: 0.84rem;
+    color: var(--ink-2);
+  }
+  .hero__pill:hover {
+    color: var(--ink);
+    border-color: var(--rule-2);
+  }
+  .hero__pill svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hero__title {
+    max-width: 16ch;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 6.2vw, 4.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+  .hero__lede {
+    max-width: 40rem;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+
+  .stage {
+    border: 1px solid var(--rule-2);
+    border-radius: calc(var(--radius) * 1.4);
+    overflow: hidden;
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.18);
+  }
+  .stage__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1.5rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--code);
+  }
+  .stage__live {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.86rem;
+    color: var(--ink-2);
+  }
+  .stage__dot {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.2);
+  }
+
+  .steps {
     display: grid;
     gap: 1rem;
-    margin-bottom: 2.25rem;
+    margin-top: 4rem;
   }
-  .front .h1 {
-    font-size: clamp(2.5rem, 5.4vw, 4.2rem);
-  }
-  .h2 {
-    margin-top: 3rem;
-    margin-bottom: 0.75rem;
-  }
-  :global(.start-code) {
-    margin: 0.75rem 0;
-  }
-  .toc {
-    display: grid;
-    gap: 2rem;
-    margin-top: 1rem;
-  }
-  @media (min-width: 64rem) {
-    .toc {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 3rem;
+  @media (min-width: 56rem) {
+    .steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
-  .toc__label {
-    font-family: var(--sans);
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin: 1.25rem 0 0.4rem;
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
   }
-  .toc__part .toc__label:first-child {
-    margin-top: 0;
+  .step__num {
+    width: 1.6rem;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--paper-2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
   }
-  .toc__components {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    columns: 2;
-    column-gap: 1.5rem;
-    font-size: 0.92rem;
+  .step .small {
+    flex: 1;
+    margin-bottom: 0.5rem;
   }
-  .toc__components li {
-    break-inside: avoid;
+  .step code,
+  .start code {
+    font-size: 0.86em;
   }
-  .toc__components a {
+
+  .block {
+    margin-top: 4.5rem;
+  }
+  .block__head {
     display: flex;
     align-items: baseline;
-    gap: 0.55rem;
-    padding: 0.18rem 0;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
   }
-  .toc__components a:hover {
-    color: var(--rubric);
+  .block .h2 {
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
   }
-  .toc__components .num {
-    font-family: var(--mono);
-    font-size: 0.7rem;
+  .block__more {
+    font-size: 0.88rem;
+    color: var(--ink-2);
+  }
+  .block__more:hover {
+    color: var(--ink);
+  }
+  .kinds {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1rem;
+  }
+  .kind {
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+  }
+  .kind:hover {
+    border-color: var(--ink-3);
+  }
+  .kind__title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+  .kind__count {
+    font-weight: 400;
+    font-size: 0.84rem;
     color: var(--ink-3);
-    width: 1.4rem;
-    flex: none;
+  }
+  .kind__names {
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .fresh {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .start {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 2rem;
+    border: 1px solid var(--rule);
+    border-radius: calc(var(--radius) * 1.4);
+    background: var(--code);
+  }
+  @media (min-width: 56rem) {
+    .start {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    }
+  }
+  .start__text {
+    margin-top: 0.6rem;
+    max-width: 34rem;
+  }
+  .start__text a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-color: var(--rule-2);
+  }
+  .start :global(.code) {
+    background: var(--paper);
   }
 </style>

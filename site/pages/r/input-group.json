@@ -3,7 +3,7 @@
   "name": "input-group",
   "type": "registry:item",
   "title": "Input Group",
-  "description": "Inputs, textareas, addons and actions sharing one accessible frame.",
+  "description": "Combines an input or textarea with inline addons and actions.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -49,6 +49,7 @@
     }
   ],
   "meta": {
-    "since": "0.5.0"
+    "since": "0.5.0",
+    "category": "forms"
   }
 }

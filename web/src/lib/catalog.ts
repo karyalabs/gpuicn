@@ -1,15 +1,19 @@
-import registry from "../../../registry.json"
+import catalog from "../generated/catalog.json"
 import { release } from "./release"
 
 export type CatalogComponent = {
   slug: string
   name: string
   description: string
+  /** The id of one of `categories`. */
+  category: string
   /**
    * The release that first shipped the component, such as "0.7.0", or "next"
    * before its first release. Read from `since` in registry.toml.
    */
   added: string
+  /** Height of the preview frame on the component's page, in pixels. */
+  previewHeight: number
 }
 
 /**
@@ -21,7 +25,6 @@ export type CatalogComponent = {
  */
 export const newForMinorVersions = 3
 
-const since = new Map(registry.items.map((item) => [item.name, item.meta.since]))
 const minorIndex = (version: string) => {
   const [major = 0, minor = 0] = version.replace(/^v/, "").split(".").map(Number)
   return { major, minor }
@@ -39,371 +42,17 @@ export function addedLabel(component: CatalogComponent) {
   return component.added === "next" ? "Unreleased" : `Added in ${component.added}`
 }
 
-const entries: Omit<CatalogComponent, "added">[] = [
-  {
-    slug: "accordion",
-    name: "Accordion",
-    description:
-      "A vertically stacked set of interactive headings that reveal content.",
-  },
-  {
-    slug: "alert",
-    name: "Alert",
-    description:
-      "An inline callout with an icon, title and description for form errors, warnings and notes.",
-  },
-  {
-    slug: "alert-dialog",
-    name: "Alert Dialog",
-    description: "A modal dialog that expects a response from the user.",
-  },
-  {
-    slug: "attachment",
-    name: "Attachment",
-    description:
-      "File and image cards with upload progress, retry, and remove.",
-  },
-  {
-    slug: "autocomplete",
-    name: "Autocomplete",
-    description: "A text input that suggests matching values.",
-  },
-  {
-    slug: "avatar",
-    name: "Avatar",
-    description: "An image element with a fallback for representing a user.",
-  },
-  {
-    slug: "avatar-group",
-    name: "Avatar Group",
-    description:
-      "Overlapping avatars with a +N overflow chip and one accessible list of names.",
-  },
-  {
-    slug: "badge",
-    name: "Badge",
-    description: "Labels and unread or mention counts in a compact pill.",
-  },
-  {
-    slug: "button",
-    name: "Button",
-    description: "Displays a button or a component that looks like a button.",
-  },
-  {
-    slug: "calendar",
-    name: "Calendar",
-    description:
-      "A keyboard-driven month grid for picking a date, with limits and a configurable first weekday.",
-  },
-  {
-    slug: "carousel",
-    name: "Carousel",
-    description:
-      "Cycles through content with buttons, pagination, keyboard controls, and pointer gestures.",
-  },
-  {
-    slug: "checkbox",
-    name: "Checkbox",
-    description: "A control that toggles between checked and unchecked.",
-  },
-  {
-    slug: "checkbox-group",
-    name: "Checkbox Group",
-    description: "Groups related checkboxes under shared state.",
-  },
-  {
-    slug: "collapsible",
-    name: "Collapsible",
-    description: "An interactive panel that expands and collapses.",
-  },
-  {
-    slug: "color-picker",
-    name: "Color Picker",
-    description:
-      "Picks a color with hue, chroma and lightness sliders in OKLCH, plus optional swatches.",
-  },
-  {
-    slug: "combobox",
-    name: "Combobox",
-    description: "An input paired with a searchable list of choices.",
-  },
-  {
-    slug: "command",
-    name: "Command",
-    description: "A searchable command palette and quick switcher.",
-  },
-  {
-    slug: "composer",
-    name: "Composer",
-    description:
-      "A chat message box with autocomplete for mentions, channels and emoji.",
-  },
-  {
-    slug: "context-menu",
-    name: "Context Menu",
-    description: "A menu opened by a secondary pointer action.",
-  },
-  {
-    slug: "date-picker",
-    name: "Date Picker",
-    description:
-      "A trigger that opens a Calendar popover and shows the chosen date.",
-  },
-  {
-    slug: "date-time-picker",
-    name: "Date Time Picker",
-    description:
-      "A date and time picker: a Calendar popover with an hour and minute field, 12- or 24-hour.",
-  },
-  {
-    slug: "dialog",
-    name: "Dialog",
-    description: "A window overlaid on the primary content.",
-  },
-  {
-    slug: "drawer",
-    name: "Drawer",
-    description: "A panel that slides from an edge of the window.",
-  },
-  {
-    slug: "embed",
-    name: "Embed",
-    description:
-      "Link previews, message attachments and quoted posts under a chat message.",
-  },
-  {
-    slug: "emoji-picker",
-    name: "Emoji Picker",
-    description:
-      "A searchable emoji grid with categories, recents and custom emoji.",
-  },
-  {
-    slug: "empty",
-    name: "Empty",
-    description: "Explains an empty state and offers a clear next action.",
-  },
-  {
-    slug: "field",
-    name: "Field",
-    description: "Composes a control with its label, description, and errors.",
-  },
-  {
-    slug: "fieldset",
-    name: "Fieldset",
-    description: "Groups related form controls with a legend.",
-  },
-  {
-    slug: "form",
-    name: "Form",
-    description: "Coordinates validation and submission for fields.",
-  },
-  {
-    slug: "input",
-    name: "Input",
-    description: "A styled text input backed by native GPUI editing.",
-  },
-  {
-    slug: "input-group",
-    name: "Input Group",
-    description:
-      "Combines an input or textarea with inline addons and actions.",
-  },
-  {
-    slug: "item",
-    name: "Item",
-    description:
-      "Rows with media, a title, a description and actions, grouped into cards.",
-  },
-  {
-    slug: "kbd",
-    name: "Kbd",
-    description:
-      "Shows a keyboard key or shortcut with platform modifier names.",
-  },
-  {
-    slug: "lightbox",
-    name: "Lightbox",
-    description:
-      "A full-window image viewer with zoom, pan and previous and next.",
-  },
-  {
-    slug: "markdown",
-    name: "Markdown",
-    description:
-      "Renders Markdown with themed code blocks and inline entity chips.",
-  },
-  {
-    slug: "menu",
-    name: "Dropdown Menu",
-    description: "Displays a menu of actions from a trigger.",
-  },
-  {
-    slug: "menubar",
-    name: "Menubar",
-    description: "A persistent horizontal set of menus.",
-  },
-  {
-    slug: "message",
-    name: "Message",
-    description:
-      "A chat message row with grouping, reactions, and hover actions.",
-  },
-  {
-    slug: "message-list",
-    name: "Message List",
-    description:
-      "A chat transcript that only renders visible rows and follows new messages.",
-  },
-  {
-    slug: "meter",
-    name: "Meter",
-    description: "Shows a scalar value within a known range.",
-  },
-  {
-    slug: "navigation-menu",
-    name: "Navigation Menu",
-    description: "A collection of links for navigating a site or app.",
-  },
-  {
-    slug: "number-field",
-    name: "Number Field",
-    description: "A numeric input with step controls.",
-  },
-  {
-    slug: "otp-field",
-    name: "Input OTP",
-    description: "A segmented input for one-time passcodes.",
-  },
-  {
-    slug: "popover",
-    name: "Popover",
-    description: "Displays rich content in a portal from a trigger.",
-  },
-  {
-    slug: "preview-card",
-    name: "Hover Card",
-    description: "Previews content behind a link or trigger.",
-  },
-  {
-    slug: "progress",
-    name: "Progress",
-    description: "Displays completion progress for a task.",
-  },
-  {
-    slug: "radio-group",
-    name: "Radio Group",
-    description: "A set of checkable options where one value is selected.",
-  },
-  {
-    slug: "resizable",
-    name: "Resizable",
-    description: "Controlled panes with pointer and keyboard resizing.",
-  },
-  {
-    slug: "scroll-area",
-    name: "Scroll Area",
-    description: "Adds styled scrolling to overflowing content.",
-  },
-  {
-    slug: "select",
-    name: "Select",
-    description: "Displays a list of options for the user to pick from.",
-  },
-  {
-    slug: "separator",
-    name: "Separator",
-    description: "Visually separates content.",
-  },
-  {
-    slug: "sidebar",
-    name: "Sidebar",
-    description:
-      "Application navigation with responsive layouts, icon rails, nested menus, and mobile sheets.",
-  },
-  {
-    slug: "skeleton",
-    name: "Skeleton",
-    description: "A placeholder that stands in for content while it loads.",
-  },
-  {
-    slug: "slider",
-    name: "Slider",
-    description: "Selects a value or range along a track.",
-  },
-  {
-    slug: "sortable",
-    name: "Sortable",
-    description:
-      "Rows people drag, or move with the keyboard, to reorder them and move them between groups.",
-  },
-  {
-    slug: "spinner",
-    name: "Spinner",
-    description: "An animated indicator that shows work in progress.",
-  },
-  {
-    slug: "switch",
-    name: "Switch",
-    description: "Toggles a setting on or off.",
-  },
-  {
-    slug: "tabs",
-    name: "Tabs",
-    description: "Shows one panel from a set of layered sections.",
-  },
-  {
-    slug: "tag",
-    name: "Tag",
-    description: "A compact chip for a status, role, or removable filter.",
-  },
-  {
-    slug: "textarea",
-    name: "Textarea",
-    description: "A styled multi-line editor backed by native GPUI editing.",
-  },
-  {
-    slug: "title-bar",
-    name: "Title Bar",
-    description: "A draggable custom window title bar with window controls.",
-  },
-  {
-    slug: "toast",
-    name: "Toast",
-    description: "A brief notification shown above the application.",
-  },
-  {
-    slug: "toggle",
-    name: "Toggle",
-    description: "A two-state button that can be on or off.",
-  },
-  {
-    slug: "toggle-group",
-    name: "Toggle Group",
-    description: "Groups two-state buttons with shared selection.",
-  },
-  {
-    slug: "toolbar",
-    name: "Toolbar",
-    description: "Groups controls for a related set of actions.",
-  },
-  {
-    slug: "tooltip",
-    name: "Tooltip",
-    description: "Shows short information on hover or keyboard focus.",
-  },
-  {
-    slug: "virtual-list",
-    name: "Virtual List",
-    description:
-      "Large lists with stable selection, keyboard navigation, and fast fixed-height rows.",
-  },
-]
+/**
+ * Every component with a page, A to Z. Generated from registry.toml by
+ * scripts/sync-catalog.mjs; add a component there, not here.
+ */
+export const components: CatalogComponent[] = catalog.components
 
-export const components: CatalogComponent[] = entries.map((entry) => {
-  const added = since.get(entry.slug)
-  if (!added) throw new Error(`registry.json has no component named ${entry.slug}`)
-  return { ...entry, added }
-})
+/** The groups of the catalog, in display order, each with its components. */
+export const categories = catalog.categories.map((category) => ({
+  ...category,
+  components: components.filter((component) => component.category === category.id),
+})).filter((category) => category.components.length > 0)
 
 export const guide = [
   { to: "/introduction/", label: "Introduction", blurb: "What gpuicn is, and how installing source differs from adding a crate." },
@@ -413,74 +62,26 @@ export const guide = [
 ] as const
 
 export const reference = [
-  { to: "/components/", label: "Components", blurb: "All 58 components, each with a live preview, usage, API, and platform notes." },
-  { to: "/icons/", label: "Icons", blurb: "The 1,924 Lucide icons as Rust names, rendered by GPUI." },
+  { to: "/components/", label: "Components", blurb: `All ${components.length} components, each with a live preview, usage, API, and platform notes.` },
+  { to: "/icons/", label: "Icons", blurb: "The complete Lucide library as Rust names, rendered by GPUI." },
   { to: "/registry/", label: "Registry", blurb: "The JSON files behind gpuicn add." },
   { to: "/changelog/", label: "Changelog", blurb: "What each release added, changed, and fixed." },
 ] as const
 
-/** Kept for the search palette and older links. */
-export const sections = [...guide, ...reference]
-
 export function componentHref(slug: string) {
   return `/components/${slug}/`
-}
-
-/** Zero-padded position in the catalog, such as "07". */
-export function componentNumber(slug: string) {
-  return String(components.findIndex((component) => component.slug === slug) + 1).padStart(2, "0")
 }
 
 export function findComponent(slug: string) {
   return components.find((component) => component.slug === slug)
 }
 
+export function categoryOf(component: CatalogComponent) {
+  return categories.find((category) => category.id === component.category)!
+}
+
 export function previewHeight(slug: string) {
-  if (slug === "drawer") return 560
-  if (slug === "embed") return 960
-  if (
-    [
-      "carousel",
-      "date-picker",
-      "date-time-picker",
-      "form",
-      "input-group",
-      "markdown",
-      "message",
-      "message-list",
-      "sidebar",
-      "sortable",
-      "virtual-list",
-    ].includes(slug)
-  )
-    return 520
-  if (
-    [
-      "alert-dialog",
-      "command",
-      "composer",
-      "context-menu",
-      "emoji-picker",
-      "dialog",
-      "menu",
-      "menubar",
-      "navigation-menu",
-    ].includes(slug)
-  )
-    return 432
-  if (
-    [
-      "autocomplete",
-      "combobox",
-      "field",
-      "popover",
-      "preview-card",
-      "select",
-    ].includes(slug)
-  )
-    return 360
-  if (["alert", "calendar"].includes(slug)) return 432
-  return 288
+  return findComponent(slug)?.previewHeight ?? 288
 }
 
 export function rustModule(slug: string) {

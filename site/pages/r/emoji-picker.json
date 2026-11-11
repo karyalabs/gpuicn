@@ -3,7 +3,7 @@
   "name": "emoji-picker",
   "type": "registry:item",
   "title": "Emoji Picker",
-  "description": "Searchable emoji grid with category tabs, recently used and custom emoji images.",
+  "description": "A searchable emoji grid with categories, recents and custom emoji.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.7.0"
+    "since": "0.7.0",
+    "category": "chat"
   }
 }

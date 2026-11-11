@@ -1,19 +1,40 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
+import Preview from "../components/Preview.astro"
+import ThemeControls from "../components/ThemeControls.astro"
 import { setup } from "../lib/docs"
 
 const switchSource = `use crate::ui::theme::{ThemeMode, UiTheme};\n\n// Install the default dark palette.\nUiTheme::switch(cx, ThemeMode::Dark);`
 const customSource = `use gpui_kit::{px, rgb};\nuse crate::ui::theme::{UiRadius, UiTheme};\n\nlet mut theme = UiTheme::neutral_light();\ntheme.colors.primary = rgb(0x2563eb);\ntheme.colors.primary_foreground = rgb(0xffffff);\ntheme.radius = UiRadius::new(px(4.));\ntheme.spacing.unit = px(4.5);\ntheme.text_scale = 1.0;\ntheme.motion.reduced = false;\nUiTheme::set(cx, theme);`
 ---
 
-<Chapter
+<Docs
   title="Theming"
-  part="Guide"
-  kicker="Chapter 3"
-  lede="Every component reads one struct of tokens. This chapter explains what is in it and how to change it while the app runs."
+  part="Get started"
+  lede="Every component reads one struct of tokens. This page explains what is in it and how to change it while the app runs."
 >
+  <div class="text">
+    <h2 class="h2">Try it</h2>
+    <p>
+      These controls change the theme of every live preview on this site, including the ones below.
+      Base color and radius are what <code>gpuicn theme set</code> writes; the accent replaces
+      <code>colors.primary</code>.
+    </p>
+  </div>
+  <figure class="figure">
+    <div class="figure__frame">
+      <div class="playground">
+        <ThemeControls command />
+      </div>
+      <Preview slug="board" name="themed components" height={440} />
+    </div>
+    <figcaption class="figure__caption">
+      Real components, drawn by GPUI. Your choice is remembered and follows you through the site.
+    </figcaption>
+  </figure>
+
   <div class="text">
     <h2 class="h2">One struct, read everywhere</h2>
     <p>
@@ -76,9 +97,14 @@ const customSource = `use gpui_kit::{px, rgb};\nuse crate::ui::theme::{UiRadius,
     <summary>theme.rs, {setup.theme.split("\n").length} lines</summary>
     <Code code={setup.theme} />
   </details>
-</Chapter>
+</Docs>
 
 <style>
+  .playground {
+    padding: 1rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--code);
+  }
   .fold {
     margin-top: 1rem;
   }

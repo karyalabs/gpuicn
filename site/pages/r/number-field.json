@@ -3,7 +3,7 @@
   "name": "number-field",
   "type": "registry:item",
   "title": "Number Field",
-  "description": "The shadcn default Number Field visual port backed by GPUI Kit behavior.",
+  "description": "A numeric input with step controls.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

@@ -3,7 +3,7 @@
   "name": "scroll-area",
   "type": "registry:item",
   "title": "Scroll Area",
-  "description": "The shadcn default Scroll Area visual port backed by GPUI Kit behavior.",
+  "description": "Adds styled scrolling to overflowing content.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "navigation"
   }
 }

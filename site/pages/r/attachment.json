@@ -3,7 +3,7 @@
   "name": "attachment",
   "type": "registry:item",
   "title": "Attachment",
-  "description": "File and image attachment cards with upload progress, retry and remove.",
+  "description": "File and image cards with upload progress, retry, and remove.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -37,6 +37,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "chat"
   }
 }

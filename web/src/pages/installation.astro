@@ -1,15 +1,14 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
 import { setup } from "../lib/docs"
 import { registry, release, releaseSource } from "../lib/release"
 ---
 
-<Chapter
+<Docs
   title="Installation"
-  part="Guide"
-  kicker="Chapter 2"
+  part="Get started"
   lede="Add a component to a GPUI app, one step at a time. Each step says what it writes and what you should see."
 >
   <div class="text">
@@ -154,7 +153,7 @@ import { registry, release, releaseSource } from "../lib/release"
       <p>Reapply the edits from your earlier commits that you still need.</p>
     </div>
   </section>
-</Chapter>
+</Docs>
 
 <style>
   .step {

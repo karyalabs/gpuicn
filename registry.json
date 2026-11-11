@@ -26,14 +26,15 @@
         }
       ],
       "meta": {
-        "since": "0.1.0"
+        "since": "0.1.0",
+        "category": "foundations"
       }
     },
     {
       "name": "accordion",
       "type": "registry:item",
       "title": "Accordion",
-      "description": "The shadcn default Accordion visual port backed by GPUI Kit behavior.",
+      "description": "A vertically stacked set of interactive headings that reveal content.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -57,7 +58,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "navigation"
       }
     },
     {
@@ -88,14 +90,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.6"
+        "since": "0.9.6",
+        "category": "display"
       }
     },
     {
       "name": "alert-dialog",
       "type": "registry:item",
       "title": "Alert Dialog",
-      "description": "The shadcn default Alert Dialog visual port backed by GPUI Kit behavior.",
+      "description": "A modal dialog that expects a response from the user.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -134,7 +137,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
@@ -165,14 +169,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.0"
+        "since": "0.9.0",
+        "category": "foundations"
       }
     },
     {
       "name": "attachment",
       "type": "registry:item",
       "title": "Attachment",
-      "description": "File and image attachment cards with upload progress, retry and remove.",
+      "description": "File and image cards with upload progress, retry, and remove.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -201,14 +206,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "chat"
       }
     },
     {
       "name": "autocomplete",
       "type": "registry:item",
       "title": "Autocomplete",
-      "description": "The shadcn default Autocomplete visual port backed by GPUI Kit behavior.",
+      "description": "A text input that suggests matching values.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -247,14 +253,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "avatar",
       "type": "registry:item",
       "title": "Avatar",
-      "description": "The shadcn default Avatar visual port backed by GPUI Kit behavior.",
+      "description": "An image element with a fallback for representing a user.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -278,7 +285,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "display"
       }
     },
     {
@@ -319,14 +327,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.6"
+        "since": "0.9.6",
+        "category": "display"
       }
     },
     {
       "name": "badge",
       "type": "registry:item",
       "title": "Badge",
-      "description": "Nova pills for labels and capped unread or mention counts.",
+      "description": "Labels and unread or mention counts in a compact pill.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -350,14 +359,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "display"
       }
     },
     {
       "name": "button",
       "type": "registry:item",
       "title": "Button",
-      "description": "The shadcn default Button visual port backed by GPUI Kit behavior.",
+      "description": "Displays a button or a component that looks like a button.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -381,7 +391,8 @@
         }
       ],
       "meta": {
-        "since": "0.1.0"
+        "since": "0.1.0",
+        "category": "actions"
       }
     },
     {
@@ -412,14 +423,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.6"
+        "since": "0.9.6",
+        "category": "forms"
       }
     },
     {
       "name": "carousel",
       "type": "registry:item",
       "title": "Carousel",
-      "description": "Native snapping carousel with pointer, trackpad and keyboard navigation.",
+      "description": "Cycles through content with buttons, pagination, keyboard controls, and pointer gestures.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -443,14 +455,15 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "navigation"
       }
     },
     {
       "name": "checkbox",
       "type": "registry:item",
       "title": "Checkbox",
-      "description": "The shadcn default Checkbox visual port backed by GPUI Kit behavior.",
+      "description": "A control that toggles between checked and unchecked.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -484,14 +497,15 @@
         }
       ],
       "meta": {
-        "since": "0.1.0"
+        "since": "0.1.0",
+        "category": "forms"
       }
     },
     {
       "name": "checkbox-group",
       "type": "registry:item",
       "title": "Checkbox Group",
-      "description": "The shadcn default Checkbox Group visual port backed by GPUI Kit behavior.",
+      "description": "Groups related checkboxes under shared state.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -515,14 +529,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "collapsible",
       "type": "registry:item",
       "title": "Collapsible",
-      "description": "The shadcn default Collapsible visual port backed by GPUI Kit behavior.",
+      "description": "An interactive panel that expands and collapses.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -546,7 +561,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "navigation"
       }
     },
     {
@@ -582,14 +598,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.12"
+        "since": "0.9.12",
+        "category": "forms"
       }
     },
     {
       "name": "combobox",
       "type": "registry:item",
       "title": "Combobox",
-      "description": "The shadcn default Combobox visual port backed by GPUI Kit behavior.",
+      "description": "An input paired with a searchable list of choices.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -628,14 +645,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "command",
       "type": "registry:item",
       "title": "Command",
-      "description": "A Nova command palette and quick switcher with grouped, fuzzy-filtered, virtualized results.",
+      "description": "A searchable command palette and quick switcher.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -684,14 +702,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "overlays"
       }
     },
     {
       "name": "composer",
       "type": "registry:item",
       "title": "Composer",
-      "description": "A growing chat composer with Enter to send, caret control, paste and key hooks, and autocomplete for mentions, channels, emoji and commands.",
+      "description": "A chat message box with autocomplete for mentions, channels and emoji.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -725,14 +744,15 @@
         }
       ],
       "meta": {
-        "since": "0.7.0"
+        "since": "0.7.0",
+        "category": "chat"
       }
     },
     {
       "name": "context-menu",
       "type": "registry:item",
       "title": "Context Menu",
-      "description": "The shadcn default Context Menu visual port backed by GPUI Kit behavior.",
+      "description": "A menu opened by a secondary pointer action.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -771,7 +791,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
@@ -812,7 +833,8 @@
         }
       ],
       "meta": {
-        "since": "0.9.6"
+        "since": "0.9.6",
+        "category": "forms"
       }
     },
     {
@@ -863,14 +885,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.6"
+        "since": "0.9.6",
+        "category": "forms"
       }
     },
     {
       "name": "dialog",
       "type": "registry:item",
       "title": "Dialog",
-      "description": "The shadcn default Dialog visual port backed by GPUI Kit behavior.",
+      "description": "A window overlaid on the primary content.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -904,14 +927,15 @@
         }
       ],
       "meta": {
-        "since": "0.1.0"
+        "since": "0.1.0",
+        "category": "overlays"
       }
     },
     {
       "name": "drawer",
       "type": "registry:item",
       "title": "Drawer",
-      "description": "The shadcn default Drawer visual port backed by GPUI Kit behavior.",
+      "description": "A panel that slides from an edge of the window.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -950,7 +974,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
@@ -1001,14 +1026,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.2"
+        "since": "0.9.2",
+        "category": "chat"
       }
     },
     {
       "name": "emoji-picker",
       "type": "registry:item",
       "title": "Emoji Picker",
-      "description": "Searchable emoji grid with category tabs, recently used and custom emoji images.",
+      "description": "A searchable emoji grid with categories, recents and custom emoji.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1037,14 +1063,15 @@
         }
       ],
       "meta": {
-        "since": "0.7.0"
+        "since": "0.7.0",
+        "category": "chat"
       }
     },
     {
       "name": "empty",
       "type": "registry:item",
       "title": "Empty",
-      "description": "Composable empty-state media, copy and action layout.",
+      "description": "Explains an empty state and offers a clear next action.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1068,14 +1095,15 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "display"
       }
     },
     {
       "name": "field",
       "type": "registry:item",
       "title": "Field",
-      "description": "The shadcn default Field visual port backed by GPUI Kit behavior.",
+      "description": "Composes a control with its label, description, and errors.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1104,14 +1132,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "fieldset",
       "type": "registry:item",
       "title": "Fieldset",
-      "description": "The shadcn default Fieldset visual port backed by GPUI Kit behavior.",
+      "description": "Groups related form controls with a legend.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1135,14 +1164,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "form",
       "type": "registry:item",
       "title": "Form",
-      "description": "The shadcn default Form visual port backed by GPUI Kit behavior.",
+      "description": "Coordinates validation and submission for fields.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1166,14 +1196,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "input",
       "type": "registry:item",
       "title": "Input",
-      "description": "Nova-styled native text input with accessible labels, IME and standard editing shortcuts.",
+      "description": "A styled text input backed by native GPUI editing.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1197,14 +1228,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "input-group",
       "type": "registry:item",
       "title": "Input Group",
-      "description": "Inputs, textareas, addons and actions sharing one accessible frame.",
+      "description": "Combines an input or textarea with inline addons and actions.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1243,7 +1275,8 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "forms"
       }
     },
     {
@@ -1274,14 +1307,15 @@
         }
       ],
       "meta": {
-        "since": "0.10.1"
+        "since": "0.10.1",
+        "category": "display"
       }
     },
     {
       "name": "kbd",
       "type": "registry:item",
       "title": "Kbd",
-      "description": "Nova key caps that show shortcuts with each platform's modifier names.",
+      "description": "Shows a keyboard key or shortcut with platform modifier names.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1305,14 +1339,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "actions"
       }
     },
     {
       "name": "lightbox",
       "type": "registry:item",
       "title": "Lightbox",
-      "description": "A full-window image viewer with zoom, pan and keyboard previous and next.",
+      "description": "A full-window image viewer with zoom, pan and previous and next.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1351,14 +1386,15 @@
         }
       ],
       "meta": {
-        "since": "0.7.0"
+        "since": "0.7.0",
+        "category": "overlays"
       }
     },
     {
       "name": "markdown",
       "type": "registry:item",
       "title": "Markdown",
-      "description": "Nova-styled Markdown with themed code blocks, tables, quotes and inline entity chips for mentions and channels.",
+      "description": "Renders Markdown with themed code blocks and inline entity chips.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1407,14 +1443,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "display"
       }
     },
     {
       "name": "menu",
       "type": "registry:item",
-      "title": "Menu",
-      "description": "The shadcn default Menu visual port backed by GPUI Kit behavior.",
+      "title": "Dropdown Menu",
+      "description": "Displays a menu of actions from a trigger.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1448,14 +1485,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
       "name": "menubar",
       "type": "registry:item",
       "title": "Menubar",
-      "description": "The shadcn default Menubar visual port backed by GPUI Kit behavior.",
+      "description": "A persistent horizontal set of menus.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1494,14 +1532,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
       "name": "message",
       "type": "registry:item",
       "title": "Message",
-      "description": "Team-chat message rows with grouping, mention highlights, reactions, hover actions and dividers.",
+      "description": "A chat message row with grouping, reactions, and hover actions.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1535,14 +1574,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "chat"
       }
     },
     {
       "name": "message-list",
       "type": "registry:item",
       "title": "Message List",
-      "description": "A virtualized, variable-height chat transcript that follows new messages, with a jump-to-latest pill.",
+      "description": "A chat transcript that only renders visible rows and follows new messages.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1571,14 +1611,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "chat"
       }
     },
     {
       "name": "meter",
       "type": "registry:item",
       "title": "Meter",
-      "description": "The shadcn default Meter visual port backed by GPUI Kit behavior.",
+      "description": "Shows a scalar value within a known range.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1602,14 +1643,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "display"
       }
     },
     {
       "name": "navigation-menu",
       "type": "registry:item",
       "title": "Navigation Menu",
-      "description": "The shadcn default Navigation Menu visual port backed by GPUI Kit behavior.",
+      "description": "A collection of links for navigating a site or app.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1653,14 +1695,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "navigation"
       }
     },
     {
       "name": "number-field",
       "type": "registry:item",
       "title": "Number Field",
-      "description": "The shadcn default Number Field visual port backed by GPUI Kit behavior.",
+      "description": "A numeric input with step controls.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1694,14 +1737,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "otp-field",
       "type": "registry:item",
-      "title": "OTP Field",
-      "description": "The shadcn default OTP Field visual port backed by GPUI Kit behavior.",
+      "title": "Input OTP",
+      "description": "A segmented input for one-time passcodes.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1725,14 +1769,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "popover",
       "type": "registry:item",
       "title": "Popover",
-      "description": "The shadcn default Popover visual port backed by GPUI Kit behavior.",
+      "description": "Displays rich content in a portal from a trigger.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1761,14 +1806,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
       "name": "preview-card",
       "type": "registry:item",
-      "title": "Preview Card",
-      "description": "The shadcn default Preview Card visual port backed by GPUI Kit behavior.",
+      "title": "Hover Card",
+      "description": "Previews content behind a link or trigger.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1792,14 +1838,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
       "name": "progress",
       "type": "registry:item",
       "title": "Progress",
-      "description": "The shadcn default Progress visual port backed by GPUI Kit behavior.",
+      "description": "Displays completion progress for a task.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1823,14 +1870,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "display"
       }
     },
     {
       "name": "radio-group",
       "type": "registry:item",
       "title": "Radio Group",
-      "description": "The shadcn default Radio Group visual port backed by GPUI Kit behavior.",
+      "description": "A set of checkable options where one value is selected.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1864,14 +1912,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "resizable",
       "type": "registry:item",
       "title": "Resizable",
-      "description": "Controlled shadcn-styled native GPUI resizable panes.",
+      "description": "Controlled panes with pointer and keyboard resizing.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1895,14 +1944,15 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "navigation"
       }
     },
     {
       "name": "scroll-area",
       "type": "registry:item",
       "title": "Scroll Area",
-      "description": "The shadcn default Scroll Area visual port backed by GPUI Kit behavior.",
+      "description": "Adds styled scrolling to overflowing content.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1926,14 +1976,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "navigation"
       }
     },
     {
       "name": "select",
       "type": "registry:item",
       "title": "Select",
-      "description": "The shadcn default Select visual port backed by GPUI Kit behavior.",
+      "description": "Displays a list of options for the user to pick from.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1967,14 +2018,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "separator",
       "type": "registry:item",
       "title": "Separator",
-      "description": "The shadcn default Separator visual port backed by GPUI Kit behavior.",
+      "description": "Visually separates content.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -1998,14 +2050,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "navigation"
       }
     },
     {
       "name": "sidebar",
       "type": "registry:item",
       "title": "Sidebar",
-      "description": "Shadcn-styled navigation composed from GPUI Kit buttons and scroll areas.",
+      "description": "Application navigation with responsive layouts, icon rails, nested menus, and mobile sheets.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2069,14 +2122,15 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "navigation"
       }
     },
     {
       "name": "skeleton",
       "type": "registry:item",
       "title": "Skeleton",
-      "description": "Muted pulsing placeholders for content that is still loading.",
+      "description": "A placeholder that stands in for content while it loads.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2100,14 +2154,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "display"
       }
     },
     {
       "name": "slider",
       "type": "registry:item",
       "title": "Slider",
-      "description": "The shadcn default Slider visual port backed by GPUI Kit behavior.",
+      "description": "Selects a value or range along a track.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2131,7 +2186,8 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
@@ -2162,14 +2218,15 @@
         }
       ],
       "meta": {
-        "since": "0.9.4"
+        "since": "0.9.4",
+        "category": "display"
       }
     },
     {
       "name": "spinner",
       "type": "registry:item",
       "title": "Spinner",
-      "description": "A rotating Lucide loader announced as a status; it holds still under reduced motion.",
+      "description": "An animated indicator that shows work in progress.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2193,14 +2250,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "display"
       }
     },
     {
       "name": "switch",
       "type": "registry:item",
       "title": "Switch",
-      "description": "The shadcn default Switch visual port backed by GPUI Kit behavior.",
+      "description": "Toggles a setting on or off.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2224,14 +2282,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "forms"
       }
     },
     {
       "name": "tabs",
       "type": "registry:item",
       "title": "Tabs",
-      "description": "The shadcn default Tabs visual port backed by GPUI Kit behavior.",
+      "description": "Shows one panel from a set of layered sections.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2255,14 +2314,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "navigation"
       }
     },
     {
       "name": "tag",
       "type": "registry:item",
       "title": "Tag",
-      "description": "Compact chips for statuses and roles, with an optional status dot and remove button.",
+      "description": "A compact chip for a status, role, or removable filter.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2291,14 +2351,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "display"
       }
     },
     {
       "name": "textarea",
       "type": "registry:item",
       "title": "Textarea",
-      "description": "Nova-styled multi-line text editor with retained native editing state.",
+      "description": "A styled multi-line editor backed by native GPUI editing.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2327,14 +2388,15 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "forms"
       }
     },
     {
       "name": "title-bar",
       "type": "registry:item",
       "title": "Title Bar",
-      "description": "A draggable custom window title bar with platform window controls.",
+      "description": "A draggable custom window title bar with window controls.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2358,14 +2420,15 @@
         }
       ],
       "meta": {
-        "since": "0.6.0"
+        "since": "0.6.0",
+        "category": "navigation"
       }
     },
     {
       "name": "toast",
       "type": "registry:item",
       "title": "Toast",
-      "description": "The shadcn default Toast visual port backed by GPUI Kit behavior.",
+      "description": "A brief notification shown above the application.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2394,14 +2457,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
       "name": "toggle",
       "type": "registry:item",
       "title": "Toggle",
-      "description": "The shadcn default Toggle visual port backed by GPUI Kit behavior.",
+      "description": "A two-state button that can be on or off.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2425,14 +2489,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "actions"
       }
     },
     {
       "name": "toggle-group",
       "type": "registry:item",
       "title": "Toggle Group",
-      "description": "The shadcn default Toggle Group visual port backed by GPUI Kit behavior.",
+      "description": "Groups two-state buttons with shared selection.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2456,14 +2521,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "actions"
       }
     },
     {
       "name": "toolbar",
       "type": "registry:item",
       "title": "Toolbar",
-      "description": "The shadcn default Toolbar visual port backed by GPUI Kit behavior.",
+      "description": "Groups controls for a related set of actions.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2492,14 +2558,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "actions"
       }
     },
     {
       "name": "tooltip",
       "type": "registry:item",
       "title": "Tooltip",
-      "description": "The shadcn default Tooltip visual port backed by GPUI Kit behavior.",
+      "description": "Shows short information on hover or keyboard focus.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2523,14 +2590,15 @@
         }
       ],
       "meta": {
-        "since": "0.2.0"
+        "since": "0.2.0",
+        "category": "overlays"
       }
     },
     {
       "name": "virtual-list",
       "type": "registry:item",
       "title": "Virtual List",
-      "description": "Virtualized native rows with stable identity, selection, keyboard navigation and fixed row heights.",
+      "description": "Large lists with stable selection, keyboard navigation, and fast fixed-height rows.",
       "files": [
         {
           "path": "registry/theme/locale.rs",
@@ -2564,7 +2632,8 @@
         }
       ],
       "meta": {
-        "since": "0.5.0"
+        "since": "0.5.0",
+        "category": "display"
       }
     }
   ]

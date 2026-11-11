@@ -1,6 +1,6 @@
-#[cfg(not(target_family = "wasm"))]
 mod gallery;
 mod previews;
+mod site_theme;
 #[cfg(not(target_family = "wasm"))]
 mod workspace;
 
@@ -10,13 +10,19 @@ use previews::prelude::*;
 
 #[cfg(target_family = "wasm")]
 #[wasm_bindgen::prelude::wasm_bindgen(
-    inline_js = "export function previewReady(){let sent=false;const send=()=>{if(sent)return;sent=true;document.documentElement.dataset.gpuicnReady='true';window.parent.postMessage({gpuicn:'preview-ready'},'*')};requestAnimationFrame(()=>requestAnimationFrame(send));setTimeout(send,1000)} export function installPreviewUpdates(update){window.gpuicnPreviewUpdates(update)}"
+    inline_js = "export function previewReady(){let sent=false;const send=()=>{if(sent)return;sent=true;document.documentElement.dataset.gpuicnReady='true';window.parent.postMessage({gpuicn:'preview-ready'},'*')};requestAnimationFrame(()=>requestAnimationFrame(send));setTimeout(send,1000)} export function installPreviewUpdates(update){window.gpuicnPreviewUpdates(update)} export function gallerySelected(slug){if(window.parent!==window)window.parent.postMessage({gpuicn:'gallery-select',slug},window.location.origin)} export function galleryOpen(path){(window.parent!==window?window.parent:window).location.assign(path)}"
 )]
 extern "C" {
     #[wasm_bindgen::prelude::wasm_bindgen(js_name = previewReady)]
     fn preview_ready();
     #[wasm_bindgen::prelude::wasm_bindgen(js_name = installPreviewUpdates)]
     fn install_preview_updates(update: wasm_bindgen::JsValue);
+    /// Tells the framing page which gallery entry is showing, so its URL can follow.
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name = gallerySelected)]
+    fn gallery_selected(slug: &str);
+    /// Navigates the framing page to a path on the website.
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name = galleryOpen)]
+    fn gallery_open(path: &str);
 }
 
 fn main() {
@@ -70,7 +76,10 @@ fn launch(cx: &mut App) {
         Some("dark") => ThemeMode::Dark,
         _ => ThemeMode::Light,
     };
-    UiTheme::switch(cx, mode);
+    UiTheme::set(
+        cx,
+        site_theme::theme(mode, &requested_value("style").unwrap_or_default()),
+    );
     // `?dir=rtl` (or `GPUICN_DIR=rtl` natively) previews the gallery in a
     // right-to-left layout.
     if requested_value("dir").as_deref() == Some("rtl") {
@@ -84,9 +93,29 @@ fn launch(cx: &mut App) {
         workspace::launch(cx);
         return;
     }
-    #[cfg(not(target_family = "wasm"))]
-    if requested_value("demo").as_deref() == Some("--catalog") {
+    // The gallery app: `showcase --catalog` natively, `?demo=gallery` in the browser.
+    if matches!(
+        requested_value("demo").as_deref(),
+        Some("--catalog" | "gallery")
+    ) {
         gallery::launch(cx);
+        #[cfg(target_family = "wasm")]
+        {
+            // The framing page owns the light and dark switch.
+            let async_cx = cx.to_async();
+            let update = wasm_bindgen::closure::Closure::<dyn FnMut(String, String, String)>::new(
+                move |theme: String, _icon: String, style: String| {
+                    let mode = match theme.as_str() {
+                        "light" => ThemeMode::Light,
+                        "dark" => ThemeMode::Dark,
+                        _ => return,
+                    };
+                    async_cx.update(|cx| gallery::set_theme(cx, site_theme::theme(mode, &style)));
+                },
+            );
+            install_preview_updates(update.into_js_value());
+            preview_ready();
+        }
         return;
     }
 
@@ -120,8 +149,8 @@ fn launch(cx: &mut App) {
     #[cfg(target_family = "wasm")]
     {
         let mut async_cx = cx.to_async();
-        let update = wasm_bindgen::closure::Closure::<dyn FnMut(String, String)>::new(
-            move |theme: String, icon: String| {
+        let update = wasm_bindgen::closure::Closure::<dyn FnMut(String, String, String)>::new(
+            move |theme: String, icon: String, style: String| {
                 let mode = match theme.as_str() {
                     "light" => ThemeMode::Light,
                     "dark" => ThemeMode::Dark,
@@ -129,7 +158,7 @@ fn launch(cx: &mut App) {
                 };
                 _window
                     .update(&mut async_cx, |view, _, cx| {
-                        UiTheme::switch(cx, mode);
+                        UiTheme::set(cx, site_theme::theme(mode, &style));
                         if let Some(icon) = LucideIcon::from_name(&icon) {
                             view.icon = icon;
                         }

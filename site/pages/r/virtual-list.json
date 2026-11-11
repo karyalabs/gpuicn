@@ -3,7 +3,7 @@
   "name": "virtual-list",
   "type": "registry:item",
   "title": "Virtual List",
-  "description": "Virtualized native rows with stable identity, selection, keyboard navigation and fixed row heights.",
+  "description": "Large lists with stable selection, keyboard navigation, and fast fixed-height rows.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.5.0"
+    "since": "0.5.0",
+    "category": "display"
   }
 }

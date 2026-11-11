@@ -1,15 +1,14 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
 import { components, componentHref } from "../lib/catalog"
 import { registry, release } from "../lib/release"
 ---
 
-<Chapter
+<Docs
   title="Registry"
   part="Reference"
-  kicker="Chapter 7"
   lede="The registry is a directory of JSON files, one per component. The CLI reads it; this page lists it."
 >
   <Aside top>
@@ -45,7 +44,7 @@ import { registry, release } from "../lib/release"
       }
     </tbody>
   </table>
-</Chapter>
+</Docs>
 
 <style>
   .files {

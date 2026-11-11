@@ -3,7 +3,7 @@
   "name": "kbd",
   "type": "registry:item",
   "title": "Kbd",
-  "description": "Nova key caps that show shortcuts with each platform's modifier names.",
+  "description": "Shows a keyboard key or shortcut with platform modifier names.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "actions"
   }
 }

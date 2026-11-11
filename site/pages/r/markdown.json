@@ -3,7 +3,7 @@
   "name": "markdown",
   "type": "registry:item",
   "title": "Markdown",
-  "description": "Nova-styled Markdown with themed code blocks, tables, quotes and inline entity chips for mentions and channels.",
+  "description": "Renders Markdown with themed code blocks and inline entity chips.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -61,6 +61,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "display"
   }
 }

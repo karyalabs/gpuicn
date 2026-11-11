@@ -1,6 +1,6 @@
 ---
-import { components, componentHref, componentNumber, isNew, guide, reference } from "../lib/catalog"
-const chapters = [...guide, ...reference]
+import { categories, componentHref, isNew, guide, reference } from "../lib/catalog"
+const pages = [...guide, ...reference]
 ---
 
 <!-- Search in a native dialog. The list is static HTML kept in a template until
@@ -10,7 +10,7 @@ const chapters = [...guide, ...reference]
     <input
       class="palette__input"
       type="search"
-      placeholder="Search chapters and components"
+      placeholder="Search docs and components"
       autocomplete="off"
       aria-label="Search"
       data-palette-input
@@ -19,31 +19,33 @@ const chapters = [...guide, ...reference]
   </form>
   <div class="palette__list" data-palette-list></div>
   <template data-palette-items>
-    <p class="palette__group">Chapters</p>
+    <p class="palette__group">Docs</p>
     {
-      chapters.map((chapter, index) => (
+      pages.map((chapter) => (
         <a class="palette__item" href={chapter.to} data-terms={`${chapter.label} ${chapter.blurb}`.toLowerCase()}>
-          <span class="palette__num">{index + 1}</span>
           <span class="palette__name">{chapter.label}</span>
           <span class="palette__desc">{chapter.blurb}</span>
         </a>
       ))
     }
-    <p class="palette__group">Components</p>
     {
-      components.map((component) => (
-        <a
-          class="palette__item"
-          href={componentHref(component.slug)}
-          data-terms={`${component.name} ${component.slug} ${component.description}`.toLowerCase()}
-        >
-          <span class="palette__num">{componentNumber(component.slug)}</span>
-          <span class="palette__name">
-            {component.name}
-            {isNew(component) && <span class="badge">New</span>}
-          </span>
-          <span class="palette__desc">{component.description}</span>
-        </a>
+      categories.map((category) => (
+        <>
+          <p class="palette__group">{category.title}</p>
+          {category.components.map((component) => (
+            <a
+              class="palette__item"
+              href={componentHref(component.slug)}
+              data-terms={`${component.name} ${component.slug} ${component.description} ${category.title}`.toLowerCase()}
+            >
+              <span class="palette__name">
+                {component.name}
+                {isNew(component) && <span class="badge badge--new">New</span>}
+              </span>
+              <span class="palette__desc">{component.description}</span>
+            </a>
+          ))}
+        </>
       ))
     }
     <p class="palette__empty" data-palette-empty hidden>Nothing matches.</p>
@@ -57,6 +59,7 @@ const chapters = [...guide, ...reference]
     margin: 4rem auto 0;
     padding: 0;
     border: 1px solid var(--rule-2);
+    border-radius: var(--radius);
     background: var(--paper);
     color: var(--ink);
     box-shadow: 0 24px 60px rgb(0 0 0 / 0.2);
@@ -106,9 +109,8 @@ const chapters = [...guide, ...reference]
   .palette__group {
     padding: 0.7rem 0.6rem 0.3rem;
     font-size: 0.7rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-3);
+    font-weight: 600;
+    color: var(--ink-2);
   }
   .palette__group[hidden],
   .palette__item[hidden] {
@@ -116,8 +118,6 @@ const chapters = [...guide, ...reference]
   }
   .palette__item {
     display: grid;
-    grid-template-columns: 1.6rem minmax(0, 1fr);
-    column-gap: 0.4rem;
     padding: 0.4rem 0.6rem;
     border-radius: 3px;
     font-size: 0.85rem;
@@ -139,7 +139,6 @@ const chapters = [...guide, ...reference]
     font-weight: 500;
   }
   .palette__desc {
-    grid-column: 2;
     font-size: 0.78rem;
     color: var(--ink-2);
     overflow: hidden;

@@ -1,5 +1,5 @@
 ---
-import Chapter from "../layouts/Chapter.astro"
+import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
 import { components } from "../lib/catalog"
@@ -8,11 +8,10 @@ import { componentDocs } from "../lib/docs"
 const button = componentDocs("button")
 ---
 
-<Chapter
+<Docs
   title="Introduction"
-  part="Guide"
-  kicker="Chapter 1"
-  lede="What gpuicn is, how installing source differs from adding a crate, and what the rest of this book expects you to know."
+  part="Get started"
+  lede="What gpuicn is, how installing source differs from adding a crate, and what the rest of these docs expect you to know."
 >
   <div class="text">
     <h2 class="h2">What you install</h2>
@@ -62,11 +61,11 @@ const button = componentDocs("button")
       from.
     </p>
 
-    <h2 class="h2">How to read a component chapter</h2>
-    <p>Each of the {components.length} component chapters has the same five parts.</p>
+    <h2 class="h2">How to read a component page</h2>
+    <p>Each of the {components.length} component pages has the same five parts.</p>
     <ol>
       <li>
-        A numbered figure that runs the component. The preview is the component itself, compiled to
+        A live preview. It is the component itself, compiled to
         WebAssembly, so you can test the behavior before you install it.
       </li>
       <li>Installation, which gives the command and the module declarations the CLI maintains.</li>
@@ -78,10 +77,10 @@ const button = componentDocs("button")
       </li>
     </ol>
 
-    <h2 class="h2">What this book assumes</h2>
+    <h2 class="h2">What these docs assume</h2>
     <p>
       You can read Rust and have built a GPUI window before. The <a href="/installation/">Installation</a>
-      chapter is a how-to, not a tutorial. It names each file it writes and what you should see, but it
+      page is a how-to, not a tutorial. It names each file it writes and what you should see, but it
       does not explain GPUI's context or entity model. For that, read GPUI's own documentation.
     </p>
     <p>
@@ -91,4 +90,4 @@ const button = componentDocs("button")
       before moving to the next.
     </p>
   </div>
-</Chapter>
+</Docs>

@@ -3,7 +3,7 @@
   "name": "message",
   "type": "registry:item",
   "title": "Message",
-  "description": "Team-chat message rows with grouping, mention highlights, reactions, hover actions and dividers.",
+  "description": "A chat message row with grouping, reactions, and hover actions.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -43,6 +43,7 @@
     }
   ],
   "meta": {
-    "since": "0.6.0"
+    "since": "0.6.0",
+    "category": "chat"
   }
 }

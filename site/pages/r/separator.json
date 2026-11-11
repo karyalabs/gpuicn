@@ -3,7 +3,7 @@
   "name": "separator",
   "type": "registry:item",
   "title": "Separator",
-  "description": "The shadcn default Separator visual port backed by GPUI Kit behavior.",
+  "description": "Visually separates content.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -31,6 +31,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "navigation"
   }
 }

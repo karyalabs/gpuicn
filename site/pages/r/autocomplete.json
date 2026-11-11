@@ -3,7 +3,7 @@
   "name": "autocomplete",
   "type": "registry:item",
   "title": "Autocomplete",
-  "description": "The shadcn default Autocomplete visual port backed by GPUI Kit behavior.",
+  "description": "A text input that suggests matching values.",
   "files": [
     {
       "path": "registry/theme/locale.rs",
@@ -49,6 +49,7 @@
     }
   ],
   "meta": {
-    "since": "0.2.0"
+    "since": "0.2.0",
+    "category": "forms"
   }
 }

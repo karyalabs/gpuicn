@@ -1,0 +1,133 @@
+---
+import Base from "./Base.astro"
+import Sidebar from "../components/Sidebar.astro"
+
+interface Props {
+  title: string
+  /** Where the page sits, such as "Get started" or "Components". Shown above the title. */
+  part: string
+  /** Makes `part` a link, such as "/components/". */
+  partHref?: string
+  lede?: string
+  description?: string
+  current?: string
+}
+
+const { title, part, partHref, lede, description = lede, current = Astro.url.pathname } = Astro.props
+---
+
+<Base title={title} description={description}>
+  <div class="page">
+    <Sidebar current={current} />
+    <article class="body" data-article>
+      <header class="page-head">
+        <p class="kicker">{partHref ? <a href={partHref}>{part}</a> : part}</p>
+        <h1 class="h1">{title}</h1>
+        {lede && <p class="lede">{lede}</p>}
+        <slot name="head" />
+      </header>
+      <slot />
+    </article>
+    <nav class="toc" aria-label="On this page" data-toc hidden>
+      <p class="toc__title">On this page</p>
+      <ol class="toc__list" data-toc-list></ol>
+    </nav>
+  </div>
+</Base>
+
+<script>
+  // "On this page": every second-level heading of the article. Headings get
+  // an id from their text when the page did not give one.
+  const article = document.querySelector<HTMLElement>("[data-article]")
+  const toc = document.querySelector<HTMLElement>("[data-toc]")
+  const list = toc?.querySelector<HTMLElement>("[data-toc-list]")
+  if (article && toc && list) {
+    const headings = [...article.querySelectorAll<HTMLElement>("h2")]
+    const links = new Map<Element, HTMLAnchorElement>()
+    for (const heading of headings) {
+      const target = heading.closest<HTMLElement>("section[id]") ?? heading
+      if (!target.id) {
+        target.id = (heading.textContent ?? "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "")
+      }
+      const item = document.createElement("li")
+      const link = document.createElement("a")
+      link.href = `#${target.id}`
+      link.textContent = heading.textContent
+      item.append(link)
+      list.append(item)
+      links.set(heading, link)
+    }
+    toc.hidden = headings.length < 2
+    // Mark the last heading that has scrolled past the top third.
+    const mark = () => {
+      let current = headings[0]
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top < innerHeight / 3) current = heading
+      }
+      for (const [heading, link] of links) {
+        if (heading === current) link.setAttribute("aria-current", "true")
+        else link.removeAttribute("aria-current")
+      }
+    }
+    if (headings.length) {
+      mark()
+      addEventListener("scroll", mark, { passive: true })
+    }
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView()
+  }
+</script>
+
+<style>
+  .page-head {
+    display: grid;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+  .page-head .kicker a:hover {
+    color: var(--ink);
+  }
+  .toc {
+    display: none;
+  }
+  @media (min-width: 84rem) {
+    .toc:not([hidden]) {
+      display: block;
+      position: sticky;
+      top: var(--head);
+      align-self: start;
+      max-height: calc(100vh - var(--head));
+      overflow-y: auto;
+      padding: 3.4rem 0 3rem;
+      font-size: 0.84rem;
+    }
+  }
+  .toc__title {
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  .toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--rule);
+  }
+  .toc__list :global(a) {
+    display: block;
+    padding: 0.22rem 0 0.22rem 0.85rem;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    color: var(--ink-2);
+  }
+  .toc__list :global(a:hover) {
+    color: var(--ink);
+  }
+  .toc__list :global(a[aria-current]) {
+    color: var(--ink);
+    border-left-color: var(--ink);
+  }
+</style>

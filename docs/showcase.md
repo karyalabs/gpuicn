@@ -8,9 +8,13 @@ themes use black, white and gray; the panels logo keeps orange.
 
 Open **Component gallery** from the sidebar or app menu to browse every component
 in a separate window. Search, reset and theme switching are available there.
+The same gallery runs in the browser at `/app/` on the website, compiled to
+WebAssembly; its entries and groups come from `registry.toml`.
 The website and native gallery use the same component examples. The app applies
-its monochrome theme through shared tokens; the website previews use the stock
-Neutral theme. Menu examples show which action ran and omit unbound shortcuts.
+its monochrome theme through shared tokens; the website previews start in the
+stock Neutral theme and follow the site's theme menu (base color, accent and
+radius, built in `site/src/site_theme.rs`). The home page's board of
+components is one more preview, `?demo=board` (`site/src/previews/board.rs`). Menu examples show which action ran and omit unbound shortcuts.
 
 ## Editing and persistence
 
@@ -115,7 +119,10 @@ download metadata. Credentials and private keys stay outside the repository.
 the version, source revision, file size and checksum, and, once the Apple
 secrets exist, the notarization flag, before building the catalog with the same
 download. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the
-`release` environment. A signed-in local release checkout can instead build the
+`release` environment. Before the Astro build it runs
+`scripts/thumbnails.mjs`, which shoots a still of every preview for the cards
+on the home page and the component index; without the stills the cards show
+the component's initial. A signed-in local release checkout can instead build the
 catalog with `cd web && bun run build`, then run `bunx wrangler@4.129.0 deploy`
 from the repository root, with the release download files in
 `web/public/downloads/`.

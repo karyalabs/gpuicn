@@ -1,0 +1,154 @@
+---
+import { accents, bases, radii } from "../lib/theme"
+
+/**
+ * The theme menu's controls: base color, accent and corner radius. Any number
+ * of copies can be on a page; src/scripts/site.ts keeps them in step and
+ * restyles every GPUI preview.
+ */
+interface Props {
+  /** Shows the `gpuicn theme set` command that reproduces the choice. */
+  command?: boolean
+  /** Lays the three groups out in one row, for a toolbar. */
+  inline?: boolean
+}
+const { command = false, inline = false } = Astro.props
+---
+
+<div class:list={["tc", inline && "tc--inline"]} data-style-controls>
+  <div class="tc__row">
+    <span class="tc__label">Base</span>
+    <div class="tc__options" role="radiogroup" aria-label="Base color">
+      {
+        bases.map((base) => (
+          <button class="tc__dot" type="button" role="radio" aria-checked="false" aria-label={base.label} title={base.label} data-style-base={base.id} style={`--dot:${base.swatch}`} />
+        ))
+      }
+    </div>
+  </div>
+  <div class="tc__row">
+    <span class="tc__label">Accent</span>
+    <div class="tc__options" role="radiogroup" aria-label="Accent color">
+      {
+        accents.map((accent) => (
+          <button class="tc__dot" type="button" role="radio" aria-checked="false" aria-label={accent.label} title={accent.label} data-style-accent={accent.id} style={`--dot:${accent.light};--dot-dark:${accent.dark}`} />
+        ))
+      }
+    </div>
+  </div>
+  <div class="tc__row">
+    <span class="tc__label">Radius</span>
+    <div class="tc__options" role="radiogroup" aria-label="Corner radius">
+      {
+        radii.map((radius) => (
+          <button class="tc__radius" type="button" role="radio" aria-checked="false" aria-label={`${radius} rem`} title={`${radius} rem`} data-style-radius={radius}>
+            <span style={`border-top-left-radius:${Number(radius) * 0.9}rem`}></span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+  {
+    command && (
+      <div class="tc__command">
+        <code data-style-command>gpuicn theme set --base-color neutral --radius 0.625rem</code>
+        <button class="btn btn--ghost btn--sm" type="button" data-style-reset>Reset</button>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .tc {
+    display: grid;
+    gap: 0.7rem;
+    font-size: 0.84rem;
+  }
+  .tc--inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.4rem;
+  }
+  .tc--inline .tc__label {
+    width: auto;
+  }
+  .tc--inline .tc__row {
+    gap: 0.5rem;
+  }
+  .tc__row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .tc__label {
+    width: 3.4rem;
+    flex: none;
+    color: var(--ink-2);
+  }
+  .tc__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .tc__dot {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+  }
+  .tc__dot::before {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--dot);
+  }
+  :global([data-theme="dark"]) .tc__dot::before {
+    background: var(--dot-dark, var(--dot));
+  }
+  .tc__dot:hover {
+    border-color: var(--rule-2);
+  }
+  .tc__dot[aria-checked="true"] {
+    border-color: var(--ink);
+  }
+  .tc__radius {
+    width: 1.75rem;
+    height: 1.5rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    color: var(--ink-3);
+  }
+  .tc__radius span {
+    width: 0.7rem;
+    height: 0.7rem;
+    margin: 0.2rem 0 0 0.2rem;
+    border-top: 1.5px solid currentColor;
+    border-left: 1.5px solid currentColor;
+  }
+  .tc__radius:hover {
+    color: var(--ink);
+  }
+  .tc__radius[aria-checked="true"] {
+    color: var(--ink);
+    border-color: var(--ink);
+    background: var(--paper-2);
+  }
+  .tc__command {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--rule);
+  }
+  .tc__command code {
+    font-size: 0.72rem;
+    color: var(--ink-2);
+    user-select: all;
+  }
+</style>
