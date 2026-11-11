@@ -41,10 +41,16 @@ macro_rules! examples {
 examples! {
     alert: with_action, custom_icon, title_only;
     avatar: sizes, status, fallback;
+    avatar_group: overflow, sizes;
     badge: variants, counts, with_icon;
     button: sizes, with_icon, icon_only, tinted, disabled;
+    calendar: limits, monday_first;
     checkbox: with_description, indeterminate, disabled;
+    checkbox_group: several_checked, disabled;
+    date_picker: placeholder, custom_format, disabled;
+    field: required, with_an_error, horizontal;
     input: placeholder, invalid, disabled;
+    input_group: with_an_icon, with_a_button, units;
     item: variants, with_an_action;
     kbd: shortcuts, in_a_button;
     meter: levels, custom_range;
@@ -60,6 +66,8 @@ examples! {
     switch: settings, disabled;
     tabs: line, disabled_tab;
     tag: status_dots, removable, with_icon;
+    textarea: rows, in_a_field;
     toggle: sizes, with_text, outline;
     toggle_group: single, multiple, segmented;
+    toolbar: with_icons, vertical;
 }
