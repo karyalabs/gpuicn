@@ -201,7 +201,7 @@ impl gpui_kit::RenderOnce for CodeBlockActions {
 type EntityClick = Arc<dyn Fn(&SharedString, &mut Window, &mut App) + Send + Sync + 'static>;
 type EntityHighlight = Arc<dyn Fn(&str) -> bool + Send + Sync + 'static>;
 
-/// Renders links with a custom URL scheme as Nova entity chips, for mentions
+/// Renders links with a custom URL scheme as Nova entity links, for mentions
 /// such as `[@arya](mention:arya)` or channels such as `[~town-square](channel:town-square)`.
 ///
 /// The application rewrites its own syntax (`@arya`, `~town-square`) into these
@@ -294,13 +294,12 @@ impl MarkdownPlugin for EntityLinks {
             .id(ElementId::Name(
                 format!("{}:{}", self.scheme, entity.target).into(),
             ))
-            .px(px(2.))
-            .rounded(theme.radius.sm)
-            .font_weight(gpui_kit::FontWeight::MEDIUM)
-            .bg(if strong {
-                colors.mention_highlight()
-            } else {
-                colors.link().opacity(0.1)
+            // Like Mattermost: other entities read as links, and only the
+            // ones that match (the reader's own mentions) get a filled chip.
+            .when(strong, |chip| {
+                chip.px(px(2.))
+                    .rounded(theme.radius.sm)
+                    .bg(colors.mention_highlight())
             })
             .text_color(if strong {
                 colors.mention_highlight_foreground()
@@ -309,6 +308,7 @@ impl MarkdownPlugin for EntityLinks {
             })
             .when_some(on_click, move |chip, handler| {
                 chip.cursor_pointer()
+                    .hover(|style| style.underline())
                     .on_mouse_down(gpui_kit::MouseButton::Left, |_, _, cx| {
                         super::theme::primitives::press::claim_now(cx)
                     })
