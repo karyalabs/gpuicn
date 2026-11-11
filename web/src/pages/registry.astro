@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
@@ -38,7 +39,7 @@ import { registry, release } from "../lib/release"
         components.map((component) => (
           <tr>
             <td><a href={componentHref(component.slug)}>{component.name}</a></td>
-            <td><a class="files__raw" href={`/r/${component.slug}.json`}><code>/r/{component.slug}.json</code></a></td>
+            <td><a class="files__raw" href={u(`/r/${component.slug}.json`)}><code>/r/{component.slug}.json</code></a></td>
           </tr>
         ))
       }

@@ -366,18 +366,19 @@ impl Render for Gallery {
 /// Opens a component's page on the website. The icon browser's page is /icons/.
 fn open_docs(slug: &str, cx: &mut App) {
     let path = if slug == "icons" {
-        "/icons/".to_owned()
+        "icons/".to_owned()
     } else {
-        format!("/components/{slug}/")
+        format!("components/{slug}/")
     };
-    // In the browser the gallery is framed by the site, which follows the link.
+    // In the browser the gallery is framed by the site, which follows the
+    // link; the previews are served from `demo/`, beside the pages.
     #[cfg(target_family = "wasm")]
     {
         let _ = cx;
-        super::gallery_open(&path);
+        super::gallery_open(&format!("../{path}"));
     }
     #[cfg(not(target_family = "wasm"))]
-    cx.open_url(&format!("https://ui.imajha.com{path}"));
+    cx.open_url(&format!("https://karyalabs.dev/gpuicn/{path}"));
 }
 
 #[cfg(test)]

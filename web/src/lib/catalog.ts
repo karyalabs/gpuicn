@@ -1,4 +1,5 @@
 import catalog from "../generated/catalog.json"
+import { u } from "./base"
 import { release } from "./release"
 
 export type CatalogComponent = {
@@ -55,21 +56,21 @@ export const categories = catalog.categories.map((category) => ({
 })).filter((category) => category.components.length > 0)
 
 export const guide = [
-  { to: "/introduction/", label: "Introduction", blurb: "What gpuicn is, and how installing source differs from adding a crate." },
-  { to: "/installation/", label: "Installation", blurb: "Create an app, install the CLI, add a component, open a window." },
-  { to: "/theming/", label: "Theming", blurb: "The tokens every component reads, and how to change them at runtime." },
-  { to: "/showcase/", label: "Example app", blurb: "gpuicn Workspace for macOS and Linux, built from this catalog." },
-] as const
+  { to: u("/introduction/"), label: "Introduction", blurb: "What gpuicn is, and how installing source differs from adding a crate." },
+  { to: u("/installation/"), label: "Installation", blurb: "Create an app, install the CLI, add a component, open a window." },
+  { to: u("/theming/"), label: "Theming", blurb: "The tokens every component reads, and how to change them at runtime." },
+  { to: u("/showcase/"), label: "Example app", blurb: "gpuicn Workspace for macOS and Linux, built from this catalog." },
+]
 
 export const reference = [
-  { to: "/components/", label: "Components", blurb: `All ${components.length} components, each with a live preview, usage, API, and platform notes.` },
-  { to: "/icons/", label: "Icons", blurb: "The complete Lucide library as Rust names, rendered by GPUI." },
-  { to: "/registry/", label: "Registry", blurb: "The JSON files behind gpuicn add." },
-  { to: "/changelog/", label: "Changelog", blurb: "What each release added, changed, and fixed." },
-] as const
+  { to: u("/components/"), label: "Components", blurb: `All ${components.length} components, each with a live preview, usage, API, and platform notes.` },
+  { to: u("/icons/"), label: "Icons", blurb: "The complete Lucide library as Rust names, rendered by GPUI." },
+  { to: u("/registry/"), label: "Registry", blurb: "The JSON files behind gpuicn add." },
+  { to: u("/changelog/"), label: "Changelog", blurb: "What each release added, changed, and fixed." },
+]
 
 export function componentHref(slug: string) {
-  return `/components/${slug}/`
+  return u(`/components/${slug}/`)
 }
 
 export function findComponent(slug: string) {

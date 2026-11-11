@@ -1,14 +1,28 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "gpuicn-site",
+  "main": "web/worker.js",
   "compatibility_date": "2026-08-27",
   "workers_dev": false,
   "routes": [
+    // A route, not a custom domain, so the rest of karyalabs.dev stays free
+    // (Matty's site is karyalabs.dev/matty). It uses the zone's proxied DNS
+    // record for the bare domain.
+    { "pattern": "karyalabs.dev/gpuicn*", "zone_name": "karyalabs.dev" },
+    // The old addresses; web/worker.js sends them to the new one.
     { "pattern": "ui.imajha.com", "custom_domain": true },
     { "pattern": "ui.jha.sh", "custom_domain": true }
   ],
+  "vars": {
+    // "true" once karyalabs.dev/gpuicn is confirmed live: the old addresses
+    // then redirect to it. Until then they serve the site under /gpuicn/.
+    "REDIRECT_OLD_HOSTS": "false"
+  },
   "assets": {
+    // The site is in web/dist/gpuicn, so its files are under /gpuicn/.
     "directory": "./web/dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
     "html_handling": "force-trailing-slash",
     "not_found_handling": "404-page"
   },

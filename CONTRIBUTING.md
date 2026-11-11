@@ -34,7 +34,7 @@ The website additionally needs the pinned WASM nightly, Trunk 0.21.14 and Bun:
 ```sh
 rustup toolchain install nightly-2026-08-17 --component rust-src --target wasm32-unknown-unknown
 cd site
-RUSTUP_TOOLCHAIN=nightly-2026-08-17 CARGO_UNSTABLE_BUILD_STD=std,panic_abort trunk build --release --dist ../web/public/demo --public-url /demo/
+RUSTUP_TOOLCHAIN=nightly-2026-08-17 CARGO_UNSTABLE_BUILD_STD=std,panic_abort trunk build --release --dist ../web/public/demo --public-url /gpuicn/demo/
 cd ../web
 bun install
 bun run dev
@@ -77,7 +77,7 @@ the `screenshots` artifact; run it locally for a pull request that changes
 how anything looks:
 
 ```sh
-(cd site && trunk build --release --public-url /demo/ --dist ../web/public/demo)
+(cd site && trunk build --release --public-url /gpuicn/demo/ --dist ../web/public/demo)
 bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v<next> --compare docs/screenshots/v<previous>
 ```
 
@@ -132,7 +132,7 @@ Merging a version bump to `main` is the release; nothing runs on a laptop.
    - builds the macOS app (signed and notarized when the Apple secrets exist)
      and the Linux x86-64 and ARM64 archives;
    - publishes the GitHub release with every download and checksum;
-   - deploys ui.imajha.com from that release.
+   - deploys karyalabs.dev/gpuicn from that release.
 
 A merge that doesn't change the version releases nothing. If a job fails,
 fix the cause and use **Re-run failed jobs**; every step skips what is already
@@ -145,5 +145,5 @@ The `release` environment holds the secrets:
 | none (crates.io Trusted Publishing) or `CARGO_REGISTRY_TOKEN` | Publishing the crates |
 | `MACOS_CERT_P12`, `MACOS_CERT_PASSWORD` | The Developer ID Application certificate, as base64 .p12 |
 | `APPLE_API_KEY_P8`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER_ID` | Notarization with an App Store Connect API key |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Deploying ui.imajha.com |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Deploying karyalabs.dev/gpuicn |
 

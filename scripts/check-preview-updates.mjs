@@ -6,7 +6,7 @@ const listeners = {};
 const window = {
   Worker: function () {},
   parent: {},
-  location: { origin: "https://ui.imajha.com" },
+  location: { origin: "https://karyalabs.dev" },
   addEventListener: (type, callback) => { listeners[type] = callback; },
 };
 const keys = [];

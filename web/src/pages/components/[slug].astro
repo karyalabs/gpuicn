@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Docs from "../../layouts/Docs.astro"
 import Aside from "../../components/Aside.astro"
 import Code from "../../components/Code.astro"
@@ -28,7 +29,7 @@ const lines = docs.source.split("\n").length
 <Docs
   title={component.name}
   part={category.title}
-  partHref={`/components/#${category.id}`}
+  partHref={u(`/components/#${category.id}`)}
   lede={component.description}
 >
   <p class="meta" slot="head">
@@ -47,7 +48,7 @@ const lines = docs.source.split("\n").length
         <span class="spacer"></span>
         <button class="btn btn--ghost btn--sm" type="button" aria-pressed="false" data-preview-rtl title="Preview in a right-to-left layout">RTL</button>
         <button class="btn btn--ghost btn--sm" type="button" data-preview-reset title="Start the preview again">Reset</button>
-        <a class="btn btn--ghost btn--sm" href={`/app/?c=${component.slug}`} title="Open this component in the gallery app">
+        <a class="btn btn--ghost btn--sm" href={u(`/app/?c=${component.slug}`)} title="Open this component in the gallery app">
           Gallery
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
         </a>
@@ -85,7 +86,7 @@ const lines = docs.source.split("\n").length
       The real {component.name}, drawn by GPUI in your browser. It follows the theme menu in the header.
       {others.length > 0 && "Pick an example above to change what it shows. "}
       The second tab is the source of what is showing, from the site's showcase crate;
-      <a href="/examples/showcase.rs" download>download the whole showcase</a> for its imports and helpers.
+      <a href={u("/examples/showcase.rs")} download>download the whole showcase</a> for its imports and helpers.
     </figcaption>
   </figure>
 
@@ -104,7 +105,7 @@ const lines = docs.source.split("\n").length
     </Aside>
     <div class="text">
       <p>
-        After the one-time <a href="/installation/">setup</a>, run the command from your app root. The CLI
+        After the one-time <a href={u("/installation/")}>setup</a>, run the command from your app root. The CLI
         writes the modules and keeps <code>src/ui/mod.rs</code> in step.
       </p>
     </div>

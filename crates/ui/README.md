@@ -25,6 +25,6 @@ use gpuicn::button::Button;
 Button::new("save").label("Save")
 ```
 
-See the [catalog](https://ui.imajha.com/) for every component, and the
+See the [catalog](https://karyalabs.dev/gpuicn/) for every component, and the
 [repository](https://github.com/karyalabs/gpuicn) for source mode, theming
 and the changelog.

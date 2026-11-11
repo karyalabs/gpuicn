@@ -68,6 +68,15 @@ cargo run --release -p gpuicn-showcase --features gpui_platform/runtime_shaders 
 
 The packaging script embeds fonts and the app icon, verifies the code signature,
 and writes the ZIP, checksum and manifest under `web/public/downloads/`.
+
+The site is served under a path, `https://karyalabs.dev/gpuicn/`, by a Worker
+route on the `karyalabs.dev` zone (`wrangler.jsonc`), so the token also needs
+Workers Routes access to that zone. Astro builds into `web/dist/gpuicn` with
+`base: "/gpuicn"`, the previews are built with `--public-url /gpuicn/demo/`,
+and every root-relative link in `web/src` goes through `u` from
+`web/src/lib/base.ts`. The old addresses, ui.imajha.com and ui.jha.sh, stay
+attached to the same Worker; `web/worker.js` redirects them to the new address
+once `REDIRECT_OLD_HOSTS` is `"true"`.
 The `/showcase` page downloads that archive. The build architecture matches its
 host; local build validation covers Apple silicon.
 
@@ -121,7 +130,7 @@ API key (CI uses the key). The script signs with the hardened runtime, submits
 to Apple, staples and validates the ticket, and checks Gatekeeper before writing
 download metadata. Credentials and private keys stay outside the repository.
 
-**Deploy ui.imajha.com** serves the downloads of one GitHub release. It checks
+**Deploy karyalabs.dev/gpuicn** serves the downloads of one GitHub release. It checks
 the version, source revision, file size and checksum, and, once the Apple
 secrets exist, the notarization flag, before building the catalog with the same
 download. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the

@@ -4,7 +4,7 @@
   <img src="web/public/brand/gpuicn-panels-transparent.png" alt="gpuicn logo" width="96">
   <p>Native, editable UI components for <a href="https://www.gpui.rs/">GPUI</a>.</p>
   <p>
-    <a href="https://ui.imajha.com/">Catalog</a> ·
+    <a href="https://karyalabs.dev/gpuicn/">Catalog</a> ·
     <a href="docs/registry.md">Install</a> ·
     <a href="docs/theming.md">Theming</a> ·
     <a href="https://github.com/karyalabs/gpuicn/issues">Issues</a>
@@ -92,7 +92,7 @@ crate, so every component reads the same theme.
 
 ## Learn more
 
-- [Catalog](https://ui.imajha.com/): live GPUI/WASM previews, usage and API for every component
+- [Catalog](https://karyalabs.dev/gpuicn/): live GPUI/WASM previews, usage and API for every component
 - [Install and update](docs/registry.md): what `init` does, manual setup, upgrading
 - [Theming](docs/theming.md): colors, density, type, radius, motion, and importing shadcn themes
 - [Changelog](CHANGELOG.md) and [release notes](docs/releases/)

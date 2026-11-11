@@ -9,11 +9,11 @@ impl Showcase {
                 [
                     MenuItem::new("introduction", "Introduction")
                         .link()
-                        .on_click(|_, _, cx| cx.open_url("https://ui.imajha.com/docs")),
+                        .on_click(|_, _, cx| cx.open_url("https://karyalabs.dev/gpuicn/introduction/")),
                     MenuItem::new("installation", "Installation")
                         .link()
                         .on_click(|_, _, cx| {
-                            cx.open_url("https://ui.imajha.com/docs/installation")
+                            cx.open_url("https://karyalabs.dev/gpuicn/installation/")
                         }),
                 ],
                 cx,
@@ -25,12 +25,12 @@ impl Showcase {
                     MenuItem::new("button", "Button")
                         .link()
                         .on_click(|_, _, cx| {
-                            cx.open_url("https://ui.imajha.com/docs/components/button")
+                            cx.open_url("https://karyalabs.dev/gpuicn/components/button/")
                         }),
                     MenuItem::new("dialog", "Dialog")
                         .link()
                         .on_click(|_, _, cx| {
-                            cx.open_url("https://ui.imajha.com/docs/components/dialog")
+                            cx.open_url("https://karyalabs.dev/gpuicn/components/dialog/")
                         }),
                 ],
                 cx,
