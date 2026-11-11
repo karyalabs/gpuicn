@@ -1262,7 +1262,7 @@ fn link_button(
             };
             text::xs(base, &theme)
                 .font_weight(FontWeight::MEDIUM)
-                .text_color(theme.colors.primary)
+                .text_color(theme.colors.link())
                 .rounded(theme.radius.sm)
                 .flex_shrink_0()
                 .cursor_pointer()

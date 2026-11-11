@@ -39,6 +39,7 @@ pub struct TitleBar {
     style: gpui_kit::StyleRefinement,
     children: Vec<AnyElement>,
     on_close: Option<CloseHandler>,
+    page: bool,
 }
 
 impl TitleBar {
@@ -48,7 +49,16 @@ impl TitleBar {
             style: gpui_kit::StyleRefinement::default(),
             children: Vec::new(),
             on_close: None,
+            page: false,
         }
+    }
+
+    /// Draws the bar in the page's muted colors and not the sidebar's: for
+    /// a window with no sidebar under the bar, such as a settings window,
+    /// where a theme's dark sidebar color would sit alone above a light page.
+    pub fn page(mut self, value: bool) -> Self {
+        self.page = value;
+        self
     }
 
     /// Runs instead of closing the window when the close control is clicked on
@@ -126,12 +136,22 @@ impl Control {
 fn control(
     kind: Control,
     on_close: Option<CloseHandler>,
+    on_sidebar: bool,
     theme: &UiTheme,
     cx: &App,
 ) -> impl IntoElement {
     let colors = theme.colors;
+    // On the title bar the controls sit on the sidebar's color, which a
+    // theme may make dark beside a light page.
+    let rest = if on_sidebar {
+        colors.sidebar_muted_foreground()
+    } else {
+        colors.muted_foreground
+    };
     let (hover_bg, hover_fg) = if kind == Control::Close {
         (colors.destructive, colors.destructive_foreground)
+    } else if on_sidebar {
+        (colors.sidebar_accent, colors.sidebar_accent_foreground)
     } else {
         (colors.accent, colors.accent_foreground)
     };
@@ -144,7 +164,7 @@ fn control(
         .justify_center()
         .w(px(46.))
         .h_full()
-        .text_color(colors.muted_foreground)
+        .text_color(rest)
         .hover(move |style| style.bg(hover_bg).text_color(hover_fg))
         .when(cfg!(target_os = "windows"), |this| {
             this.window_control_area(kind.area())
@@ -173,7 +193,7 @@ fn control(
                 } else {
                     theme.space(3.5)
                 })
-                .text_color(colors.muted_foreground),
+                .text_color(rest),
         )
 }
 
@@ -261,6 +281,7 @@ where
 pub struct WindowControls {
     style: gpui_kit::StyleRefinement,
     on_close: Option<CloseHandler>,
+    on_sidebar: bool,
 }
 
 impl WindowControls {
@@ -269,6 +290,7 @@ impl WindowControls {
         Self {
             style: gpui_kit::StyleRefinement::default(),
             on_close: None,
+            on_sidebar: false,
         }
     }
 
@@ -307,7 +329,13 @@ impl RenderOnce for WindowControls {
                 .flex_shrink_0()
                 .when(draws_window_controls(window), |row| {
                     row.when(supported.minimize, |row| {
-                        row.child(control(Control::Minimize, None, &theme, cx))
+                        row.child(control(
+                            Control::Minimize,
+                            None,
+                            self.on_sidebar,
+                            &theme,
+                            cx,
+                        ))
                     })
                     .when(supported.maximize, |row| {
                         row.child(control(
@@ -317,6 +345,7 @@ impl RenderOnce for WindowControls {
                                 Control::Maximize
                             },
                             None,
+                            self.on_sidebar,
                             &theme,
                             cx,
                         ))
@@ -324,6 +353,7 @@ impl RenderOnce for WindowControls {
                     .child(control(
                         Control::Close,
                         self.on_close.clone(),
+                        self.on_sidebar,
                         &theme,
                         cx,
                     ))
@@ -346,14 +376,23 @@ impl RenderOnce for TitleBar {
             .items_center()
             .pl(left_inset)
             .border_b_1()
-            .border_color(theme.colors.border)
-            .bg(theme.colors.sidebar)
-            .text_color(theme.colors.foreground)
+            .map(|bar| {
+                if self.page {
+                    bar.border_color(theme.colors.border)
+                        .bg(theme.colors.muted)
+                        .text_color(theme.colors.foreground)
+                } else {
+                    bar.border_color(theme.colors.sidebar_border)
+                        .bg(theme.colors.sidebar)
+                        .text_color(theme.colors.sidebar_foreground)
+                }
+            })
             .font_family(theme.fonts.body.clone())
             .text_size(theme.text(13.));
         let bar = window_drag_area("title-bar.drag", bar, window, cx);
         let mut controls = WindowControls::new();
         controls.on_close = self.on_close.clone();
+        controls.on_sidebar = !self.page;
         let bar = bar
             .child(
                 div()

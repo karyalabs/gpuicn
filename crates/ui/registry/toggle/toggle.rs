@@ -24,6 +24,9 @@ pub enum ToggleVariant {
     Default,
     /// Draw a border around the toggle.
     Outline,
+    /// A toggle on the sidebar: it hovers and presses in the sidebar's own
+    /// colors, so it reads on a sidebar darker or lighter than the page.
+    Sidebar,
 }
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 /// Nova toggle dimensions.
@@ -140,8 +143,21 @@ impl RenderOnce for Toggle {
                 let theme = theme.clone();
                 move |style| focus::ring(style, &theme)
             })
+            .when(variant == ToggleVariant::Sidebar, |base| {
+                let colors = theme.colors;
+                base.text_color(colors.sidebar_foreground).bg(if pressed {
+                    colors.sidebar_accent
+                } else {
+                    colors.sidebar.opacity(0.)
+                })
+            })
             .when(!disabled, |base| {
-                base.hover(move |style| style.bg(control.hover))
+                let hover = if variant == ToggleVariant::Sidebar {
+                    theme.colors.sidebar_accent
+                } else {
+                    control.hover
+                };
+                base.hover(move |style| style.bg(hover))
             });
         let mut toggle = super::theme::apply_style(base, &self.style).children(self.children);
         if let Some(label) = self.aria_label {

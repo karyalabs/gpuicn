@@ -63,6 +63,7 @@ pub struct ToggleGroup {
     disabled: bool,
     multiple: bool,
     joined: bool,
+    segmented: bool,
     items: Vec<ToggleGroupItem>,
     on_change: Option<ChangeHandler>,
     style: StyleRefinement,
@@ -77,6 +78,7 @@ impl ToggleGroup {
             disabled: false,
             multiple: false,
             joined: true,
+            segmented: false,
             items: Vec::new(),
             on_change: None,
             style: Default::default(),
@@ -105,6 +107,13 @@ impl ToggleGroup {
     /// Removes gaps between adjacent toggles.
     pub fn joined(mut self, value: bool) -> Self {
         self.joined = value;
+        self
+    }
+    /// Draws the group as one segmented control: a filled track with the
+    /// pressed option raised on it. For choosing one of a few options,
+    /// where the choice must show at a glance.
+    pub fn segmented(mut self, value: bool) -> Self {
+        self.segmented = value;
         self
     }
     /// Appends an option to the group.
@@ -142,6 +151,10 @@ impl RenderOnce for ToggleGroup {
             cx,
         );
         let count = self.items.len();
+        let segmented = self.segmented;
+        let joined = self.joined && !segmented;
+        let colors = theme.colors;
+        let raised = control.segment;
         let children = self
             .items
             .into_iter()
@@ -173,20 +186,35 @@ impl RenderOnce for ToggleGroup {
                     .items_center()
                     .justify_center()
                     .gap(theme.space(1.))
-                    .h(theme.space(8.))
+                    .h(theme.space(if segmented { 7. } else { 8. }))
                     .min_w(theme.space(8.))
                     .px(theme.space(2.5))
-                    .rounded(if self.joined { px(0.) } else { theme.radius.lg })
-                    .when(self.joined && index == 0, |t| t.rounded_l(theme.radius.lg))
-                    .when(self.joined && index + 1 == count, |t| {
+                    .rounded(if joined { px(0.) } else { theme.radius.lg })
+                    .when(joined && index == 0, |t| t.rounded_l(theme.radius.lg))
+                    .when(joined && index + 1 == count, |t| {
                         t.rounded_r(theme.radius.lg)
                     })
                     .map(|t| control::toggle(t, &theme, pressed, disabled, false))
+                    .when(segmented, |t| {
+                        if pressed {
+                            t.bg(raised)
+                                .border_color(colors.border)
+                                .font_weight(gpui_kit::FontWeight::MEDIUM)
+                        } else {
+                            t.bg(colors.background.opacity(0.))
+                                .text_color(colors.muted_foreground)
+                        }
+                    })
                     .focus_visible({
                         let theme = theme.clone();
                         move |s| focus::ring(s, &theme)
                     })
-                    .when(!disabled, |t| t.hover(move |s| s.bg(control.hover)))
+                    .when(!disabled && !segmented, |t| {
+                        t.hover(move |s| s.bg(control.hover))
+                    })
+                    .when(!disabled && segmented && !pressed, |t| {
+                        t.hover(move |s| s.text_color(colors.foreground))
+                    })
                     .children(item.children)
                     .when_some(change, |toggle, handler| {
                         toggle.on_change(move |_, _, window, cx| handler(&next, window, cx))
@@ -196,7 +224,18 @@ impl RenderOnce for ToggleGroup {
             .collect::<Vec<_>>();
         let root = gpui_kit::base::ToggleGroup::new(self.id)
             .flex_row_in(theme.direction)
-            .gap(theme.space(if self.joined { 0. } else { 2. }))
+            .gap(if segmented {
+                px(2.)
+            } else {
+                theme.space(if joined { 0. } else { 2. })
+            })
+            .when(segmented, |root| {
+                root.p(px(2.))
+                    .rounded(theme.radius.lg + px(2.))
+                    .bg(colors.muted)
+                    .border_1()
+                    .border_color(colors.border)
+            })
             .when_some(self.label, |root, label| root.aria_label(label))
             .on_key_down(move |event, window, cx| {
                 focus.key(event, Some(gpui_kit::Axis::Horizontal), window, cx);

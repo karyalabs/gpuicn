@@ -625,6 +625,9 @@ pub struct ControlColors {
     pub ghost_hover: Rgba,
     /// Fill of a pressed toggle or selected tab.
     pub pressed: Rgba,
+    /// Fill of the pressed option of a segmented toggle group, raised on
+    /// the group's muted track.
+    pub segment: Rgba,
     /// Unchecked switch track.
     pub track: Rgba,
     /// Switch thumb on the unchecked track.
@@ -1090,6 +1093,11 @@ impl UiTheme {
                 colors.muted
             },
             pressed: colors.muted,
+            segment: if dark {
+                colors.secondary
+            } else {
+                colors.background
+            },
             track: if dark {
                 colors.input.opacity(0.80)
             } else {

@@ -4,6 +4,24 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.5
+
+[Notes](docs/releases/v0.11.5.md)
+
+### Added
+
+- `ButtonVariant::Sidebar` and `ToggleVariant::Sidebar`, for controls on a
+  sidebar that is darker or lighter than the page.
+- `ToggleGroup::segmented`, a segmented control with the pressed option raised.
+- `TitleBar::page`, for a window with no sidebar under the bar.
+
+### Changed
+
+- The reacted count, `Link` button, collapsible trigger and embed toggle draw
+  their text in `link()`, not `primary`.
+- `TitleBar` draws its content and window controls in the sidebar's colors.
+- The color picker's hue track is vivid whatever color is picked.
+
 ## 0.11.4
 
 [Notes](docs/releases/v0.11.4.md)
