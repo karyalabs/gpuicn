@@ -49,7 +49,11 @@ fn application() -> Application {
             Some("webgl") => gpui_kit::platform::WebBackendPreference::WebGl,
             _ => gpui_kit::platform::WebBackendPreference::Auto,
         };
-        let platform = gpui_kit::web::WebPlatform::new_with_backend(true, backend);
+        // Web workers stay off: the main thread cannot wait on a lock a worker
+        // holds, so the page froze in `Atomics.wait` (a Markdown link was
+        // enough). `?threads=1` turns them back on to test.
+        let threads = requested_value("threads").as_deref() == Some("1");
+        let platform = gpui_kit::web::WebPlatform::new_with_backend(threads, backend);
         let http_client = std::sync::Arc::new(platform.fetch_http_client());
         Application::with_platform(std::rc::Rc::new(platform)).with_http_client(http_client)
     };

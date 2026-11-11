@@ -39,7 +39,11 @@ macro_rules! examples {
 }
 
 examples! {
+    accordion: several_open, disabled_section;
     alert: with_action, custom_icon, title_only;
+    alert_dialog: destructive, one_button;
+    attachment: files, upload_states;
+    autocomplete: free_text;
     avatar: sizes, status, fallback;
     avatar_group: overflow, sizes;
     badge: variants, counts, with_icon;
@@ -47,17 +51,24 @@ examples! {
     calendar: limits, monday_first;
     checkbox: with_description, indeterminate, disabled;
     checkbox_group: several_checked, disabled;
+    color_picker: without_swatches, disabled;
+    combobox: empty, disabled;
     date_picker: placeholder, custom_format, disabled;
+    dialog: with_a_cancel_button, long_content;
+    empty: without_an_action, two_actions;
     field: required, with_an_error, horizontal;
     input: placeholder, invalid, disabled;
     input_group: with_an_icon, with_a_button, units;
     item: variants, with_an_action;
     kbd: shortcuts, in_a_button;
+    markdown: text_styles, code_block, table;
+    menu: checked_items, icons_and_shortcuts;
     meter: levels, custom_range;
     number_field: step_and_limits, disabled;
     otp_field: four_digits, disabled;
     progress: determinate, indeterminate, custom_range;
     radio_group: plans, disabled;
+    scroll_area: horizontal;
     select: with_a_value, invalid, disabled;
     separator: vertical, in_a_list;
     skeleton: card, text;
@@ -67,6 +78,7 @@ examples! {
     tabs: line, disabled_tab;
     tag: status_dots, removable, with_icon;
     textarea: rows, in_a_field;
+    toast: with_an_action, timing;
     toggle: sizes, with_text, outline;
     toggle_group: single, multiple, segmented;
     toolbar: with_icons, vertical;
