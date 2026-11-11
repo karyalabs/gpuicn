@@ -378,7 +378,7 @@ fn title_text(
                     let base = base.role(Role::Link);
                     text::sm(base, &theme)
                         .font_weight(FontWeight::SEMIBOLD)
-                        .text_color(theme.colors.primary)
+                        .text_color(theme.colors.link())
                         .line_clamp(lines)
                         .rounded(theme.radius.sm)
                         // A block, so the title wraps at the card's width
@@ -474,8 +474,10 @@ impl LinkPreview {
         }
     }
     /// Sets the small muted line above the title, such as "GitHub".
+    /// An empty name leaves the line out, so the card keeps no blank row.
     pub fn site_name(mut self, site_name: impl Into<SharedString>) -> Self {
-        self.site_name = Some(site_name.into());
+        let site_name = site_name.into();
+        self.site_name = (!site_name.trim().is_empty()).then_some(site_name);
         self
     }
     /// Sets the description, clamped to three lines.

@@ -4,6 +4,20 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.4
+
+[Notes](docs/releases/v0.11.4.md)
+
+### Added
+
+- `Message::footer`, a line under the reactions for a thread's reply summary.
+
+### Changed
+
+- A press on blank space in a message row no longer starts a text selection.
+- `EntityLinks` draws unmatched entities as plain links; only matches get a chip.
+- `LinkPreview` leaves out an empty site name and colors its title as a link.
+
 ## 0.11.3
 
 [Notes](docs/releases/v0.11.3.md)

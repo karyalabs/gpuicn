@@ -9,12 +9,12 @@ use std::rc::Rc;
 use gpui_icons::{LucideIcon, lucide};
 use gpui_kit::{
     AnyElement, AnyView, App, Axis, Bounds, ClickEvent, ElementId, FontWeight, ImageSource,
-    InteractiveElement as _, IntoElement, ParentElement, Pixels, RenderOnce, Role, SharedString,
-    StatefulInteractiveElement as _, Styled, Window, div, prelude::FluentBuilder as _, px,
-    relative,
+    InteractiveElement as _, IntoElement, MouseButton, ParentElement, Pixels, RenderOnce, Role,
+    SharedString, StatefulInteractiveElement as _, Styled, Window, div,
+    prelude::FluentBuilder as _, px, relative,
 };
 
-use gpui_kit::base::{ElementExt as _, TextSelection};
+use gpui_kit::base::{ElementExt as _, GlobalState, TextSelection};
 
 use super::button::{Button, ButtonSize, ButtonVariant};
 use super::theme::{
@@ -146,6 +146,7 @@ pub struct Message {
     on_click: Option<Handler>,
     header: Vec<AnyElement>,
     children: Vec<AnyElement>,
+    footer: Vec<AnyElement>,
     reactions: Vec<Reaction>,
     on_reaction: Option<ReactionHandler>,
     reaction_tooltip: Option<ReactionTooltip>,
@@ -178,6 +179,7 @@ impl Message {
             on_click: None,
             header: Vec::new(),
             children: Vec::new(),
+            footer: Vec::new(),
             reactions: Vec::new(),
             on_reaction: None,
             reaction_tooltip: None,
@@ -349,6 +351,12 @@ impl Message {
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_add_reaction = Some(Rc::new(handler));
+        self
+    }
+    /// Adds a line under the reactions, such as a thread's reply summary,
+    /// which Mattermost shows below a post's reactions.
+    pub fn footer(mut self, footer: impl IntoElement) -> Self {
+        self.footer.push(footer.into_any_element());
         self
     }
     /// Sets the floating action bar shown while the row is hovered or selected,
@@ -640,9 +648,17 @@ impl RenderOnce for Message {
                     .children(self.children),
             )
             .children(failed)
-            .children(reactions);
+            .children(reactions)
+            .children(self.footer);
 
         let permalink = colors.warning;
+        // Set while the current press started on the row's blank space.
+        let blank_press = window
+            .use_keyed_state((self.id.clone(), "blank-press"), cx, |_, _| {
+                Rc::new(std::cell::Cell::new(false))
+            })
+            .read(cx)
+            .clone();
         let copy_prefix = self.copy_prefix.clone();
         let marker_id = self.id.clone();
         let root = div()
@@ -683,6 +699,29 @@ impl RenderOnce for Message {
             })
             .child(gutter_content)
             .child(body)
+            // A press on blank space in the row (beside short lines, between
+            // blocks) is not the start of a text selection, as in a native
+            // chat client; a press on text still starts one, and Shift
+            // still extends the current selection.
+            // The claim is the row's own, so its click still opens it.
+            .capture_any_mouse_down({
+                let blank = blank_press.clone();
+                move |_, _, _| blank.set(false)
+            })
+            .on_mouse_down(MouseButton::Left, {
+                let blank = blank_press.clone();
+                move |event, window, cx| {
+                    if event.click_count == 1
+                        && !event.modifiers.shift
+                        && !press::claimed(cx)
+                        && !TextSelection::is_selectable_at(event.position, window, cx)
+                    {
+                        GlobalState::init(cx);
+                        GlobalState::suppress_text_selection(cx);
+                        blank.set(true);
+                    }
+                }
+            })
             .when_some(self.on_click, |row, handler| {
                 // A press on a control in the row (a button, a link card, a
                 // reaction, "Show more") is that control's: it claims the
@@ -690,7 +729,7 @@ impl RenderOnce for Message {
                 row.capture_any_mouse_down(|_, _, cx| press::reset(cx))
                     .on_click(move |event, window, cx| {
                         if is_plain_click(event)
-                            && !press::claimed(cx)
+                            && (!press::claimed(cx) || blank_press.get())
                             && !TextSelection::has_selection(window, cx)
                         {
                             handler(event, window, cx)

@@ -322,6 +322,34 @@ fn transcript_keyboard_selection_and_copy_across_rows(cx: &mut TestAppContext) {
     cx.simulate_keystrokes("secondary-c");
     let copied = cx.update(|_, cx| cx.read_from_clipboard().and_then(|item| item.text()));
     assert_eq!(copied.as_deref(), Some("Message number 2"));
+
+    // A press on blank space beside a message's text starts no selection,
+    // even when the pointer then crosses text (matty: clicking empty space
+    // in a message highlighted it).
+    let (first, last) = cx.update(|_, cx| {
+        let bodies = view.read(cx).bodies.borrow();
+        (bodies[&1], bodies[&3])
+    });
+    let start = gpui_kit::point(first.right() - px(2.), first.center().y);
+    let end = gpui_kit::point(last.left() + px(2.), last.center().y);
+    cx.simulate_mouse_down(
+        start,
+        gpui_kit::MouseButton::Left,
+        gpui_kit::Modifiers::default(),
+    );
+    cx.simulate_mouse_move(
+        end,
+        Some(gpui_kit::MouseButton::Left),
+        gpui_kit::Modifiers::default(),
+    );
+    cx.simulate_mouse_up(
+        end,
+        gpui_kit::MouseButton::Left,
+        gpui_kit::Modifiers::default(),
+    );
+    cx.update(|window, cx| window.draw(cx).clear(cx));
+    let text = cx.update(gpui_kit::base::TextSelection::selected_text);
+    assert_eq!(text, "", "a press on blank space selected {text:?}");
 }
 
 struct ComposerView {
