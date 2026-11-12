@@ -106,7 +106,7 @@ bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v<next
    (sizes, states, one use each), add functions to
    `site/src/examples/<module>.rs` and list them in `site/src/examples/mod.rs`;
    each one's doc comment is its title, a blank line, and a sentence about it.
-   The page shows them as choices above the preview, with their source.
+   The page lists them under Examples, each with its own preview and code.
 6. Add platform notes in `docs/parity/<name>.md`: how it differs from shadcn
    and what was verified.
 7. Run the checks above and commit the regenerated registry.

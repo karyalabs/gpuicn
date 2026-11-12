@@ -1,0 +1,56 @@
+---
+import Code from "./Code.astro"
+import Preview from "./Preview.astro"
+
+/**
+ * One live preview with its source behind a second tab: the overview at the
+ * top of a component page, and each of its examples.
+ */
+interface Props {
+  slug: string
+  name: string
+  /** The example's name in `site/src/examples`, or empty for the overview. */
+  example?: string
+  code: string
+  /** Unique on the page; the tab and panel ids are built from it. */
+  id: string
+}
+
+const { slug, name, example, code, id } = Astro.props
+---
+
+<figure class="figure" data-tabs data-figure>
+  <div class="figure__frame">
+    <div class="figure__bar">
+      <div class="tabs__list" role="tablist" aria-label="Preview or its code">
+        <button class="tabs__tab" type="button" role="tab" id={`${id}-tab-preview`} aria-controls={`${id}-preview`} aria-selected="true" tabindex="0">Preview</button>
+        <button class="tabs__tab" type="button" role="tab" id={`${id}-tab-code`} aria-controls={`${id}-code`} aria-selected="false" tabindex="-1">Code</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="btn btn--ghost btn--sm" type="button" aria-pressed="false" data-preview-rtl title="Preview in a right-to-left layout">RTL</button>
+      <button class="btn btn--ghost btn--sm" type="button" data-preview-reset title="Start the preview again">Reset</button>
+      <slot name="actions" />
+    </div>
+    <div class="tabs__panel" role="tabpanel" id={`${id}-preview`} aria-labelledby={`${id}-tab-preview`}>
+      <Preview slug={slug} name={name} example={example || undefined} />
+    </div>
+    <div class="tabs__panel" role="tabpanel" id={`${id}-code`} aria-labelledby={`${id}-tab-code`} hidden>
+      <Code code={code} class="code--flush" />
+    </div>
+  </div>
+</figure>
+
+<script>
+  for (const figure of document.querySelectorAll<HTMLElement>("[data-figure]")) {
+    const preview = figure.querySelector<HTMLElement>(".gpu")
+    const remount = () => preview?.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true, detail: "remount" }))
+    figure.querySelector("[data-preview-reset]")?.addEventListener("click", remount)
+    const rtl = figure.querySelector<HTMLButtonElement>("[data-preview-rtl]")
+    rtl?.addEventListener("click", () => {
+      const on = rtl.getAttribute("aria-pressed") !== "true"
+      rtl.setAttribute("aria-pressed", String(on))
+      if (preview) preview.dataset.dir = on ? "rtl" : "ltr"
+      remount()
+    })
+  }
+</script>

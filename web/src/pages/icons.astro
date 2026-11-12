@@ -32,13 +32,41 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
     </p>
   </div>
 
-  <div class="wide icons" data-icons>
-    <section class="icons__catalog" aria-label="Icon catalog">
-      <label class="search">
-        <span class="sr-only">Search icons</span>
-        <input id="icon-search" type="search" placeholder="Search names, tags, and aliases" autocomplete="off" data-icon-search />
-      </label>
-      <p class="small icons__count" role="status" data-icon-count>{icons.length.toLocaleString("en")} icons</p>
+  <div class="icons" data-icons>
+    <!-- The selected icon and the search stay in view while the grid scrolls. -->
+    <div class="icons__top">
+      <aside class="detail" aria-label="Selected icon" data-icon-detail>
+        <div class="detail__preview">
+          <Preview id="icon-preview" slug="icons" name="icon" icon={initial.name} height={150} />
+        </div>
+        <div class="detail__info">
+          <p class="detail__name" data-icon-name>{initial.name}</p>
+          <div class="code">
+            <pre tabindex="0"><code class="shiki" set:html={snippet} /></pre>
+            <button class="code__copy" type="button" data-copy aria-label="Copy code">
+              <svg class="icon--copy" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="12" height="12" rx="2"></rect>
+                <path d="M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4"></path>
+              </svg>
+              <svg class="icon--check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"></path></svg>
+            </button>
+            <p class="code__status" role="status" data-copy-status></p>
+          </div>
+          <p class="small">
+            <a href={u(`/icons/lucide/${initial.name}.svg`)} download data-icon-download>Download the SVG</a>
+            · <a href={u("/icons/LICENSE")}>ISC and Feather MIT terms</a>
+          </p>
+        </div>
+      </aside>
+      <div class="icons__find">
+        <label class="search">
+          <span class="sr-only">Search icons</span>
+          <input id="icon-search" type="search" placeholder="Search names, tags, and aliases" autocomplete="off" data-icon-search />
+        </label>
+        <p class="small icons__count" role="status" data-icon-count>{icons.length.toLocaleString("en")} icons</p>
+      </div>
+    </div>
+    <section aria-label="Icon catalog">
       <ul class="grid" data-icon-grid>
         {
           icons.map((icon) => (
@@ -55,31 +83,6 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
         No icon matches. <button class="btn" type="button" data-icon-clear>Clear the search</button>
       </p>
     </section>
-
-    <aside class="detail" aria-label="Selected icon" tabindex="-1" data-icon-detail>
-      <a class="small detail__back" href="#icon-search">↑ Back to the grid</a>
-      <figure class="figure detail__figure">
-        <div class="figure__frame">
-          <Preview id="icon-preview" slug="icons" name="icon" icon={initial.name} height={180} />
-        </div>
-        <figcaption class="figure__caption"><span class="detail__name" data-icon-name>{initial.name}</span><br />At 16, 24, 32, and 48 pixels, drawn by GPUI.</figcaption>
-      </figure>
-      <div class="code">
-        <pre tabindex="0"><code class="shiki" set:html={snippet} /></pre>
-        <button class="code__copy" type="button" data-copy aria-label="Copy code">
-          <svg class="icon--copy" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="9" y="9" width="12" height="12" rx="2"></rect>
-            <path d="M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4"></path>
-          </svg>
-          <svg class="icon--check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"></path></svg>
-        </button>
-        <p class="code__status" role="status" data-copy-status></p>
-      </div>
-      <p class="small">
-        <a href={u(`/icons/lucide/${initial.name}.svg`)} download data-icon-download>Download the SVG</a>. Lucide
-        assets are under <a href={u("/icons/LICENSE")}>ISC and Feather MIT terms</a>.
-      </p>
-    </aside>
   </div>
 </Docs>
 
@@ -132,9 +135,9 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
     detail.querySelector<HTMLAnchorElement>("[data-icon-download]")!.href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/icons/lucide/${name}.svg`
     preview.dataset.icon = name
     preview.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true }))
-    if (scroll && matchMedia("(max-width: 63.9rem)").matches) {
-      detail.scrollIntoView({ block: "start" })
-      detail.focus({ preventScroll: true })
+    // Where the panel is too big to stay in view (a phone), go to it.
+    if (scroll && getComputedStyle(detail.parentElement!).position !== "sticky") {
+      detail.scrollIntoView({ block: "start", behavior: "smooth" })
     }
   }
   for (const cell of cells) {
@@ -151,16 +154,32 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
 
 <style>
   .icons {
-    display: grid;
-    gap: 2rem;
-    align-items: start;
     margin-top: 1.5rem;
   }
-  @media (min-width: 64rem) {
-    .icons {
-      grid-template-columns: minmax(0, 1fr) var(--margin);
-      gap: var(--gap);
+  .icons__top {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 0.75rem;
+  }
+  /* Stay under the header while the grid scrolls, where there is room. */
+  @media (min-width: 40rem) and (min-height: 40rem) {
+    .icons__top {
+      position: sticky;
+      top: var(--head);
+      z-index: 2;
     }
+  }
+  .icons__find {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .icons__find .search {
+    flex: 1;
+    min-width: 0;
   }
   .search input {
     width: 100%;
@@ -182,7 +201,7 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
     display: none;
   }
   .icons__count {
-    padding: 0.6rem 0;
+    white-space: nowrap;
   }
   .grid {
     list-style: none;
@@ -243,30 +262,35 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
     gap: 0.75rem;
     padding: 2rem 0;
   }
-  /* The detail column has one fixed width; long icon names and code lines
-     scroll or truncate inside it instead of resizing it. */
+  /* The preview has one fixed width; long icon names and code lines
+     scroll or truncate beside it. */
   .detail {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
     min-width: 0;
-    gap: 0.9rem;
-    position: sticky;
-    top: calc(var(--head) + 1.5rem);
-    scroll-margin-top: calc(var(--head) + 1rem);
+    scroll-margin-top: calc(var(--head) + 0.75rem);
   }
-  .detail__figure {
-    margin: 0;
-    width: auto;
+  @media (min-width: 40rem) {
+    .detail {
+      grid-template-columns: 15rem minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+  .detail__preview {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .detail__info {
+    display: grid;
+    gap: 0.4rem;
     min-width: 0;
-  }
-  .detail__figure :global(.figure__caption) {
-    min-height: 3em;
   }
   .detail__name {
-    display: inline-block;
-    max-width: calc(100% - 3.5rem);
-    vertical-align: bottom;
     font-family: var(--mono);
+    font-size: 0.9rem;
+    font-weight: 500;
     color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -275,13 +299,9 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
   .detail :global(.code) {
     min-width: 0;
   }
-  .detail__back {
-    display: inline-block;
-  }
-  @media (min-width: 64rem) {
-    .detail__back {
-      display: none;
-    }
+  .detail :global(.code pre) {
+    max-height: 9rem;
+    padding-block: 0.6rem;
   }
   .detail .small a {
     color: var(--rubric);
