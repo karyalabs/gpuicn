@@ -497,9 +497,13 @@ impl RenderOnce for Message {
 
         let mut header_children = self.header;
         let header = (!self.continuation && !compact).then(|| {
+            // GPUI reports no text baselines, so `items_baseline` lines the
+            // boxes up by their tops and a smaller time or marker sits high.
+            // Centred, text of any size lines up to within a pixel, and
+            // icons beside it centre on it as Mattermost's do.
             div()
                 .flex_row_in(dir)
-                .items_baseline()
+                .items_center()
                 .gap(theme.space(2.))
                 .min_w_0()
                 .children(author.take().map(|author| {
