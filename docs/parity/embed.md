@@ -4,15 +4,18 @@ shadcn/ui has no embed card. gpuicn draws Mattermost's two post embeds with
 Nova card tokens and the `Message` density steps. Implementation:
 `crates/ui/registry/embed/embed.rs`, using GPUI Kit 0.9.0.
 
-`LinkPreview` is an Open Graph preview: a muted site name, a semibold title
-clamped to two lines, a muted description clamped to three, and an optional
-image. The image is large below the text, or an 80px thumbnail on the right
-when it is narrower than 150px or roughly square (`LinkPreviewImageLayout`
-overrides the choice). The caller passes the image's pixel size, so the card
-reserves the box before the bytes arrive, as `Attachment::dimensions` does.
-`on_toggle` adds a chevron named "Collapse preview" or "Expand preview" that
-hides the image; `on_remove` adds a "Remove preview" button. The card is at
-most 480px wide.
+`LinkPreview` is an Open Graph preview, laid out as Mattermost's webapp: a
+muted site name, a semibold title on one line, a muted description clamped to
+two, and an optional image. The image is large below the text, scaled down
+(never up) to at most 392 × 240, or an 80px thumbnail on the right when it is
+narrower than 150px or than 4:3 (`LinkPreviewImageLayout` overrides the
+choice). The caller passes the image's pixel size, so the card reserves the
+box before the bytes arrive, as `Attachment::dimensions` does. `on_toggle`
+puts a round 24px chevron, "Hide image preview", over the large image's
+top-left corner; once hidden, a "Show image preview" button takes the image's
+place. A thumbnail has no toggle. Only a site name or `on_remove`'s "Remove
+preview" button add a row above the title. The card fills its container up
+to 700px.
 
 `MessageEmbed` is the integration attachment: a 4px colored bar (any color,
 a hex string, or `good`, `warning` and `danger` mapped to the status tokens),

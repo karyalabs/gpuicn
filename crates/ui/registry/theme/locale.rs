@@ -481,9 +481,9 @@ pub enum UiText {
     LoadImage,
     /// "Load image from {host}".
     LoadImageFrom(SharedString),
-    /// "Expand preview", on link embeds.
+    /// "Show image preview", on link embeds.
     ExpandPreview,
-    /// "Collapse preview", on link embeds.
+    /// "Hide image preview", on link embeds.
     CollapsePreview,
     /// "Remove preview", on link embeds.
     RemovePreview,
@@ -903,8 +903,8 @@ impl UiText {
             Self::Emoji => "Emoji",
             Self::Suggestions => "Suggestions",
             Self::LoadImage => "Load image",
-            Self::ExpandPreview => "Expand preview",
-            Self::CollapsePreview => "Collapse preview",
+            Self::ExpandPreview => "Show image preview",
+            Self::CollapsePreview => "Hide image preview",
             Self::RemovePreview => "Remove preview",
             Self::Attachment => "Attachment",
             Self::Jump => "Jump",
