@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Docs from "../layouts/Docs.astro"
 import Preview from "../components/Preview.astro"
 import { icons } from "../lib/docs"
@@ -43,7 +44,7 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
           icons.map((icon) => (
             <li>
               <a class="cell" href={`?icon=${icon.name}`} data-icon={icon.name} aria-current={icon.name === initial.name ? "true" : undefined}>
-                <img src={`/icons/lucide/${icon.name}.svg`} alt="" loading="lazy" decoding="async" />
+                <img src={u(`/icons/lucide/${icon.name}.svg`)} alt="" loading="lazy" decoding="async" />
                 <span>{icon.name}</span>
               </a>
             </li>
@@ -75,8 +76,8 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
         <p class="code__status" role="status" data-copy-status></p>
       </div>
       <p class="small">
-        <a href={`/icons/lucide/${initial.name}.svg`} download data-icon-download>Download the SVG</a>. Lucide
-        assets are under <a href="/icons/LICENSE">ISC and Feather MIT terms</a>.
+        <a href={u(`/icons/lucide/${initial.name}.svg`)} download data-icon-download>Download the SVG</a>. Lucide
+        assets are under <a href={u("/icons/LICENSE")}>ISC and Feather MIT terms</a>.
       </p>
     </aside>
   </div>
@@ -108,7 +109,7 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
   }
   input.addEventListener("input", async () => {
     if (!terms) {
-      terms = await fetch("/icons/search.json").then((response) => response.json()).catch(() => ({}))
+      terms = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/icons/search.json`).then((response) => response.json()).catch(() => ({}))
     }
     filter()
   })
@@ -128,7 +129,7 @@ if (!snippet.includes("data-icon-variant")) throw new Error("Icon snippet lost i
     }
     detail.querySelector("[data-icon-name]")!.textContent = name
     detail.querySelector<HTMLElement>("[data-icon-variant]")!.textContent = variant(name)
-    detail.querySelector<HTMLAnchorElement>("[data-icon-download]")!.href = `/icons/lucide/${name}.svg`
+    detail.querySelector<HTMLAnchorElement>("[data-icon-download]")!.href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/icons/lucide/${name}.svg`
     preview.dataset.icon = name
     preview.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true }))
     if (scroll && matchMedia("(max-width: 63.9rem)").matches) {

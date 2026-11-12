@@ -7,7 +7,7 @@ license.workspace = true
 repository.workspace = true
 description = "shadcn components for GPUI, as a crate or as source you own."
 readme = "README.md"
-homepage = "https://ui.imajha.com/"
+homepage = "https://karyalabs.dev/gpuicn/"
 keywords = ["gpui", "shadcn", "ui", "components"]
 categories = ["gui"]
 

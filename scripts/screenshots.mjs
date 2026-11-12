@@ -3,7 +3,7 @@
 //
 //   bun scripts/screenshots.mjs --dist web/public/demo --out docs/screenshots/v0.9.0 [--only button,dialog] [--compare docs/screenshots/v0.8.0] [--scale 1]
 //
-// Needs `bun add playwright` somewhere on NODE_PATH, the site built first (`trunk build --release --public-url /demo/ --dist
+// Needs `bun add playwright` somewhere on NODE_PATH, the site built first (`trunk build --release --public-url /gpuicn/demo/ --dist
 // ../web/public/demo` in `site/`), Chromium through Playwright, and no network.
 // Headless Chromium has no WebGPU, so the page is loaded with `?backend=webgl`,
 // which the showcase honors, and SwiftShader draws the frames. With --compare,
@@ -45,7 +45,7 @@ const wide = new Set(["sidebar", "virtual-list", "message-list"]);
 const types = { ".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm", ".css": "text/css", ".ttf": "font/ttf", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json" };
 const server = createServer((request, response) => {
   const url = new URL(request.url, "http://localhost");
-  let path = join(dist, url.pathname.replace(/^\/demo\//, "/"));
+  let path = join(dist, url.pathname.replace(/^\/gpuicn\/demo\//, "/"));
   if (!existsSync(path) || statSync(path).isDirectory()) path = join(dist, "index.html");
   response.writeHead(200, {
     "Content-Type": types[extname(path)] ?? "application/octet-stream",
@@ -69,7 +69,7 @@ try {
       const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
       const errors = [];
       page.on("pageerror", (error) => errors.push(String(error)));
-      await page.goto(`${origin}/demo/index.html?demo=${demo}&theme=${theme}&backend=webgl`);
+      await page.goto(`${origin}/gpuicn/demo/index.html?demo=${demo}&theme=${theme}&backend=webgl`);
       try {
         await page.waitForSelector("html[data-gpuicn-ready]", { timeout: 60_000 });
       } catch {

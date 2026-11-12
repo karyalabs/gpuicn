@@ -2,7 +2,7 @@
 
 The registry copies editable Rust files into `src/ui`. The `gpuicn` CLI also
 prepares a new app: it adds the pinned Cargo dependencies, downloads the Geist
-fonts, and writes a starter window. The [installation guide](https://ui.imajha.com/installation)
+fonts, and writes a starter window. The [installation guide](https://karyalabs.dev/gpuicn/installation/)
 shows the same starter.
 
 ## Quick start
@@ -210,7 +210,7 @@ Bun/Node dependencies are separate from Rust component installation.
 The existing published registry also supports:
 
 ```sh
-bunx shadcn@4.19.0 add https://ui.imajha.com/r/button.json
+bunx shadcn@4.19.0 add https://karyalabs.dev/gpuicn/r/button.json
 ```
 
 This legacy route needs Node.js and the `components.json` / `tsconfig.json`

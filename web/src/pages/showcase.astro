@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
@@ -51,8 +52,8 @@ const views = [
     <div class="figure__frame">
       {
         views.map(([value, , alt]) => (
-          <a class="views__shot" data-view={value} href={`/workspace-${value}.jpg`} target="_blank" rel="noreferrer">
-            <img src={`/workspace-${value}.jpg`} width="1188" height="768" alt={alt} loading={value === "light" ? "eager" : "lazy"} />
+          <a class="views__shot" data-view={value} href={u(`/workspace-${value}.jpg`)} target="_blank" rel="noreferrer">
+            <img src={u(`/workspace-${value}.jpg`)} width="1188" height="768" alt={alt} loading={value === "light" ? "eager" : "lazy"} />
           </a>
         ))
       }
@@ -98,7 +99,7 @@ const views = [
   </div>
   <Code code="cargo run --release -p gpuicn-showcase --features gpui_platform/runtime_shaders" lang="bash" />
   <div class="text">
-    <p>On Linux, with the build dependencies from <a href="/installation/">Installation</a>:</p>
+    <p>On Linux, with the build dependencies from <a href={u("/installation/")}>Installation</a>:</p>
   </div>
   <Code code="cargo run --release -p gpuicn-showcase --features gpui_platform/x11,gpui_platform/wayland" lang="bash" />
 </Docs>

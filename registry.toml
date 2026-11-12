@@ -1,5 +1,5 @@
 name = "gpuicn"
-homepage = "https://ui.imajha.com/"
+homepage = "https://karyalabs.dev/gpuicn/"
 
 # The one list of components. The registry JSON, the website's pages and the
 # gallery app are all generated from it; nothing else names a component.

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run sync:static && astro dev",
-    "build": "bun run sync:static && astro build",
+    "build": "bun run sync:static && astro build && cp headers dist/_headers",
     "sync:static": "bun ../scripts/sync-catalog.mjs && bun scripts/render-platform-notes.mjs && bun scripts/render-changelog.mjs && bun scripts/minify-demo.mjs && mkdir -p public/r && cp -R ../site/pages/r/. public/r/",
     "lint": "astro check",
     "typecheck": "astro check",

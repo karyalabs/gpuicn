@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
@@ -119,7 +120,7 @@ import { registry, release, releaseSource } from "../lib/release"
         <code>ui::app::run</code> registers the Lucide icons and the fonts, installs the light and dark
         themes generated from <code>assets/theme.css</code>, and follows the system appearance.
       </p>
-      <p><a href="/examples/hello.rs" download>Download this file</a>.</p>
+      <p><a href={u("/examples/hello.rs")} download>Download this file</a>.</p>
     </Aside>
     <div class="text">
       <p>Replace <code>src/main.rs</code> with the starter:</p>

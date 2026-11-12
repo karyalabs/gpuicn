@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import { categories, componentHref, isNew, guide, reference } from "../lib/catalog"
 
 interface Props {
@@ -23,7 +24,7 @@ const active = (href: string) => (current === href ? "page" : undefined)
     <ul class="side__list">
       {
         reference.map((page) => (
-          <li><a href={page.to} aria-current={active(page.to)}>{page.to === "/components/" ? "All components" : page.label}</a></li>
+          <li><a href={page.to} aria-current={active(page.to)}>{page.to === u("/components/") ? "All components" : page.label}</a></li>
         ))
       }
     </ul>

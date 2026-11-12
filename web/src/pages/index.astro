@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Base from "../layouts/Base.astro"
 import Preview from "../components/Preview.astro"
 import Code from "../components/Code.astro"
@@ -16,7 +17,7 @@ const newest = components.filter(isNew)
 <Base>
   <div class="home">
     <section class="hero">
-      <a class="hero__pill" href="/changelog/">
+      <a class="hero__pill" href={u("/changelog/")}>
         <span class="badge badge--new">{release}</span>
         {newest.length} new components
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
@@ -27,9 +28,9 @@ const newest = components.filter(isNew)
         design. Copy the ones you need into your app and edit them there.
       </p>
       <div class="hero__cta">
-        <a class="btn btn--primary btn--lg" href="/components/">Browse components</a>
-        <a class="btn btn--lg" href="/app/">Open the gallery app</a>
-        <a class="btn btn--ghost btn--lg" href="/installation/">Get started</a>
+        <a class="btn btn--primary btn--lg" href={u("/components/")}>Browse components</a>
+        <a class="btn btn--lg" href={u("/app/")}>Open the gallery app</a>
+        <a class="btn btn--ghost btn--lg" href={u("/installation/")}>Get started</a>
       </div>
     </section>
 
@@ -77,12 +78,12 @@ const newest = components.filter(isNew)
     <section class="block">
       <header class="block__head">
         <h2 class="h2">{components.length} components, by kind</h2>
-        <a class="block__more" href="/components/">See them all</a>
+        <a class="block__more" href={u("/components/")}>See them all</a>
       </header>
       <div class="kinds">
         {
           categories.map((category) => (
-            <a class="kind" href={`/components/#${category.id}`}>
+            <a class="kind" href={u(`/components/#${category.id}`)}>
               <span class="kind__title">
                 {category.title}
                 <span class="kind__count">{category.components.length}</span>
@@ -97,7 +98,7 @@ const newest = components.filter(isNew)
     <section class="block">
       <header class="block__head">
         <h2 class="h2">New</h2>
-        <a class="block__more" href="/changelog/">Changelog</a>
+        <a class="block__more" href={u("/changelog/")}>Changelog</a>
       </header>
       <div class="fresh">
         {newest.slice(0, 8).map((component) => <ComponentCard component={component} />)}
@@ -109,11 +110,11 @@ const newest = components.filter(isNew)
         <h2 class="h2">Start in three commands</h2>
         <p class="small start__text">
           With Rust 1.98 or newer, these produce a running window with a button that counts clicks.
-          <a href="/installation/">Installation</a> covers each step.
+          <a href={u("/installation/")}>Installation</a> covers each step.
         </p>
         <p class="small start__text">
-          Also here: {icons.length.toLocaleString("en")} Lucide <a href="/icons/">icons</a> as Rust
-          names, and <a href="/showcase/">gpuicn Workspace</a>, an example app for macOS and Linux built
+          Also here: {icons.length.toLocaleString("en")} Lucide <a href={u("/icons/")}>icons</a> as Rust
+          names, and <a href={u("/showcase/")}>gpuicn Workspace</a>, an example app for macOS and Linux built
           from this catalog.
         </p>
       </div>

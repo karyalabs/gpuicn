@@ -297,7 +297,7 @@ class Preview {
     // `/demo/`, not `/demo/index.html`: the host forces trailing slashes and
     // redirects the latter, and a cross-origin-isolated page blocks a framed
     // document that arrives through a redirect.
-    return `/demo/?${query}`
+    return `${import.meta.env.BASE_URL.replace(/\/$/, "")}/demo/?${query}`
   }
   mount() {
     this.frame?.remove()

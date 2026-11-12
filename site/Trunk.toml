@@ -1,6 +1,6 @@
 [build]
 dist = "dist/demo"
-public_url = "/demo/"
+public_url = "/gpuicn/demo/"
 minify = "on_release"
 
 [serve]

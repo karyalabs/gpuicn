@@ -109,7 +109,7 @@ mod button {
 
     fn example() -> impl IntoElement {
         Button::new("open-docs")
-            .on_click(|_, _, cx| cx.open_url("https://ui.imajha.com"))
+            .on_click(|_, _, cx| cx.open_url("https://karyalabs.dev/gpuicn/"))
             .label("Open docs")
     }
 }

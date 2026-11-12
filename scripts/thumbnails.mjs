@@ -45,7 +45,7 @@ const demos = Object.entries(manifest.components)
 const types = { ".html": "text/html", ".js": "text/javascript", ".wasm": "application/wasm", ".css": "text/css", ".ttf": "font/ttf", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json" };
 const server = createServer((request, response) => {
   const url = new URL(request.url, "http://localhost");
-  let path = join(dist, url.pathname.replace(/^\/demo\//, "/"));
+  let path = join(dist, url.pathname.replace(/^\/gpuicn\/demo\//, "/"));
   if (!existsSync(path) || statSync(path).isDirectory()) path = join(dist, "index.html");
   response.writeHead(200, {
     "Content-Type": types[extname(path)] ?? "application/octet-stream",
@@ -108,7 +108,7 @@ async function worker() {
     const { slug, theme, width, height } = job;
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
     try {
-      await page.goto(`${origin}/demo/?demo=${slug}&theme=${theme}&width=${width}&height=${height}&backend=webgl`);
+      await page.goto(`${origin}/gpuicn/demo/?demo=${slug}&theme=${theme}&width=${width}&height=${height}&backend=webgl`);
       await page.waitForSelector("html[data-gpuicn-ready]", { timeout: 60_000 });
       await page.waitForTimeout(wait);
       const still = await trim(tool, await page.screenshot());

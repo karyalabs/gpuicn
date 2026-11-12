@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import "../styles/global.css"
 import Palette from "../components/Palette.astro"
 import Logo from "../components/Logo.astro"
@@ -29,18 +30,18 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-panels.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-panels.png" />
-    <link rel="preload" href="/type/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/type/Geist-Medium.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/type/Geist-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/type/GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" type="image/png" sizes="32x32" href={u("/favicon-panels.png")} />
+    <link rel="apple-touch-icon" sizes="180x180" href={u("/apple-touch-icon-panels.png")} />
+    <link rel="preload" href={u("/type/Geist-Regular.woff2")} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={u("/type/Geist-Medium.woff2")} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={u("/type/Geist-SemiBold.woff2")} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={u("/type/GeistMono-Regular.woff2")} as="font" type="font/woff2" crossorigin />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="gpuicn" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content="https://ui.imajha.com/og-gpuicn-beta.jpg" />
+    <meta property="og:image" content={new URL(u("/og-gpuicn-beta.jpg"), Astro.site).href} />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -51,7 +52,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content="https://ui.imajha.com/og-gpuicn-beta.jpg" />
+    <meta name="twitter:image" content={new URL(u("/og-gpuicn-beta.jpg"), Astro.site).href} />
     <meta name="theme-color" content="#fdfdfb" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)" />
     <script is:inline>
@@ -84,15 +85,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     <a class="skip" href="#main">Skip to content</a>
     <header class="head">
       <div class="head__row">
-        <a class="head__brand" href="/" aria-label="gpuicn home">
+        <a class="head__brand" href={u("/")} aria-label="gpuicn home">
           <Logo size={20} />
           <span>gpuicn</span>
         </a>
         <nav class="head__nav" aria-label="Main">
-          <a href="/introduction/">Docs</a>
-          <a href="/components/">Components</a>
-          <a href="/icons/">Icons</a>
-          <a href="/app/">Gallery app</a>
+          <a href={u("/introduction/")}>Docs</a>
+          <a href={u("/components/")}>Components</a>
+          <a href={u("/icons/")}>Icons</a>
+          <a href={u("/app/")}>Gallery app</a>
         </nav>
         <div class="head__tools">
           <details class="head__menu head__more" data-theme-menu>
@@ -100,10 +101,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
             </summary>
             <nav class="head__popup head__links" aria-label="Main, small screens">
-              <a href="/introduction/">Docs</a>
-              <a href="/components/">Components</a>
-              <a href="/icons/">Icons</a>
-              <a href="/app/">Gallery app</a>
+              <a href={u("/introduction/")}>Docs</a>
+              <a href={u("/components/")}>Components</a>
+              <a href={u("/icons/")}>Icons</a>
+              <a href={u("/app/")}>Gallery app</a>
             </nav>
           </details>
           <button class="head__tool" type="button" data-open-palette>

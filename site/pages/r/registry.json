@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "gpuicn",
-  "homepage": "https://ui.imajha.com/",
+  "homepage": "https://karyalabs.dev/gpuicn/",
   "items": [
     {
       "name": "theme",

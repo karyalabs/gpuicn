@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 
@@ -21,8 +22,8 @@ const has = existsSync(join(process.cwd(), "public/thumbs", `${slug}-light.png`)
   {
     has ? (
       <>
-        <img class="thumb__img thumb__img--light" src={`/thumbs/${slug}-light.png`} alt="" loading="lazy" decoding="async" />
-        <img class="thumb__img thumb__img--dark" src={`/thumbs/${slug}-dark.png`} alt="" loading="lazy" decoding="async" />
+        <img class="thumb__img thumb__img--light" src={u(`/thumbs/${slug}-light.png`)} alt="" loading="lazy" decoding="async" />
+        <img class="thumb__img thumb__img--dark" src={u(`/thumbs/${slug}-dark.png`)} alt="" loading="lazy" decoding="async" />
       </>
     ) : (
       <span class="thumb__initial" aria-hidden="true">{name[0]}</span>

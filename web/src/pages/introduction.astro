@@ -1,4 +1,5 @@
 ---
+import { u } from "@/lib/base"
 import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
@@ -79,7 +80,7 @@ const button = componentDocs("button")
 
     <h2 class="h2">What these docs assume</h2>
     <p>
-      You can read Rust and have built a GPUI window before. The <a href="/installation/">Installation</a>
+      You can read Rust and have built a GPUI window before. The <a href={u("/installation/")}>Installation</a>
       page is a how-to, not a tutorial. It names each file it writes and what you should see, but it
       does not explain GPUI's context or entity model. For that, read GPUI's own documentation.
     </p>

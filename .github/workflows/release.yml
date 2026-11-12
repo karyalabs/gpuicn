@@ -8,7 +8,7 @@ name: Release
 # finishes that release from the tagged commit. Otherwise it runs the slow
 # end-to-end checks in verify.yml, tags the commit, publishes gpuicn and then
 # gpuicn-cli, builds the example apps, publishes the GitHub release and deploys
-# ui.imajha.com. Every step skips work that is already done, so "Re-run failed
+# karyalabs.dev/gpuicn. Every step skips work that is already done, so "Re-run failed
 # jobs" is always safe. It runs CI itself first instead of listening for CI's
 # workflow_run event: crates.io Trusted Publishing refuses tokens to
 # workflow_run triggers.
