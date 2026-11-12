@@ -14,9 +14,9 @@
     { "pattern": "ui.jha.sh", "custom_domain": true }
   ],
   "vars": {
-    // "true" once karyalabs.dev/gpuicn is confirmed live: the old addresses
-    // then redirect to it. Until then they serve the site under /gpuicn/.
-    "REDIRECT_OLD_HOSTS": "false"
+    // "true": the old addresses redirect to karyalabs.dev/gpuicn. With
+    // "false" they serve the site under /gpuicn/ themselves.
+    "REDIRECT_OLD_HOSTS": "true"
   },
   "assets": {
     // The site is in web/dist/gpuicn, so its files are under /gpuicn/.
