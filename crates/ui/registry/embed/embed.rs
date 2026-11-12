@@ -1328,7 +1328,8 @@ impl RenderOnce for QuotedMessage {
                     .flex_1()
                     .min_w_0()
                     .flex_row_in(dir)
-                    .items_baseline()
+                    // GPUI has no text baselines; see `Message`'s header.
+                    .items_center()
                     .gap(theme.space(2.))
                     .overflow_hidden()
                     .child(

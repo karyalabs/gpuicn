@@ -4,6 +4,20 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.6
+
+[Notes](docs/releases/v0.11.6.md)
+
+### Fixed
+
+- A message header's name, time and `header_child` markers line up: the row
+  centres its items, since GPUI reports no text baselines. Embed headers too.
+
+### Changed
+
+- Registry items carry a `meta` with `since` and the catalog group.
+- `loop_phase` steps on the executor's clock.
+
 ## 0.11.5
 
 [Notes](docs/releases/v0.11.5.md)
