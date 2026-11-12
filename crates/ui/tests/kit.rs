@@ -875,3 +875,76 @@ fn otp_field_pastes_a_code_from_the_clipboard(cx: &mut TestAppContext) {
         .collect();
     assert_eq!(events, [OtpEvent::Change, OtpEvent::Complete]);
 }
+
+use gpui_kit::SharedString;
+
+struct BadgedTabs {
+    selected: SharedString,
+    secondary: Option<SharedString>,
+}
+impl Render for BadgedTabs {
+    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        use gpuicn::tabs::{Tab, Tabs, TabsSize, TabsVariant};
+        let entity = cx.entity().downgrade();
+        let tab = |value: &'static str, label: &'static str, aria: &'static str| {
+            let entity = entity.clone();
+            Tab::new(value, value, label)
+                .aria_label(aria)
+                .trailing(
+                    div()
+                        .debug_selector(move || format!("{value}.badge"))
+                        .child("2"),
+                )
+                .on_secondary_click(move |_, _, cx| {
+                    entity
+                        .update(cx, |this, cx| {
+                            this.secondary = Some(value.into());
+                            cx.notify();
+                        })
+                        .unwrap();
+                })
+        };
+        Tabs::new("teams")
+            .variant(TabsVariant::Line)
+            .size(TabsSize::Sm)
+            .selected(self.selected.clone())
+            .item(tab("eng", "Engineering", "Engineering, 2 mentions"))
+            .item(tab("design", "Design", "Design, 2 mentions"))
+            .end(div().debug_selector(|| "teams.more".into()).child("More"))
+    }
+}
+
+#[gpui_kit::test]
+fn tabs_carry_trailing_badges_an_end_slot_and_a_secondary_click(cx: &mut TestAppContext) {
+    use gpui_kit::test::TestQueryExt as _;
+    cx.update(gpuicn::init);
+    let (view, cx) = cx.add_window_view(|_, _| BadgedTabs {
+        selected: "eng".into(),
+        secondary: None,
+    });
+    cx.update(|window, cx| window.draw(cx).clear(cx));
+    let design = cx.update(|window, _| {
+        let elements = window.elements();
+        assert!(
+            elements
+                .iter()
+                .any(|e| e.label().is_some_and(|l| l == "Engineering, 2 mentions")),
+            "the accessible label replaces the visible one"
+        );
+        elements
+            .into_iter()
+            .find(|e| e.label().is_some_and(|l| l == "Design, 2 mentions"))
+            .unwrap()
+            .bounds()
+    });
+    // The badge sits inside its tab, after the label; the end slot follows.
+    let badge = cx.debug_bounds("design.badge").unwrap();
+    assert!(design.contains(&badge.center()));
+    assert!(cx.debug_bounds("teams.more").unwrap().left() >= design.right());
+    cx.simulate_mouse_down(
+        design.center(),
+        gpui_kit::MouseButton::Right,
+        gpui_kit::Modifiers::none(),
+    );
+    cx.update(|_, cx| assert_eq!(view.read(cx).secondary.as_deref(), Some("design")));
+}
