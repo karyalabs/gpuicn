@@ -4,6 +4,20 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.8
+
+[Notes](docs/releases/v0.11.8.md)
+
+### Changed
+
+- `LinkPreview` is laid out as Mattermost's webapp: the collapse toggle is a
+  round chevron over the large image's top-left corner, not a row of its own
+  above the title; a hidden image leaves "Show image preview" in its place;
+  large images keep their own size up to 392 × 240; the card fills its
+  container up to 700px; the title takes one line and the description two.
+  Images narrower than 4:3 show as thumbnails, which have no toggle.
+- The toggle's names are "Hide image preview" and "Show image preview".
+
 ## 0.11.7
 
 [Notes](docs/releases/v0.11.7.md)

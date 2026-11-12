@@ -43,7 +43,7 @@ pub const LARGE_IMAGE_MIN_WIDTH: u32 = 150;
 pub enum LinkPreviewImageLayout {
     #[default]
     /// A thumbnail when the image is narrower than [`LARGE_IMAGE_MIN_WIDTH`]
-    /// or roughly square (or taller than wide); a large image otherwise.
+    /// or than 4:3; a large image otherwise, as in Mattermost's webapp.
     Auto,
     /// The full-width image below the text.
     Large,
@@ -56,8 +56,8 @@ impl LinkPreviewImageLayout {
     pub fn resolve(self, width: u32, height: u32) -> Self {
         match self {
             Self::Auto => {
-                let square = height > 0 && (width as f32) < height as f32 * 1.2;
-                if width < LARGE_IMAGE_MIN_WIDTH || square {
+                let narrow = height > 0 && (width as f32) < height as f32 * 4. / 3.;
+                if width < LARGE_IMAGE_MIN_WIDTH || narrow {
                     Self::Thumbnail
                 } else {
                     Self::Large
@@ -166,16 +166,28 @@ fn fit_within(width: f32, height: f32, max: (Pixels, Pixels)) -> (Pixels, Pixels
     (px((width * scale).round()), px((height * scale).round()))
 }
 
-/// The box of a large image of `width` × `height` pixels. The width also
-/// shrinks with a narrow card, and the aspect ratio keeps the height in step.
+/// The largest box a message attachment's image takes.
+fn attachment_image_max(theme: &UiTheme) -> (Pixels, Pixels) {
+    (theme.space(114.), theme.space(72.))
+}
+
+/// The largest box a link preview's image takes: 392 × 240, as in
+/// Mattermost's webapp. A smaller image keeps its own size.
+fn preview_image_max(theme: &UiTheme) -> (Pixels, Pixels) {
+    (theme.space(98.), theme.space(60.))
+}
+
+/// The box of a large image of `width` × `height` pixels, scaled down to fit
+/// `max`. The width also shrinks with a narrow card, and the aspect ratio
+/// keeps the height in step.
 fn large_box(
     id: ElementId,
     width: u32,
     height: u32,
-    theme: &UiTheme,
+    max: (Pixels, Pixels),
 ) -> gpui_kit::Stateful<gpui_kit::Div> {
     let (width, height) = (width.max(1) as f32, height.max(1) as f32);
-    let (box_width, _) = fit_within(width, height, (theme.space(114.), theme.space(72.)));
+    let (box_width, _) = fit_within(width, height, max);
     div()
         .id(id)
         .w(box_width)
@@ -188,10 +200,11 @@ fn large_box(
 fn large_image(
     id: ElementId,
     image: SizedImage,
+    max: (Pixels, Pixels),
     on_click: Option<Handler>,
     theme: &UiTheme,
 ) -> AnyElement {
-    large_box(id, image.width, image.height, theme)
+    large_box(id, image.width, image.height, max)
         .debug_selector(|| "embed-image".into())
         .child(clipped_image(image.source, theme.radius.md, ObjectFit::Cover, theme).size_full())
         .when_some(on_click, |frame, handler| {
@@ -306,12 +319,13 @@ fn placeholder_button(
 fn large_placeholder(
     id: ElementId,
     placeholder: ImagePlaceholder,
+    max: (Pixels, Pixels),
     window: &mut Window,
     cx: &mut App,
     theme: &UiTheme,
 ) -> AnyElement {
     let (width, height) = placeholder.layout_size();
-    large_box((id.clone(), "frame").into(), width, height, theme)
+    large_box((id.clone(), "frame").into(), width, height, max)
         .debug_selector(|| "embed-image-placeholder".into())
         .child(placeholder_button(id, placeholder, window, cx, theme))
         .into_any_element()
@@ -480,7 +494,7 @@ impl LinkPreview {
         self.site_name = (!site_name.trim().is_empty()).then_some(site_name);
         self
     }
-    /// Sets the description, clamped to three lines.
+    /// Sets the description, clamped to two lines.
     pub fn description(mut self, description: impl Into<SharedString>) -> Self {
         self.description = Some(description.into());
         self
@@ -507,8 +521,9 @@ impl LinkPreview {
         self.image_layout = layout;
         self
     }
-    /// Hides the image, as Mattermost's per-post "collapse preview". The
-    /// text stays.
+    /// Hides a large image, as Mattermost's per-post "Hide image preview",
+    /// leaving "Show image preview" in its place. The text stays, and so does
+    /// a thumbnail.
     pub fn collapsed(mut self, collapsed: bool) -> Self {
         self.collapsed = collapsed;
         self
@@ -526,10 +541,11 @@ impl LinkPreview {
         self.on_click = Some(Rc::new(handler));
         self
     }
-    /// Adds a chevron that collapses or expands the image, named "Collapse
-    /// preview" or "Expand preview". Receives the new collapsed state; the
-    /// caller stores it and passes it back through `collapsed`. Shown only
-    /// when the preview has an image or an image placeholder.
+    /// Adds a round chevron on the large image's top-left corner that hides
+    /// it ("Hide image preview"), and a "Show image preview" button in its
+    /// place once hidden. Receives the new collapsed state; the caller stores
+    /// it and passes it back through `collapsed`. Shown only for a large
+    /// image or image placeholder; a thumbnail has no toggle.
     pub fn on_toggle(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.on_toggle = Some(Rc::new(handler));
         self
@@ -558,33 +574,14 @@ impl RenderOnce for LinkPreview {
         let id = self.id;
         let collapsed = self.collapsed;
 
-        let toggle = self
-            .on_toggle
-            .filter(|_| self.image.is_some())
-            .map(|handler| {
-                let (icon, label) = if collapsed {
-                    (
-                        theme.direction.icon(
-                            true,
-                            LucideIcon::ChevronLeft,
-                            LucideIcon::ChevronRight,
-                        ),
-                        locale::text(cx, UiText::ExpandPreview),
-                    )
-                } else {
-                    (
-                        LucideIcon::ChevronDown,
-                        locale::text(cx, UiText::CollapsePreview),
-                    )
-                };
-                icon_button(
-                    (id.clone(), "toggle").into(),
-                    icon,
-                    label,
-                    move |_, window, cx| handler(&!collapsed, window, cx),
-                    &theme,
-                )
-            });
+        // A large image sits below the text and can be collapsed; a small one
+        // sits beside the text and always shows, as in Mattermost's webapp.
+        let large_layout = self.image.as_ref().is_some_and(|slot| {
+            let (width, height) = slot.size();
+            self.image_layout.resolve(width, height) == LinkPreviewImageLayout::Large
+        });
+        let toggle = self.on_toggle.filter(|_| large_layout);
+
         let remove = self.on_remove.map(|handler| {
             icon_button(
                 (id.clone(), "remove").into(),
@@ -594,38 +591,37 @@ impl RenderOnce for LinkPreview {
                 &theme,
             )
         });
-        let header =
-            (self.site_name.is_some() || toggle.is_some() || remove.is_some()).then(|| {
-                div()
-                    .flex_row_in(theme.direction)
-                    .items_center()
-                    .gap(theme.space(1.))
-                    .min_h(theme.space(5.))
-                    .child(
-                        text::xs(div(), &theme)
-                            .flex_1()
-                            .min_w_0()
-                            .text_color(colors.muted_foreground)
-                            .overflow_hidden()
-                            .text_ellipsis()
-                            .whitespace_nowrap()
-                            .children(self.site_name),
-                    )
-                    .children(
-                        toggle.map(|toggle| {
-                            div().debug_selector(|| "embed-toggle".into()).child(toggle)
-                        }),
-                    )
-                    .children(remove)
-            });
+        // Only a site name or the remove button earn a row above the title;
+        // the collapse toggle sits on the image instead.
+        let header = (self.site_name.is_some() || remove.is_some()).then(|| {
+            div()
+                .flex_row_in(theme.direction)
+                .items_center()
+                .gap(theme.space(1.))
+                .child(
+                    text::xs(div(), &theme)
+                        .flex_1()
+                        .min_w_0()
+                        .text_color(colors.muted_foreground)
+                        .overflow_hidden()
+                        .text_ellipsis()
+                        .whitespace_nowrap()
+                        .children(self.site_name),
+                )
+                .children(remove)
+        });
 
-        let (large, thumb) = match self.image.filter(|_| !collapsed) {
+        let (large, thumb) = match self.image {
+            Some(_) if collapsed && large_layout => (
+                toggle.map(|handler| {
+                    show_image_button((id.clone(), "toggle").into(), handler, &theme, cx)
+                }),
+                None,
+            ),
             Some(slot) => {
-                let (width, height) = slot.size();
-                let as_thumbnail =
-                    self.image_layout.resolve(width, height) == LinkPreviewImageLayout::Thumbnail;
-                match (slot, as_thumbnail) {
-                    (ImageSlot::Image(image), true) => (
+                let max = preview_image_max(&theme);
+                let (large, thumb) = match (slot, large_layout) {
+                    (ImageSlot::Image(image), false) => (
                         None,
                         Some(thumbnail(
                             (id.clone(), "thumbnail").into(),
@@ -634,16 +630,17 @@ impl RenderOnce for LinkPreview {
                             &theme,
                         )),
                     ),
-                    (ImageSlot::Image(image), false) => (
+                    (ImageSlot::Image(image), true) => (
                         Some(large_image(
                             (id.clone(), "image").into(),
                             image,
+                            max,
                             self.on_click.clone(),
                             &theme,
                         )),
                         None,
                     ),
-                    (ImageSlot::Placeholder(placeholder), true) => (
+                    (ImageSlot::Placeholder(placeholder), false) => (
                         None,
                         Some(thumbnail_placeholder(
                             (id.clone(), "thumbnail-placeholder").into(),
@@ -653,22 +650,36 @@ impl RenderOnce for LinkPreview {
                             &theme,
                         )),
                     ),
-                    (ImageSlot::Placeholder(placeholder), false) => (
+                    (ImageSlot::Placeholder(placeholder), true) => (
                         Some(large_placeholder(
                             (id.clone(), "image-placeholder").into(),
                             placeholder,
+                            max,
                             window,
                             cx,
                             &theme,
                         )),
                         None,
                     ),
-                }
+                };
+                // The toggle overlaps the image's top-left corner.
+                let large = large.map(|image| {
+                    div()
+                        .relative()
+                        .pt(theme.space(1.5))
+                        .child(image)
+                        .children(toggle.map(|handler| {
+                            hide_image_button((id.clone(), "toggle").into(), handler, &theme, cx)
+                        }))
+                        .into_any_element()
+                });
+                (large, thumb)
             }
             None => (None, None),
         };
 
         let card = card_frame(id.clone(), self.title.clone(), &theme)
+            .max_w(theme.space(175.))
             .flex()
             .flex_col()
             .gap(gap)
@@ -693,12 +704,12 @@ impl RenderOnce for LinkPreview {
                             .child(title_text(
                                 (id.clone(), "title").into(),
                                 self.title,
-                                2,
+                                1,
                                 self.on_click,
                                 &theme,
                             ))
                             .children(self.description.map(|description| {
-                                text::muted(div(), &theme).line_clamp(3).child(description)
+                                text::muted(div(), &theme).line_clamp(2).child(description)
                             })),
                     )
                     .children(thumb),
@@ -706,6 +717,80 @@ impl RenderOnce for LinkPreview {
             .children(large);
         apply_style(card, &self.style)
     }
+}
+
+/// The round "Hide image preview" chevron on a large image's top-left corner.
+fn hide_image_button(
+    id: ElementId,
+    handler: ToggleHandler,
+    theme: &UiTheme,
+    cx: &App,
+) -> AnyElement {
+    div()
+        .absolute()
+        .top(-theme.space(1.))
+        .left(-theme.space(1.))
+        .rounded_full()
+        .bg(theme.colors.card)
+        .debug_selector(|| "embed-toggle".into())
+        .child(
+            Button::new(id)
+                .variant(ButtonVariant::Outline)
+                .size(ButtonSize::IconXs)
+                .rounded_full()
+                .aria_label(locale::text(cx, UiText::CollapsePreview))
+                .on_click(move |_, window, cx| {
+                    cx.stop_propagation();
+                    handler(&true, window, cx)
+                })
+                .child(
+                    lucide(LucideIcon::ChevronDown)
+                        .size(theme.space(3.5))
+                        .text_color(theme.colors.muted_foreground),
+                ),
+        )
+        .into_any_element()
+}
+
+/// "Show image preview", in a collapsed image's place.
+fn show_image_button(
+    id: ElementId,
+    handler: ToggleHandler,
+    theme: &UiTheme,
+    cx: &App,
+) -> AnyElement {
+    let label = locale::text(cx, UiText::ExpandPreview);
+    div()
+        .flex()
+        .self_start()
+        // Lines the chevron up with the text above, past the button's padding.
+        .ml(-theme.space(2.))
+        .debug_selector(|| "embed-toggle".into())
+        .child(
+            Button::new(id)
+                .variant(ButtonVariant::Ghost)
+                .size(ButtonSize::Xs)
+                .aria_label(label.clone())
+                .on_click(move |_, window, cx| {
+                    cx.stop_propagation();
+                    handler(&false, window, cx)
+                })
+                .child(
+                    lucide(theme.direction.icon(
+                        true,
+                        LucideIcon::ChevronLeft,
+                        LucideIcon::ChevronRight,
+                    ))
+                    .size(theme.space(3.5))
+                    .text_color(theme.colors.muted_foreground),
+                )
+                .child(
+                    text::xs(div(), theme)
+                        .text_color(theme.colors.muted_foreground)
+                        .child(label),
+                ),
+        )
+        .into_any_element()
 }
 
 #[derive(Clone, Copy)]
@@ -1022,12 +1107,14 @@ impl RenderOnce for MessageEmbed {
             ImageSlot::Image(image) => large_image(
                 (id.clone(), "image").into(),
                 image,
+                attachment_image_max(&theme),
                 self.on_image_click,
                 &theme,
             ),
             ImageSlot::Placeholder(placeholder) => large_placeholder(
                 (id.clone(), "image-placeholder").into(),
                 placeholder,
+                attachment_image_max(&theme),
                 window,
                 cx,
                 &theme,
@@ -1585,10 +1672,10 @@ mod tests {
         let (_, mut cx) = probe(cx, false);
         cx.update(|window, cx| window.draw(cx).clear(cx));
         let image = cx.debug_bounds("embed-image").unwrap();
-        // 1200 × 630 fills the card's content width (480px less padding and
-        // border) and keeps its aspect ratio, so the height is known up front.
-        assert_eq!(image.size.width, px(454.));
-        let expected = 454. * 630. / 1200.;
+        // 1200 × 630 scales down to the 392px-wide cap and keeps its aspect
+        // ratio, so the height is known up front.
+        assert_eq!(image.size.width, px(392.));
+        let expected = 392. * 630. / 1200.;
         assert!((f32::from(image.size.height) - expected).abs() < 1.);
     }
 
@@ -1633,16 +1720,16 @@ mod tests {
         // The same 1200 × 630 box the loaded image takes.
         let (_, mut sized) = placeholder_probe(cx, Some((1200, 630)));
         let frame = sized.debug_bounds("embed-image-placeholder").unwrap();
-        assert_eq!(frame.size.width, px(454.));
-        assert!((f32::from(frame.size.height) - 454. * 630. / 1200.).abs() < 1.);
+        assert_eq!(frame.size.width, px(392.));
+        assert!((f32::from(frame.size.height) - 392. * 630. / 1200.).abs() < 1.);
     }
 
     #[gpui_kit::test]
     fn placeholders_without_a_size_are_16_by_9(cx: &mut TestAppContext) {
         let (_, mut cx) = placeholder_probe(cx, None);
         let frame = cx.debug_bounds("embed-image-placeholder").unwrap();
-        assert_eq!(frame.size.width, px(454.));
-        assert!((f32::from(frame.size.height) - 454. * 9. / 16.).abs() < 1.);
+        assert_eq!(frame.size.width, px(392.));
+        assert!((f32::from(frame.size.height) - 392. * 9. / 16.).abs() < 1.);
     }
 
     #[gpui_kit::test]
@@ -1707,6 +1794,18 @@ mod tests {
             Some(false),
             "expanding reports collapsed = false"
         );
+    }
+
+    #[gpui_kit::test]
+    fn the_toggle_sits_on_the_images_corner_with_no_row_of_its_own(cx: &mut TestAppContext) {
+        let (toggled, mut cx) = probe(cx, false);
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        let image = cx.debug_bounds("embed-image").unwrap();
+        let toggle = cx.debug_bounds("embed-toggle").unwrap();
+        assert!(toggle.contains(&image.origin), "over the top-left corner");
+        assert!(toggle.top() < image.top() && toggle.left() < image.left());
+        cx.simulate_click(toggle.center(), Default::default());
+        assert_eq!(toggled.get(), Some(true), "hiding reports collapsed = true");
     }
 
     struct Quote {
