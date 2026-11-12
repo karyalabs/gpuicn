@@ -435,12 +435,14 @@ pub const LOOP_STEPS_PER_SECOND: u32 = 12;
 /// window costs nothing until the window comes forward (activation redraws it).
 pub fn loop_phase(period: Duration, window: &mut Window, cx: &mut App) -> f32 {
     thread_local! {
-        static EPOCH: web_time::Instant = web_time::Instant::now();
+        static EPOCH: std::cell::OnceCell<web_time::Instant> = const { std::cell::OnceCell::new() };
         static WAITING: std::cell::RefCell<std::collections::HashSet<gpui_kit::EntityId>> =
             Default::default();
     }
     let step = Duration::from_secs(1) / LOOP_STEPS_PER_SECOND;
-    let elapsed = EPOCH.with(|epoch| epoch.elapsed());
+    // The executor's clock, so the steps follow simulated time in tests.
+    let now = cx.background_executor().now();
+    let elapsed = EPOCH.with(|epoch| now.duration_since(*epoch.get_or_init(|| now)));
     let steps = (period.as_secs_f64() / step.as_secs_f64()).round().max(1.);
     let at = (elapsed.as_secs_f64() / step.as_secs_f64()).floor();
     let phase = ((at % steps) / steps) as f32;
