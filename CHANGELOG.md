@@ -4,6 +4,17 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.7
+
+[Notes](docs/releases/v0.11.7.md)
+
+### Added
+
+- `Tab::trailing`, `Tab::aria_label` and `Tab::on_secondary_click`, for tabs
+  with a count badge and a context menu.
+- `Tabs::end`, `Tabs::size(TabsSize::Sm)` and `Tabs::text_colors`, for tab
+  rows in a sidebar with a "More" menu at the end.
+
 ## 0.11.6
 
 [Notes](docs/releases/v0.11.6.md)

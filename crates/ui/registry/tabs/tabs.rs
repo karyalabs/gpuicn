@@ -5,9 +5,10 @@ use super::theme::{
     primitives::{disabled, focus, text},
 };
 use gpui_kit::{
-    App, Div, ElementId, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
-    Role, SharedString, Stateful, StatefulInteractiveElement as _, StyleRefinement, Styled, Window,
-    div, prelude::FluentBuilder as _,
+    AnyElement, App, Div, ElementId, InteractiveElement as _, IntoElement, MouseButton,
+    MouseDownEvent, ParentElement as _, RenderOnce, Rgba, Role, SharedString, Stateful,
+    StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div,
+    prelude::FluentBuilder as _,
 };
 use std::rc::Rc;
 
@@ -21,12 +22,27 @@ pub enum TabsVariant {
     Line,
 }
 
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+/// How large the tabs are.
+pub enum TabsSize {
+    #[default]
+    /// 14 px labels.
+    Default,
+    /// 13 px labels in a slightly shorter row, for sidebars and toolbars.
+    Sm,
+}
+
+type SecondaryHandler = Rc<dyn Fn(&MouseDownEvent, &mut Window, &mut App)>;
+
 /// One tab with a stable ID, selection value and visible label.
 pub struct Tab {
     id: ElementId,
     value: SharedString,
     label: SharedString,
     disabled: bool,
+    aria: Option<SharedString>,
+    trailing: Option<AnyElement>,
+    on_secondary: Option<SecondaryHandler>,
 }
 impl Tab {
     /// Creates a `Tab` with a stable caller-owned ID.
@@ -40,11 +56,35 @@ impl Tab {
             value: value.into(),
             label: label.into(),
             disabled: false,
+            aria: None,
+            trailing: None,
+            on_secondary: None,
         }
     }
     /// Disables interaction and applies the disabled appearance.
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
+        self
+    }
+    /// Draws `element` after the label, such as a count badge or an unread
+    /// dot. Describe what it says in the tab's accessible label too.
+    pub fn trailing(mut self, element: impl IntoElement) -> Self {
+        self.trailing = Some(element.into_any_element());
+        self
+    }
+    /// Replaces the accessible label, for a tab whose trailing element says
+    /// more than its visible label ("Design, 2 mentions").
+    pub fn aria_label(mut self, label: impl Into<SharedString>) -> Self {
+        self.aria = Some(label.into());
+        self
+    }
+    /// Runs `handler` on a secondary (right) click, to open the tab's
+    /// context menu.
+    pub fn on_secondary_click(
+        mut self,
+        handler: impl Fn(&MouseDownEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
+        self.on_secondary = Some(Rc::new(handler));
         self
     }
 }
@@ -56,7 +96,10 @@ pub struct Tabs {
     selected: Option<SharedString>,
     variant: TabsVariant,
     label: Option<SharedString>,
+    size: TabsSize,
+    colors: Option<(Rgba, Rgba)>,
     items: Vec<Tab>,
+    end: Option<AnyElement>,
     on_change: Option<ChangeHandler>,
     style: StyleRefinement,
 }
@@ -68,7 +111,10 @@ impl Tabs {
             selected: None,
             variant: Default::default(),
             label: None,
+            size: Default::default(),
+            colors: None,
             items: Vec::new(),
+            end: None,
             on_change: None,
             style: Default::default(),
         }
@@ -86,6 +132,24 @@ impl Tabs {
     /// Sets the accessible name of the control.
     pub fn aria_label(mut self, label: impl Into<SharedString>) -> Self {
         self.label = Some(label.into());
+        self
+    }
+    /// Sets the label size.
+    pub fn size(mut self, size: TabsSize) -> Self {
+        self.size = size;
+        self
+    }
+    /// Draws the selected tab's label (and the line under it) in
+    /// `selected` and the other labels in `other`, for tabs on a surface
+    /// with its own colors, such as a sidebar.
+    pub fn text_colors(mut self, selected: impl Into<Rgba>, other: impl Into<Rgba>) -> Self {
+        self.colors = Some((selected.into(), other.into()));
+        self
+    }
+    /// Draws `element` at the end of the row, after the tabs: a "More"
+    /// menu for tabs that do not fit, or an add button.
+    pub fn end(mut self, element: impl IntoElement) -> Self {
+        self.end = Some(element.into_any_element());
         self
     }
     /// Appends an option to the group.
@@ -128,6 +192,13 @@ impl RenderOnce for Tabs {
         );
         let values: Vec<_> = self.items.iter().map(|i| i.value.clone()).collect();
         let count = self.items.len();
+        let (selected_color, other_color) = self
+            .colors
+            .unwrap_or((colors.foreground, colors.muted_foreground));
+        let (height, size) = match self.size {
+            TabsSize::Default => (6.5, 14.),
+            TabsSize::Sm => (6., 13.),
+        };
         let children = self
             .items
             .into_iter()
@@ -137,21 +208,21 @@ impl RenderOnce for Tabs {
                 let change = self.on_change.clone();
                 let handle = focus.handles[index].as_ref();
                 gpui_kit::base::Tab::new(item.id)
-                    .accessibility_label(item.label.clone())
+                    .accessibility_label(item.aria.unwrap_or_else(|| item.label.clone()))
+                    .flex()
+                    .items_center()
+                    .gap(theme.space(1.5))
                     .child(item.label)
+                    .children(item.trailing)
                     .selected(active)
                     .disabled(item.disabled)
                     .set_position(index + 1, count)
                     .when_some(handle, |tab, h| tab.track_focus(h))
-                    .h(theme.space(6.5))
+                    .h(theme.space(height))
                     .px(theme.space(1.5))
                     .py(theme.space(0.5))
-                    .text_size(theme.text(14.))
-                    .text_color(if active {
-                        colors.foreground
-                    } else {
-                        colors.muted_foreground
-                    })
+                    .text_size(theme.text(size))
+                    .text_color(if active { selected_color } else { other_color })
                     .when(self.variant == TabsVariant::Default, |tab| {
                         tab.rounded(theme.radius.sm)
                             .border_1()
@@ -162,7 +233,7 @@ impl RenderOnce for Tabs {
                     })
                     .when(self.variant == TabsVariant::Line, |tab| {
                         tab.border_b_2().border_color(if active {
-                            colors.foreground
+                            selected_color
                         } else {
                             colors.background.opacity(0.)
                         })
@@ -174,6 +245,11 @@ impl RenderOnce for Tabs {
                     })
                     .when_some(change, |tab, handler| {
                         tab.on_click(move |_, window, cx| handler(&item.value, window, cx))
+                    })
+                    .when_some(item.on_secondary, |tab, handler| {
+                        tab.on_mouse_down(MouseButton::Right, move |event, window, cx| {
+                            handler(event, window, cx)
+                        })
                     })
             })
             .collect::<Vec<_>>();
@@ -200,7 +276,8 @@ impl RenderOnce for Tabs {
                     change(&values[index], window, cx);
                 }
             })
-            .children(children);
+            .children(children)
+            .children(self.end);
         apply_style(root, &self.style)
     }
 }
