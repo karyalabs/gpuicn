@@ -20,7 +20,9 @@ A component page can offer more than its overview: each function in
 `site/src/examples/<module>.rs` is a named example, drawn by
 `?demo=<component>&example=<name>` and listed in `site/src/examples/mod.rs`.
 `scripts/sync-catalog.mjs` reads each function's title and sentence from its
-doc comment, and its source, for the page.
+doc comment, and its source, for the page's Examples section. Each example is
+its own preview there; the page starts one when it scrolls into view and keeps
+at most four running (`LIVE_PREVIEWS` in `web/src/scripts/site.ts`).
 
 ## Editing and persistence
 

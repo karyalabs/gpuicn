@@ -242,10 +242,13 @@ const afterLoad = (run: () => void) => {
   else window.addEventListener("load", idle, { once: true })
 }
 const hosts = new Set<Preview>()
+/** How many previews run at once on a page. */
+const LIVE_PREVIEWS = 4
 
 class Preview {
   frame: HTMLIFrameElement | null = null
   timeout = 0
+  visible = false
   constructor(public host: HTMLElement) {
     hosts.add(this)
     host.querySelector("[data-retry]")?.addEventListener("click", () => this.mount())
@@ -257,13 +260,22 @@ class Preview {
     // Mount only when visible, so a page with several previews loads one
     // WASM instance at a time, and only once the page itself has loaded and
     // gone idle, so the preview never delays the text or the first click.
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting) && !this.frame) {
-        observer.disconnect()
-        afterLoad(() => this.frame || this.mount())
-      }
-    })
+    const observer = new IntersectionObserver(
+      (entries) => {
+        this.visible = entries.some((entry) => entry.isIntersecting)
+        if (this.visible && !this.frame) afterLoad(() => this.frame || !this.visible || this.mount())
+      },
+      // Start a little before the preview scrolls into view.
+      { rootMargin: "200px 0px" }
+    )
     observer.observe(host)
+  }
+  /** Stops the preview and frees its WASM instance; it starts again when next visible. */
+  unmount() {
+    this.frame?.remove()
+    this.frame = null
+    window.clearTimeout(this.timeout)
+    this.status("loading")
   }
   status(value: Status) {
     this.host.dataset.status = value
@@ -310,6 +322,25 @@ class Preview {
     this.frame = frame
     this.host.prepend(frame)
     this.timeout = window.setTimeout(() => this.status("failed"), 45_000)
+    Preview.trim()
+  }
+  /**
+   * A page of examples has many previews, and each running one holds a WASM
+   * instance and a GPU context. Keep a few, and stop the off-screen one
+   * farthest from the viewport when another starts.
+   */
+  static trim() {
+    const running = [...hosts].filter((preview) => preview.frame)
+    if (running.length <= LIVE_PREVIEWS) return
+    const distance = (preview: Preview) => {
+      const box = preview.host.getBoundingClientRect()
+      return Math.max(0, box.top - innerHeight, -box.bottom)
+    }
+    running
+      .filter((preview) => !preview.visible)
+      .sort((a, b) => distance(b) - distance(a))
+      .slice(0, running.length - LIVE_PREVIEWS)
+      .forEach((preview) => preview.unmount())
   }
   update() {
     if (this.host.dataset.status !== "ready") return

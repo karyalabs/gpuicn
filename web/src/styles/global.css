@@ -493,6 +493,14 @@ hr {
 .gpu[data-status="ready"] .gpu__status {
   display: none;
 }
+/* A preview usually starts within a second; say so only when it takes longer. */
+.gpu[data-status="loading"] .gpu__status p {
+  animation: gpu-late 0.2s 1.5s both;
+}
+@keyframes gpu-late {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .gpu__status p {
   max-width: 26rem;
   text-wrap: pretty;

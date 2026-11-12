@@ -3,7 +3,7 @@ import { u } from "@/lib/base"
 import Docs from "../../layouts/Docs.astro"
 import Aside from "../../components/Aside.astro"
 import Code from "../../components/Code.astro"
-import Preview from "../../components/Preview.astro"
+import Example from "../../components/Example.astro"
 import { addedLabel, categories, categoryOf, components, componentHref, isNew } from "../../lib/catalog"
 import { componentDocs } from "../../lib/docs"
 
@@ -38,57 +38,14 @@ const lines = docs.source.split("\n").length
     <span class="badge badge--quiet">{lines} lines of Rust</span>
   </p>
 
-  <figure class="figure" id="preview" data-tabs>
-    <div class="figure__frame">
-      <div class="figure__bar">
-        <div class="tabs__list" role="tablist" aria-label="Preview or its source">
-          <button class="tabs__tab" type="button" role="tab" id="tab-preview" aria-controls="panel-preview" aria-selected="true" tabindex="0">Preview</button>
-          <button class="tabs__tab" type="button" role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1">Preview source</button>
-        </div>
-        <span class="spacer"></span>
-        <button class="btn btn--ghost btn--sm" type="button" aria-pressed="false" data-preview-rtl title="Preview in a right-to-left layout">RTL</button>
-        <button class="btn btn--ghost btn--sm" type="button" data-preview-reset title="Start the preview again">Reset</button>
-        <a class="btn btn--ghost btn--sm" href={u(`/app/?c=${component.slug}`)} title="Open this component in the gallery app">
-          Gallery
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
-        </a>
-      </div>
-      {
-        others.length > 0 && (
-          <div class="examples" data-examples>
-            <div class="examples__chips" role="group" aria-label={`${component.name} examples`}>
-              {docs.examples.map((example) => (
-                <button class="chip" type="button" data-example={example.id} aria-pressed={example === first ? "true" : "false"}>
-                  {example.title}
-                </button>
-              ))}
-            </div>
-            {docs.examples.map((example) => example.blurb && (
-              <p class="small" data-example-blurb={example.id} hidden={example !== first}>
-                {example.blurb.split("`").map((part, index) => (index % 2 ? <code>{part}</code> : part))}
-              </p>
-            ))}
-          </div>
-        )
-      }
-      <div class="tabs__panel" role="tabpanel" id="panel-preview" aria-labelledby="tab-preview">
-        <Preview id="component-preview" slug={component.slug} name={component.name} example={first.id || undefined} />
-      </div>
-      <div class="tabs__panel" role="tabpanel" id="panel-code" aria-labelledby="tab-code" hidden>
-        {docs.examples.map((example) => (
-          <div data-example-code={example.id} hidden={example !== first}>
-            <Code code={example.code} class="code--flush" />
-          </div>
-        ))}
-      </div>
-    </div>
-    <figcaption class="figure__caption">
-      The real {component.name}, drawn by GPUI in your browser. It follows the theme menu in the header.
-      {others.length > 0 && "Pick an example above to change what it shows. "}
-      The second tab is the source of what is showing, from the site's showcase crate;
-      <a href={u("/examples/showcase.rs")} download>download the whole showcase</a> for its imports and helpers.
-    </figcaption>
-  </figure>
+  <div id="preview">
+    <Example slug={component.slug} name={component.name} example={first.id} code={first.code} id="overview">
+      <a slot="actions" class="btn btn--ghost btn--sm" href={u(`/app/?c=${component.slug}`)} title="Open this component in the gallery app">
+        Gallery
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+      </a>
+    </Example>
+  </div>
 
   <section class="section" id="installation">
     <h2 class="h2">Installation</h2>
@@ -132,6 +89,25 @@ const lines = docs.source.split("\n").length
     <Code code={docs.usage} />
   </section>
 
+  {
+    others.length > 0 && (
+      <section class="section" id="examples">
+        <h2 class="h2">Examples</h2>
+        {others.map((example) => (
+          <div class="example" id={`example-${example.id}`}>
+            <h3 class="h3">{example.title}</h3>
+            {example.blurb && (
+              <p class="example__blurb">
+                {example.blurb.split("`").map((part, index) => (index % 2 ? <code>{part}</code> : part))}
+              </p>
+            )}
+            <Example slug={component.slug} name={component.name} example={example.id} code={example.code} id={`ex-${example.id}`} />
+          </div>
+        ))}
+      </section>
+    )
+  }
+
   <section class="section" id="api">
     <h2 class="h2">API reference</h2>
     <Aside>
@@ -172,41 +148,6 @@ const lines = docs.source.split("\n").length
     {next && <a class="pager__next" href={componentHref(next.slug)} rel="next"><span>Next</span>{next.name}</a>}
   </nav>
 </Docs>
-
-<script>
-  const preview = document.getElementById("component-preview")
-  const remount = () => preview?.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true, detail: "remount" }))
-  document.querySelector("[data-preview-reset]")?.addEventListener("click", remount)
-  const rtl = document.querySelector<HTMLButtonElement>("[data-preview-rtl]")
-  rtl?.addEventListener("click", () => {
-    const on = rtl.getAttribute("aria-pressed") !== "true"
-    rtl.setAttribute("aria-pressed", String(on))
-    if (preview) preview.dataset.dir = on ? "rtl" : "ltr"
-    remount()
-  })
-
-  // Examples: switch the preview and its source together.
-  const group = document.querySelector<HTMLElement>("[data-examples]")
-  if (group && preview) {
-    for (const chip of group.querySelectorAll<HTMLButtonElement>("[data-example]")) {
-      chip.addEventListener("click", () => {
-        const value = chip.dataset.example!
-        for (const other of group.querySelectorAll<HTMLButtonElement>("[data-example]")) {
-          other.setAttribute("aria-pressed", String(other === chip))
-        }
-        for (const blurb of group.querySelectorAll<HTMLElement>("[data-example-blurb]")) {
-          blurb.hidden = blurb.dataset.exampleBlurb !== value
-        }
-        for (const code of document.querySelectorAll<HTMLElement>("[data-example-code]")) {
-          code.hidden = code.dataset.exampleCode !== value
-        }
-        if (value) preview.dataset.example = value
-        else delete preview.dataset.example
-        preview.dispatchEvent(new CustomEvent("gpuicn:preview", { bubbles: true, detail: "remount" }))
-      })
-    }
-  }
-</script>
 
 <style>
   .meta {
@@ -252,26 +193,16 @@ const lines = docs.source.split("\n").length
   :global(.code--flush pre) {
     max-height: 40rem;
   }
-  .examples {
-    padding: 0.6rem 1rem;
-    border-bottom: 1px solid var(--rule);
-    display: grid;
-    gap: 0.4rem;
+  .example {
+    margin-top: 2rem;
+    scroll-margin-top: calc(var(--head) + 1rem);
   }
-  .examples__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
+  .example > :global(* + *) {
+    margin-top: 0.6rem;
   }
-  .files {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .files li + li {
-    margin-top: 0.15rem;
-  }
-  .fold {
-    margin-top: 1rem;
+  .example__blurb {
+    color: var(--ink-2);
+    font-size: 0.92rem;
+    max-width: 44rem;
   }
 </style>
