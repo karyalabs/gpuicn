@@ -4,6 +4,7 @@
 //! gutter, a name and time header, and body content. Consecutive messages from
 //! one sender collapse into continuation rows.
 
+use super::tooltip::AnchoredTooltip as _;
 use std::rc::Rc;
 
 use gpui_icons::{LucideIcon, lucide};
@@ -1011,7 +1012,7 @@ fn time_tooltip(
     tooltip: Option<SharedString>,
 ) -> gpui_kit::Stateful<gpui_kit::Div> {
     label.when_some(tooltip, |label, text| {
-        label.tooltip(move |_, cx| text_tooltip(text.clone(), cx))
+        label.anchored_tooltip(move |_, cx| text_tooltip(text.clone(), cx))
     })
 }
 
@@ -1083,7 +1084,7 @@ fn reaction_chip(
     div()
         .id((message.clone(), reaction.emoji.clone()))
         .when_some(tooltip, move |wrapper, builder| {
-            wrapper.tooltip(move |window, cx| builder(&reaction, window, cx))
+            wrapper.anchored_tooltip(move |window, cx| builder(&reaction, window, cx))
         })
         .child(chip)
 }

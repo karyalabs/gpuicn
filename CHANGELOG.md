@@ -4,6 +4,22 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.10
+
+[Notes](docs/releases/v0.11.10.md)
+
+### Added
+
+- `AnchoredTooltip::anchored_tooltip`, a hover tooltip centered above its
+  element with an arrow, flipping below when there is no room above.
+
+### Changed
+
+- gpuicn's own tooltips use `anchored_tooltip` instead of GPUI's native
+  `.tooltip(...)`, which opened below and to the right of the pointer.
+- Menu rows with a description have room for both lines; separators have more
+  space around them.
+
 ## 0.11.9
 
 [Notes](docs/releases/v0.11.9.md)

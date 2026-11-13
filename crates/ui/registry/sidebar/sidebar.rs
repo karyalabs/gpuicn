@@ -1,6 +1,7 @@
 //! Sidebar navigation composed from GPUI Kit buttons, Scroll Area and Tooltip.
 //! Applications own navigation and collapsed state; this component owns no router.
 
+use super::tooltip::AnchoredTooltip as _;
 use super::{
     scroll_area::*,
     theme::{
@@ -657,8 +658,7 @@ impl RenderOnce for SidebarItem {
                     let mut base = base;
                     let label = tooltip_label.clone();
                     if collapsed {
-                        base.interactivity()
-                            .tooltip(move |_, cx| text_tooltip(label.clone(), cx));
+                        base = base.anchored_tooltip(move |_, cx| text_tooltip(label.clone(), cx));
                     }
                     base.relative()
                         .flex_row_in(theme.direction)
@@ -751,11 +751,15 @@ impl RenderOnce for SidebarItem {
                                         .items_center()
                                         .map(|suffix| match (tooltip_view, tooltip) {
                                             (Some(build), _) => {
-                                                suffix.tooltip(move |window, cx| build(window, cx))
+                                                suffix.anchored_tooltip(move |window, cx| {
+                                                    build(window, cx)
+                                                })
                                             }
-                                            (None, Some(text)) => suffix.tooltip(move |_, cx| {
-                                                text_tooltip(text.clone(), cx)
-                                            }),
+                                            (None, Some(text)) => {
+                                                suffix.anchored_tooltip(move |_, cx| {
+                                                    text_tooltip(text.clone(), cx)
+                                                })
+                                            }
                                             (None, None) => suffix,
                                         })
                                         .child(suffix),

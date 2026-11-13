@@ -13,9 +13,9 @@ use gpui_kit::base::TestSupportExt as _;
 use gpui_kit::base::{Align, Button, ElementExt as _, Placement, Positioner};
 use gpui_kit::{
     AnyElement, App, Bounds, ClickEvent, Context, ElementId, Entity, FocusHandle, Focusable,
-    InteractiveElement as _, IntoElement, MouseButton, ParentElement as _, Pixels, Point, Render,
-    RenderOnce, Role, SharedString, StatefulInteractiveElement as _, StyleRefinement, Styled,
-    Window, div, prelude::FluentBuilder as _,
+    FontWeight, InteractiveElement as _, IntoElement, MouseButton, ParentElement as _, Pixels,
+    Point, Render, RenderOnce, Role, SharedString, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
 };
 use std::{rc::Rc, time::Duration};
 
@@ -557,7 +557,7 @@ impl Render for MenuState {
                     popup = popup.child(
                         div()
                             .h(gpui_kit::px(1.))
-                            .my(t.space(1.))
+                            .my(t.space(1.5))
                             .bg(t.colors.border),
                     );
                     continue;
@@ -586,8 +586,11 @@ impl Render for MenuState {
                     .min_h(t.space(if item.rich() { 9. } else { 8. }))
                     .mirror_row(t.direction)
                     .justify_start()
-                    .gap(t.space(2.))
+                    .gap(t.space(if item.leading.is_some() { 2.5 } else { 2. }))
                     .px(t.space(1.5))
+                    // A name over a description gets room to breathe: the
+                    // button's fixed height would press the two lines together.
+                    .when(item.description.is_some(), |b| b.h_auto().py(t.space(1.5)))
                     .rounded(t.radius.sm)
                     .when(selected, |b| b.bg(t.colors.accent).aria_active_descendant())
                     .map(|b| disabled::dim(b, item.disabled))
@@ -640,11 +643,13 @@ impl Render for MenuState {
                             .min_w_0()
                             .flex()
                             .flex_col()
+                            .gap(t.space(0.5))
                             .child(div().truncate().child(item.label.clone()))
                             .when_some(item.description.clone(), |col, description| {
                                 col.child(
                                     div()
                                         .truncate()
+                                        .font_weight(FontWeight::NORMAL)
                                         .text_size(t.text(12.))
                                         .text_color(t.colors.muted_foreground)
                                         .child(description),
