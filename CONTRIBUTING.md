@@ -131,7 +131,7 @@ Merging a version bump to `main` is the release; nothing runs on a laptop.
    `crates/gpui-pre-<version>` of karyalabs/zed). Moving the `gpui-pre` pin
    therefore starts in karyalabs/zed: rebase the fork's patches onto the new
    release and regenerate its crates with `karya/publish.sh <version>` (see
-   its `karya/README.md`), then point both patch lines at the new branch.
+   its `karya/README.md`), then point the patch lines at the new branch.
 4. Merge. When CI passes on `main`, the **Release** workflow:
    - tags the commit `v<version>`;
    - publishes `gpuicn` and then `gpuicn-cli` to crates.io;
