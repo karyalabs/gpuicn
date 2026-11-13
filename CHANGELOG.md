@@ -4,6 +4,16 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.9
+
+[Notes](docs/releases/v0.11.9.md)
+
+### Added
+
+- `item::Reveal`, for row actions that show while their row is hovered or
+  keyboard focus is inside it. Hidden actions stay focusable and visible to
+  screen readers; tabbing onto one shows it.
+
 ## 0.11.8
 
 [Notes](docs/releases/v0.11.8.md)
