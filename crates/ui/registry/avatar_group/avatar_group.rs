@@ -5,6 +5,7 @@
 //! overlap, the ring in the surface color, the overflow chip, a hover
 //! tooltip and one accessible name that lists the people.
 
+use super::tooltip::AnchoredTooltip as _;
 use gpui_kit::{
     App, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement as _,
     RenderOnce, Rgba, Role, SharedString, StatefulInteractiveElement as _, StyleRefinement, Styled,
@@ -186,7 +187,7 @@ impl RenderOnce for AvatarGroup {
             .children(faces)
             .children(chip)
             .when(!tooltip.is_empty(), |root| {
-                root.tooltip(move |_, cx| text_tooltip(tooltip.clone().into(), cx))
+                root.anchored_tooltip(move |_, cx| text_tooltip(tooltip.clone().into(), cx))
             });
         apply_style(root, &self.style)
     }

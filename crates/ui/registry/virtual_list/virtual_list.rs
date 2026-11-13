@@ -8,6 +8,7 @@ use super::theme::{
     UiTheme,
     primitives::{disabled, text},
 };
+use super::tooltip::AnchoredTooltip as _;
 use gpui_kit::accesskit::Role;
 use gpui_kit::base::TestSupportExt as _;
 use gpui_kit::{
@@ -670,7 +671,7 @@ impl RenderOnce for VirtualList {
                             .test_support()
                             .role(Role::ListBoxOption)
                             .aria_label(row.item.label.clone())
-                            .tooltip(move |_, cx| {
+                            .anchored_tooltip(move |_, cx| {
                                 super::tooltip::text_tooltip(tooltip_label.clone(), cx)
                             })
                             .aria_selected(row.selected)
