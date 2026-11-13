@@ -359,6 +359,92 @@ impl RenderOnce for ItemSeparator {
     }
 }
 
+/// Row actions that appear only while their row is hovered or keyboard focus
+/// is inside it, like the "+" and "⋯" on a sidebar section header.
+///
+/// The children stay in layout, in the tab order and in the accessibility
+/// tree the whole time; they are only drawn at zero opacity. Tabbing onto one
+/// reveals it, and so does focus anywhere inside the element whose
+/// [`gpui_kit::FocusHandle`] is passed to [`Reveal::focus_within`]. Mark the
+/// row with `.group(name)` and pass the same name to [`Reveal::new`].
+#[derive(IntoElement)]
+pub struct Reveal {
+    id: ElementId,
+    group: SharedString,
+    within: Option<gpui_kit::FocusHandle>,
+    style: gpui_kit::StyleRefinement,
+    children: Vec<AnyElement>,
+}
+
+impl Reveal {
+    /// Creates a reveal that shows while the element marked `.group(group)` is
+    /// hovered. The ID keys its focus tracking; keep it stable.
+    pub fn new(id: impl Into<ElementId>, group: impl Into<SharedString>) -> Self {
+        Self {
+            id: id.into(),
+            group: group.into(),
+            within: None,
+            style: Default::default(),
+            children: Vec::new(),
+        }
+    }
+
+    /// Also shows the children while focus is on or inside the element that
+    /// tracks `handle`, so a keyboard user on the row sees its actions.
+    pub fn focus_within(mut self, handle: &gpui_kit::FocusHandle) -> Self {
+        self.within = Some(handle.clone());
+        self
+    }
+}
+
+impl ParentElement for Reveal {
+    fn extend(&mut self, elements: impl IntoIterator<Item = AnyElement>) {
+        self.children.extend(elements);
+    }
+}
+
+impl Styled for Reveal {
+    fn style(&mut self) -> &mut gpui_kit::StyleRefinement {
+        &mut self.style
+    }
+}
+
+/// Keyboard focus on a child or inside the row shows the actions. A pointer
+/// click that leaves focus there (a collapsed header's trigger, a menu that
+/// closed) does not: hover already covers the pointer.
+fn revealed_by_focus(
+    own: &gpui_kit::FocusHandle,
+    within: Option<&gpui_kit::FocusHandle>,
+    window: &Window,
+    cx: &App,
+) -> bool {
+    window.last_input_was_keyboard()
+        && (own.contains_focused(window, cx)
+            || within.is_some_and(|handle| handle.contains_focused(window, cx)))
+}
+
+impl RenderOnce for Reveal {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Not a tab stop: it only notices focus on its own children.
+        let own = window
+            .use_keyed_state((self.id.clone(), "reveal-focus"), cx, |_, cx| {
+                cx.focus_handle().tab_stop(false)
+            })
+            .read(cx)
+            .clone();
+        let focused = revealed_by_focus(&own, self.within.as_ref(), window, cx);
+        let root = div()
+            .id(self.id)
+            .track_focus(&own)
+            .flex()
+            .items_center()
+            .opacity(if focused { 1. } else { 0. })
+            .group_hover(self.group, |style| style.opacity(1.))
+            .children(self.children);
+        apply_style(root, &self.style)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -418,5 +504,70 @@ mod tests {
         let (control, copy) = layout(true, cx);
         assert!(control.top() >= copy.bottom(), "{control:?} {copy:?}");
         assert!(control.left() <= px(17.), "{control:?}");
+    }
+
+    struct Header {
+        row: gpui_kit::FocusHandle,
+        own: gpui_kit::FocusHandle,
+        child: gpui_kit::FocusHandle,
+    }
+    impl Render for Header {
+        fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+            div()
+                .w(px(240.))
+                .group("head")
+                .track_focus(&self.row)
+                .child(
+                    // Stands in for the reveal's own handle around its children.
+                    div().track_focus(&self.own).child(
+                        div()
+                            .debug_selector(|| "action".into())
+                            .track_focus(&self.child)
+                            .size(px(16.)),
+                    ),
+                )
+                .child(
+                    Reveal::new("reveal", "head")
+                        .child(div().debug_selector(|| "revealed".into()).size(px(16.))),
+                )
+        }
+    }
+
+    #[gpui_kit::test]
+    fn keyboard_focus_on_an_action_or_its_row_reveals_it(cx: &mut gpui_kit::TestAppContext) {
+        cx.update(super::super::theme::init);
+        let (view, cx) = cx.add_window_view(|_, cx| Header {
+            row: cx.focus_handle().tab_stop(true),
+            own: cx.focus_handle(),
+            child: cx.focus_handle().tab_stop(true),
+        });
+        cx.update(|window, cx| window.draw(cx).clear(cx));
+        // Hidden children keep their place in layout.
+        assert!(cx.debug_bounds("revealed").is_some());
+        let shown = |cx: &mut gpui_kit::VisualTestContext| {
+            cx.update(|window, cx| {
+                window.draw(cx).clear(cx);
+                let view = view.read(cx);
+                revealed_by_focus(&view.own, Some(&view.row), window, cx)
+            })
+        };
+        assert!(!shown(cx), "nothing is focused yet");
+
+        // A pointer focus (no key pressed yet) leaves the actions to hover.
+        let child = view.read_with(cx, |view, _| view.child.clone());
+        cx.update(|window, cx| window.focus(&child, cx));
+        assert!(!shown(cx), "a pointer focus does not reveal");
+
+        cx.simulate_keystrokes("shift");
+        cx.update(|window, cx| window.focus(&child, cx));
+        assert!(shown(cx), "keyboard focus on the action reveals it");
+
+        let row = view.read_with(cx, |view, _| view.row.clone());
+        cx.update(|window, cx| window.focus(&row, cx));
+        assert!(shown(cx), "keyboard focus on the row reveals its actions");
+
+        let outside = cx.update(|_, cx| cx.focus_handle());
+        cx.update(|window, cx| window.focus(&outside, cx));
+        assert!(!shown(cx), "focus elsewhere hides them");
     }
 }

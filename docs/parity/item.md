@@ -22,3 +22,13 @@ each control.
 The Rust source and Usage example define the supported API. Verified: the
 control stays on the title's row at 320px wide, and stacked rows put it under
 the copy (unit tests in `item.rs`).
+
+`Reveal` has no shadcn counterpart (shadcn reaches for Tailwind's
+`group-hover:opacity-100 group-focus-within:opacity-100`). It draws row actions
+at zero opacity until the row marked `.group(name)` is hovered or keyboard focus
+is on an action or inside the element whose focus handle is passed to
+`Reveal::focus_within`. The actions stay in layout, in the tab order and in the
+accessibility tree while hidden. A pointer click that leaves focus behind does
+not keep them shown; hover covers the pointer. Verified: keyboard focus on an
+action or on its row reveals it, pointer focus and focus elsewhere do not (unit
+test in `item.rs`).
