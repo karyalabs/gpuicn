@@ -126,12 +126,6 @@ Merging a version bump to `main` is the release; nothing runs on a laptop.
 3. Update `release-pins.toml`, `crates/cli/templates/dependencies.toml` and the
    fixture together when an upstream pin moves; the CLI tests fail if they drift.
    A new gpui-icons version must be released from its own repository first.
-   This workspace builds GPUI's macOS crates from Karya Labs' fork
-   (`[patch.crates-io]` in the root `Cargo.toml`, branch
-   `crates/gpui-pre-<version>` of karyalabs/zed). Moving the `gpui-pre` pin
-   therefore starts in karyalabs/zed: rebase the fork's patches onto the new
-   release and regenerate its crates with `karya/publish.sh <version>` (see
-   its `karya/README.md`), then point both patch lines at the new branch.
 4. Merge. When CI passes on `main`, the **Release** workflow:
    - tags the commit `v<version>`;
    - publishes `gpuicn` and then `gpuicn-cli` to crates.io;
