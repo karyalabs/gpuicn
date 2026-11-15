@@ -1,7 +1,11 @@
 //! Nova toolbar with roving focus and GPUI Kit buttons and editors.
 use super::{
     input::{Input, InputState},
-    theme::{UiTheme, locale::DirectionalStyled as _, primitives::disabled},
+    theme::{
+        UiTheme,
+        locale::DirectionalStyled as _,
+        primitives::{disabled, text},
+    },
 };
 use gpui_kit::base::Button as BaseButton;
 use gpui_kit::{
@@ -103,6 +107,7 @@ impl ToolbarButton {
                 .border_1()
                 .border_color(colors.background.opacity(0.))
                 .text_size(theme.text(14.))
+                .line_height(text::line_height(theme, theme.text(14.)))
                 .text_color(colors.foreground)
                 .cursor_pointer()
                 .hover(move |s| s.bg(colors.muted))

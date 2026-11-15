@@ -62,6 +62,39 @@ pub mod text {
     pub fn muted<T: Styled>(element: T, theme: &UiTheme) -> T {
         sm(element, theme).text_color(theme.colors.muted_foreground)
     }
+
+    /// How tall a line box has to be, as a multiple of the font size, for
+    /// a glyph to fit inside it: Geist and IBM Plex Sans both reach 1.3em
+    /// from the top of an accent to the bottom of a g. A shorter box is fine
+    /// until something clips it; `truncate()` and `overflow_hidden()` clip
+    /// to the box and cut the bottoms off g, p and y.
+    pub const INK: f32 = 1.3;
+
+    /// The line height for text drawn at `size` (already scaled): the type
+    /// scale's own when `size` is one of its steps, otherwise 1.4 times the
+    /// size rounded up to a whole pixel. Never shorter than [`INK`].
+    pub fn line_height(theme: &UiTheme, size: Pixels) -> Pixels {
+        let t = &theme.typography;
+        [t.xs, t.sm, t.base, t.lg, t.xl]
+            .into_iter()
+            .map(|step| theme.text_style(step))
+            .find(|step| (step.size - size).abs() < px(0.01))
+            .map(|step| step.line_height)
+            .unwrap_or_else(|| px((f32::from(size) * 1.4).ceil()))
+            .max(size * INK)
+    }
+
+    /// Sets a control's text size and a line box its glyphs fit in.
+    ///
+    /// GPUI Kit's base `Button`, `Toggle` and `Tab` set
+    /// `line_height(relative(1.))`, a box exactly the font size, so a
+    /// truncated label inside one loses its descenders. Every gpuicn control
+    /// built on one of them sets its text here instead of `text_size`.
+    pub fn control<T: Styled>(element: T, theme: &UiTheme, size: Pixels) -> T {
+        element
+            .text_size(size)
+            .line_height(line_height(theme, size))
+    }
 }
 
 /// Icon sizes in spacing units, so icons scale with control density.

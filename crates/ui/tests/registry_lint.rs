@@ -446,3 +446,106 @@ fn one_value_handlers_take_the_value_by_reference() {
         wrong.join("\n  ")
     );
 }
+
+/// Line boxes shorter than their glyphs, which `truncate()` and
+/// `overflow_hidden()` clip: `relative(x)` under `text::INK`, or a
+/// `line_height(…text(b))` beside a `text_size(…text(a))` with `b < 1.3a`.
+fn tight_line_heights(source: &str) -> Vec<String> {
+    const INK: f32 = 1.3;
+    let lines: Vec<&str> = non_test(source).lines().collect();
+    let number_in = |line: &str, call: &str| -> Option<f32> {
+        let start = line.find(call)? + call.len();
+        let rest = &line[start..];
+        let end = rest.find(')')?;
+        rest[..end].trim().trim_end_matches('.').parse().ok()
+    };
+    let mut found = Vec::new();
+    for (index, line) in lines.iter().enumerate() {
+        if line.trim_start().starts_with("//")
+            || !line.contains("line_height(")
+            || line.contains("text::line_height(")
+        {
+            continue;
+        }
+        if let Some(ratio) = number_in(line, "relative(")
+            && ratio < INK
+        {
+            found.push(format!("line {}: {}", index + 1, line.trim()));
+            continue;
+        }
+        let Some(line_height) = number_in(line, ".text(") else {
+            continue;
+        };
+        let near = lines[index.saturating_sub(3)..(index + 4).min(lines.len())].iter();
+        // A 1px run is invisible copy text (the message copy markers).
+        if let Some(size) = near
+            .filter(|near| near.contains("text_size("))
+            .find_map(|near| number_in(near, ".text("))
+            && size > 1.
+            && line_height < size * INK
+        {
+            found.push(format!("line {}: {}", index + 1, line.trim()));
+        }
+    }
+    found
+}
+
+#[test]
+fn tight_line_height_scan_finds_the_old_shapes() {
+    let old = "div()\n    .text_size(theme.text(12.))\n    .line_height(relative(1.))\n\
+               .text_size(t.text(10.))\n.line_height(t.text(10.))\n\
+               .text_size(t.text(14.))\n.line_height(t.text(20.))\n.line_height(relative(1.45))";
+    assert_eq!(
+        tight_line_heights(old).len(),
+        2,
+        "{:?}",
+        tight_line_heights(old)
+    );
+}
+
+/// GPUI Kit's base `Button`, `Toggle` and `Tab` set `line_height(relative(1.))`,
+/// a box the size of the font, so a truncated label inside one loses the
+/// bottoms of g, p and y. Every component that builds on one sets its text's
+/// line height again, and no component sets a line box under the glyphs.
+#[test]
+fn line_boxes_fit_their_glyphs() {
+    const BASE_CONTROLS: &[&str] = &[
+        "BaseButton::new",
+        "BaseToggle::new",
+        "base::Button::new",
+        "base::Toggle::new",
+        "base::Tab::new",
+    ];
+    const SETS_LINE_HEIGHT: &[&str] = &["line_height(", "text::control(", "control::toggle("];
+    // Color swatches carry no text; a popover's custom trigger is styled by
+    // the caller, and its default goes through `style_button`.
+    const ALLOW: &[&str] = &["color_picker/color_picker.rs", "popover/popover.rs"];
+    let mut failures = Vec::new();
+    for (file, source) in registry_files() {
+        let code = non_test(&source);
+        let imports_base_button = code.match_indices("gpui_kit::base::{").any(|(start, _)| {
+            let list = &code[start..];
+            let list = &list[..list.find('}').unwrap_or(list.len())];
+            list.split(|c: char| !c.is_alphanumeric() && c != '_')
+                .any(|name| name == "Button")
+        });
+        let base_control = BASE_CONTROLS.iter().any(|n| code.contains(n))
+            || (imports_base_button && code.contains("Button::new("));
+        if base_control
+            && !ALLOW.contains(&file.as_str())
+            && !SETS_LINE_HEIGHT.iter().any(|n| code.contains(n))
+        {
+            failures.push(format!(
+                "{file}: builds on a GPUI Kit base control without setting a line height; \
+                 use `text::control(..)` or `text::line_height(..)`"
+            ));
+        }
+        for line in tight_line_heights(&source) {
+            failures.push(format!(
+                "{file} {line}: the line box is shorter than the glyphs (1.3em); \
+                 use `text::line_height(..)`"
+            ));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}

@@ -3,10 +3,10 @@
 use gpui_icons::{LucideIcon, lucide};
 use gpui_kit::{
     Action, AnyElement, App, AsKeystroke as _, Div, FontWeight, IntoElement, Keystroke,
-    OperatingSystem, ParentElement, RenderOnce, SharedString, Styled, Window, div, relative,
+    OperatingSystem, ParentElement, RenderOnce, SharedString, Styled, Window, div,
 };
 
-use super::theme::UiTheme;
+use super::theme::{UiTheme, primitives::text};
 
 /// A noninteractive key cap that shows one key or shortcut.
 #[derive(IntoElement)]
@@ -144,7 +144,7 @@ impl RenderOnce for Kbd {
             .font_family(theme.fonts.body.clone())
             .font_weight(FontWeight::MEDIUM)
             .text_size(theme.text(12.))
-            .line_height(relative(1.))
+            .line_height(text::line_height(theme, theme.text(12.)))
             .whitespace_nowrap()
             .gap(theme.space(0.5))
             .children(key_parts(

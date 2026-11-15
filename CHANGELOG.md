@@ -4,6 +4,24 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.11.11
+
+[Notes](docs/releases/v0.11.11.md)
+
+### Added
+
+- `text::INK`, `text::line_height` and `text::control` in the theme
+  primitives: a line height that always fits the glyphs, and a text size that
+  comes with one.
+
+### Fixed
+
+- Truncated labels in buttons, menus, tabs, toolbars, collapsible triggers,
+  items, badges, key caps and tags no longer lose the bottoms of g, p and y.
+  GPUI Kit's base controls shrink the line box to the font size, which
+  `truncate()` clipped the descenders to.
+- Dialog titles get a 24px line box instead of 16px.
+
 ## 0.11.10
 
 [Notes](docs/releases/v0.11.10.md)

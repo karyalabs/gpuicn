@@ -15,7 +15,7 @@ use gpui_kit::{
 use super::theme::{
     UiRadius, UiTheme,
     locale::DirectionalStyled as _,
-    primitives::{disabled as disabled_style, focus},
+    primitives::{disabled as disabled_style, focus, text},
 };
 
 type ButtonClickHandler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
@@ -275,7 +275,7 @@ fn style_button_with<
         .border_color(colors.background.opacity(0.0))
         .font_family(theme.fonts.body.clone())
         .font_weight(FontWeight::MEDIUM)
-        .text_size(theme.text(metrics.text_size))
+        .map(|base| text::control(base, theme, theme.text(metrics.text_size)))
         .focus_visible(move |style| focus::ring_for(style, &focus_theme, invalid_ring))
         .when(metrics.icon_only, |base| {
             base.w(theme.space(metrics.height / 4.)).p_0()

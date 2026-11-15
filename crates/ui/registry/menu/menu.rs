@@ -5,7 +5,7 @@ use super::{
     theme::{
         UiTheme, apply_style,
         locale::DirectionalStyled as _,
-        primitives::{disabled, dismiss, surface},
+        primitives::{disabled, dismiss, surface, text},
     },
 };
 use gpui_icons::{LucideIcon, lucide};
@@ -588,9 +588,12 @@ impl Render for MenuState {
                     .justify_start()
                     .gap(t.space(if item.leading.is_some() { 2.5 } else { 2. }))
                     .px(t.space(1.5))
+                    // GPUI Kit's Button shrinks the line box to the font size,
+                    // which truncate() would clip the descenders to.
+                    .line_height(text::line_height(&t, t.text(14.)))
                     // A name over a description gets room to breathe: the
                     // button's fixed height would press the two lines together.
-                    .when(item.description.is_some(), |b| b.h_auto().py(t.space(1.5)))
+                    .when(item.description.is_some(), |b| b.h_auto().py(t.space(0.5)))
                     .rounded(t.radius.sm)
                     .when(selected, |b| b.bg(t.colors.accent).aria_active_descendant())
                     .map(|b| disabled::dim(b, item.disabled))
@@ -643,14 +646,18 @@ impl Render for MenuState {
                             .min_w_0()
                             .flex()
                             .flex_col()
-                            .gap(t.space(0.5))
-                            .child(div().truncate().child(item.label.clone()))
+                            .child(
+                                div()
+                                    .debug_selector(|| "menu-label".into())
+                                    .truncate()
+                                    .child(item.label.clone()),
+                            )
                             .when_some(item.description.clone(), |col, description| {
                                 col.child(
-                                    div()
+                                    text::control(div(), &t, t.text(12.))
+                                        .debug_selector(|| "menu-description".into())
                                         .truncate()
                                         .font_weight(FontWeight::NORMAL)
-                                        .text_size(t.text(12.))
                                         .text_color(t.colors.muted_foreground)
                                         .child(description),
                                 )

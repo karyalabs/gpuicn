@@ -5,11 +5,11 @@ use std::rc::Rc;
 use gpui_icons::{LucideIcon, lucide};
 use gpui_kit::{
     App, ClickEvent, ElementId, FontWeight, InteractiveElement as _, IntoElement, ParentElement,
-    RenderOnce, Rgba, SharedString, Styled, Window, div, prelude::FluentBuilder as _, relative,
+    RenderOnce, Rgba, SharedString, Styled, Window, div, prelude::FluentBuilder as _,
 };
 
 use super::button::{Button, ButtonSize, ButtonVariant};
-use super::theme::{UiText, UiTheme, locale, locale::DirectionalStyled as _};
+use super::theme::{UiText, UiTheme, locale, locale::DirectionalStyled as _, primitives::text};
 
 type RemoveHandler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
 
@@ -116,7 +116,7 @@ impl RenderOnce for Tag {
             .font_family(theme.fonts.body.clone())
             .font_weight(FontWeight::MEDIUM)
             .text_size(theme.text(12.))
-            .line_height(relative(1.))
+            .line_height(text::line_height(&theme, theme.text(12.)))
             .whitespace_nowrap()
             .when_some(self.dot, |root, color| {
                 root.child(
