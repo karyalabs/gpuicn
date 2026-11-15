@@ -53,6 +53,8 @@ pub mod date_picker;
 pub mod date_time_picker;
 #[path = "../registry/dialog/dialog.rs"]
 pub mod dialog;
+#[path = "../registry/diff/diff.rs"]
+pub mod diff;
 #[path = "../registry/drawer/drawer.rs"]
 pub mod drawer;
 #[path = "../registry/embed/embed.rs"]
@@ -144,6 +146,8 @@ pub mod tooltip;
 pub mod resizable;
 #[path = "../registry/sidebar/sidebar.rs"]
 pub mod sidebar;
+#[path = "../registry/tree/tree.rs"]
+pub mod tree;
 #[path = "../registry/virtual_list/virtual_list.rs"]
 pub mod virtual_list;
 

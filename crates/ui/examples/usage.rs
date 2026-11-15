@@ -1351,3 +1351,56 @@ mod item {
             )
     }
 }
+
+mod tree {
+    use crate::ui::tree::*;
+    use gpui_kit::{App, IntoElement, ParentElement as _, Window, div};
+
+    fn example(window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Keep the state in your view; replace nodes when your data changes.
+        let state = window
+            .use_keyed_state("files", cx, |_, _| {
+                TreeState::new(
+                    vec![
+                        TreeNode::folder("src", "src", [TreeNode::leaf("src/main.rs", "main.rs")]),
+                        // Children load the first time the folder opens.
+                        TreeNode::lazy("vendor", "vendor"),
+                        TreeNode::leaf("README.md", "README.md"),
+                    ],
+                    ["src".into()],
+                )
+                .expect("unique IDs")
+            })
+            .read(cx)
+            .clone();
+        let loader = state.clone();
+        Tree::new("files", "Files", state, |row, _, _| {
+            div().child(row.label.clone()).into_any_element()
+        })
+        .on_event(move |event, _, _| {
+            if let TreeEvent::LoadChildren(id) = event {
+                loader.set_children(id, TreeChildren::Loaded(Vec::new()));
+            }
+        })
+    }
+}
+
+mod diff {
+    use crate::ui::diff::*;
+    use gpui_kit::{App, AppContext as _, IntoElement, Window};
+
+    fn example(patch: &str, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Parse once and keep the state; call `set_files` when the patch changes.
+        let files = DiffFile::parse(patch).unwrap_or_default();
+        let state = window
+            .use_keyed_state("diff", cx, |_, cx| cx.new(|cx| DiffState::new(files, cx)))
+            .read(cx)
+            .clone();
+        DiffView::new("diff", &state)
+            .selection_actions([DiffAction::new("stage", "Stage lines")])
+            .on_intent(|intent, _, _| {
+                // Build and apply the partial patch for `intent.range` here.
+                let _ = intent;
+            })
+    }
+}

@@ -174,6 +174,7 @@ previews! {
     date_picker => DatePicker,
     date_time_picker => DateTimePicker,
     dialog => Dialog,
+    diff => Diff,
     drawer => Drawer,
     embed => Embed,
     emoji_picker => EmojiPicker,
@@ -218,5 +219,6 @@ previews! {
     toggle_group => ToggleGroup,
     toolbar => Toolbar,
     tooltip => Tooltip,
+    tree => Tree,
     virtual_list => VirtualList,
 }
