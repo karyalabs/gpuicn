@@ -221,7 +221,7 @@ impl RenderOnce for Tabs {
                     .h(theme.space(height))
                     .px(theme.space(1.5))
                     .py(theme.space(0.5))
-                    .text_size(theme.text(size))
+                    .map(|tab| text::control(tab, &theme, theme.text(size)))
                     .text_color(if active { selected_color } else { other_color })
                     .when(self.variant == TabsVariant::Default, |tab| {
                         tab.rounded(theme.radius.sm)

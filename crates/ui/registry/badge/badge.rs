@@ -3,10 +3,10 @@
 use gpui_icons::{LucideIcon, lucide};
 use gpui_kit::{
     App, FontWeight, IntoElement, ParentElement, RenderOnce, SharedString, Styled, Window, div,
-    prelude::FluentBuilder as _, px, relative,
+    prelude::FluentBuilder as _, px,
 };
 
-use super::theme::{UiTheme, locale::DirectionalStyled as _};
+use super::theme::{UiTheme, locale::DirectionalStyled as _, primitives::text};
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 /// Nova badge color treatments.
@@ -105,7 +105,7 @@ impl RenderOnce for Badge {
             .font_family(theme.fonts.body.clone())
             .font_weight(FontWeight::MEDIUM)
             .text_size(theme.text(12.))
-            .line_height(relative(1.))
+            .line_height(text::line_height(theme, theme.text(12.)))
             .whitespace_nowrap()
             .overflow_hidden()
             .when_some(self.icon, |root, icon| {

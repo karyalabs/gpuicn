@@ -1,10 +1,10 @@
 //! Nova presentation for GPUI Kit's controlled collapsible region.
-use super::theme::UiTheme;
+use super::theme::{UiTheme, primitives::text};
 use gpui_kit::base::Button;
 pub use gpui_kit::base::Collapsible;
 use gpui_kit::{
     App, Div, ElementId, InteractiveElement as _, StatefulInteractiveElement as _, Styled, Window,
-    div,
+    div, px,
 };
 
 /// Creates a controlled region that reveals and removes its content with theme motion.
@@ -33,11 +33,14 @@ pub fn collapsible_trigger(id: impl Into<ElementId>, open: bool, cx: &App) -> Bu
     Button::new(id)
         .aria_expanded(open)
         .px(theme.space(2.5))
-        .py(theme.space(1.5))
+        // 3px around a 20px line keeps the 26px row GPUI Kit's 14px line
+        // box gave, without clipping a truncated label's descenders.
+        .py(px(3.))
         .rounded(theme.radius.lg)
         .border_1()
         .border_color(colors.background.opacity(0.))
         .text_size(theme.text(14.))
+        .line_height(text::line_height(theme, theme.text(14.)))
         .text_color(colors.foreground)
         .cursor_pointer()
         .hover(move |s| s.bg(colors.muted))
@@ -204,6 +207,7 @@ impl gpui_kit::RenderOnce for ShowMore {
                         .gap(theme.space(1.))
                         .rounded(theme.radius.sm)
                         .text_size(theme.text(13.))
+                        .line_height(text::line_height(&theme, theme.text(13.)))
                         .font_weight(gpui_kit::FontWeight::MEDIUM)
                         .text_color(colors.link())
                         .cursor_pointer()

@@ -296,7 +296,7 @@ pub fn dialog_title(id: impl Into<ElementId>, cx: &App) -> Stateful<Div> {
         .font_family(t.fonts.heading.clone())
         .font_weight(FontWeight::MEDIUM)
         .text_size(t.text(16.))
-        .line_height(t.text(16.))
+        .line_height(text::line_height(t, t.text(16.)))
         .text_color(t.colors.popover_foreground)
 }
 /// Muted dialog description.

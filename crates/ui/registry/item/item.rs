@@ -10,7 +10,11 @@ use gpui_kit::{
 };
 use std::rc::Rc;
 
-use super::theme::{UiTheme, apply_style, locale::DirectionalStyled as _, primitives::disabled};
+use super::theme::{
+    UiTheme, apply_style,
+    locale::DirectionalStyled as _,
+    primitives::{disabled, text},
+};
 
 type Handler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App)>;
 
@@ -176,8 +180,8 @@ impl Item {
             .gap(px(2.))
             .when_some(self.title, |copy, title| {
                 copy.child(
-                    div()
-                        .text_size(theme.text(13.5))
+                    text::control(div(), theme, theme.text(13.5))
+                        .debug_selector(|| "item-title".into())
                         .font_weight(FontWeight::NORMAL)
                         .text_color(theme.colors.foreground)
                         .child(title),
@@ -185,8 +189,8 @@ impl Item {
             })
             .when_some(self.description, |copy, description| {
                 copy.child(
-                    div()
-                        .text_size(theme.text(12.))
+                    text::control(div(), theme, theme.text(12.))
+                        .debug_selector(|| "item-description".into())
                         .text_color(theme.colors.muted_foreground)
                         .line_clamp(2)
                         .child(description),
