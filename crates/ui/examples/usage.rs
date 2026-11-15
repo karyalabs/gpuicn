@@ -1404,3 +1404,34 @@ mod diff {
             })
     }
 }
+
+mod commit_graph {
+    use crate::ui::commit_graph::*;
+    use gpui_kit::{App, IntoElement, ParentElement as _, Window, div};
+
+    fn example(window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Lay the graph out in your history loader: one row per commit, newest
+        // first, with the edges entering and leaving its row.
+        let state = window
+            .use_keyed_state("history", cx, |_, _| {
+                CommitGraphState::new(vec![
+                    GraphRow::new("b2c4", "Merge feature", 0)
+                        .kind(GraphNodeKind::Merge)
+                        .label(GraphLabel::new(GraphLabelKind::Head, "main"))
+                        .outgoing(GraphEdge::straight(0, 0))
+                        .outgoing(GraphEdge::new(0, 1, 1)),
+                    GraphRow::new("9f1e", "Add search", 1)
+                        .incoming(GraphEdge::new(1, 1, 1))
+                        .through(0, 0)
+                        .outgoing(GraphEdge::new(1, 0, 1)),
+                    GraphRow::new("41aa", "Initial commit", 0).incoming(GraphEdge::straight(0, 0)),
+                ])
+                .expect("commit IDs are unique")
+            })
+            .read(cx)
+            .clone();
+        CommitGraph::new("history", "History", &state, |row, _, _, _| {
+            div().child(row.label.clone()).into_any_element()
+        })
+    }
+}

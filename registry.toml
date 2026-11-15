@@ -443,6 +443,13 @@ since = "next"
 preview_height = 560
 dependencies = ["button"]
 
+[components.commit_graph]
+description = "A Git history list with a lane graph column and ref labels, drawn from a caller-computed layout."
+category = "display"
+since = "next"
+preview_height = 560
+dependencies = ["virtual_list", "badge"]
+
 # Chat
 
 [components.attachment]

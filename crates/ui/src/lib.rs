@@ -43,6 +43,8 @@ pub mod color_picker;
 pub mod combobox;
 #[path = "../registry/command/command.rs"]
 pub mod command;
+#[path = "../registry/commit_graph/commit_graph.rs"]
+pub mod commit_graph;
 #[path = "../registry/composer/composer.rs"]
 pub mod composer;
 #[path = "../registry/context_menu/context_menu.rs"]

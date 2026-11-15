@@ -169,6 +169,7 @@ previews! {
     color_picker => ColorPicker,
     combobox => Combobox,
     command => Command,
+    commit_graph => CommitGraph,
     composer => Composer,
     context_menu => ContextMenu,
     date_picker => DatePicker,
