@@ -593,7 +593,7 @@ impl Render for MenuState {
                     .line_height(text::line_height(&t, t.text(14.)))
                     // A name over a description gets room to breathe: the
                     // button's fixed height would press the two lines together.
-                    .when(item.description.is_some(), |b| b.h_auto().py(t.space(0.5)))
+                    .when(item.description.is_some(), |b| b.h_auto().py(t.space(0.75)))
                     .rounded(t.radius.sm)
                     .when(selected, |b| b.bg(t.colors.accent).aria_active_descendant())
                     .map(|b| disabled::dim(b, item.disabled))

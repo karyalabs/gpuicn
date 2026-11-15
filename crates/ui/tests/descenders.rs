@@ -138,13 +138,13 @@ fn truncated_labels_inside_controls_keep_their_descenders(cx: &mut TestAppContex
 }
 
 #[gpui_kit::test]
-fn a_menu_row_with_a_description_stays_40px(cx: &mut TestAppContext) {
+fn a_menu_row_with_a_description_stays_42px(cx: &mut TestAppContext) {
     let (_view, mut cx) = open(cx);
     let label = cx.debug_bounds("menu-label").expect("label drawn");
     let description = cx
         .debug_bounds("menu-description")
         .expect("description drawn");
-    // 2px + 20px name + 16px description + 2px: the height the row had when
+    // 3px + 20px name + 16px description + 3px: the 42px the row had when
     // both lines were squeezed into font-size boxes with a gap and more padding.
     assert_eq!(description.bottom() - label.top(), px(36.));
 }
