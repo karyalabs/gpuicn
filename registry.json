@@ -754,7 +754,7 @@
         }
       ],
       "meta": {
-        "since": "next",
+        "since": "0.12.0",
         "category": "display"
       }
     },
@@ -1016,7 +1016,7 @@
         }
       ],
       "meta": {
-        "since": "next",
+        "since": "0.12.0",
         "category": "display"
       }
     },
@@ -2726,7 +2726,7 @@
         }
       ],
       "meta": {
-        "since": "next",
+        "since": "0.12.0",
         "category": "display"
       }
     },

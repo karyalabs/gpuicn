@@ -4,6 +4,20 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.12.0
+
+[Notes](docs/releases/v0.12.0.md)
+
+### Added
+
+- Tree: a virtualized hierarchy with disclosure, typeahead, single or
+  multiple selection, and lazily loaded children.
+- Diff: GPUI Kit's patch viewer with Nova defaults, actions on selected lines
+  and file-header actions, and a read-only mode.
+- Commit graph: a history list that paints a caller-computed lane graph per
+  visible row, with ref labels, shape-coded nodes and a theme-derived lane
+  palette.
+
 ## 0.11.11
 
 [Notes](docs/releases/v0.11.11.md)
