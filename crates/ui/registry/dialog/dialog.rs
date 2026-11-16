@@ -178,8 +178,9 @@ pub fn dialog(
     })
     .id(id.clone())
     .track_focus(&focus)
+    // The popup sets its own width: `dialog_popup` caps it at 384 px, and a
+    // wider sheet overrides that with its own `max_w`.
     .w_full()
-    .max_w(t.space(96.))
     .relative()
     .top(t.space(2.) * (1. - entrance))
     .opacity(entrance)
@@ -214,6 +215,10 @@ pub fn modal_viewport(
         .id(id)
         .max_h((window.viewport_size().height - UiTheme::read(cx).space(8.)).max(px(0.)))
         .overflow_y_scroll()
+        .w_full()
+        .flex()
+        .flex_col()
+        .items_center()
         .child(popup)
 }
 
@@ -262,6 +267,8 @@ pub fn dialog_footer(cx: &App) -> Div {
         .p(t.space(4.))
 }
 /// Named popup surface with modal Tab traversal, including caller-owned inputs.
+///
+/// It is at most 384 px wide; call `.max_w(..)` on it for a wider sheet.
 pub fn dialog_popup(
     id: impl Into<ElementId>,
     label: impl Into<SharedString>,
@@ -334,7 +341,9 @@ pub fn dialog_action(id: impl Into<ElementId>, handle: &DialogHandle) -> Button 
 mod tests {
     use std::{cell::Cell, rc::Rc};
 
-    use gpui_kit::{Context, FocusHandle, Render, TestAppContext, point};
+    use gpui_kit::{
+        Context, FocusHandle, Render, TestAppContext, point, prelude::FluentBuilder as _,
+    };
 
     use super::*;
 
@@ -557,6 +566,36 @@ mod tests {
             page,
             "the backdrop keeps the wheel from the page behind the dialog"
         );
+    }
+
+    struct SizedDialog {
+        handle: DialogHandle,
+        width: Option<f32>,
+    }
+
+    impl Render for SizedDialog {
+        fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+            let popup = dialog_popup("sized-popup", "Accounts", cx)
+                .debug_selector(|| "sized-popup".into())
+                .when_some(self.width, |popup, width| popup.max_w(px(width)));
+            div()
+                .size_full()
+                .child(dialog("sized", &self.handle, popup, window, cx))
+        }
+    }
+
+    #[gpui_kit::test]
+    fn a_popup_sets_its_own_width_and_stays_centered(cx: &mut TestAppContext) {
+        cx.update(super::super::theme::init);
+        for (width, expected) in [(None, 384.), (Some(560.), 560.)] {
+            let handle = DialogHandle::new(true);
+            let (_, cx) = cx.add_window_view(move |_, _| SizedDialog { handle, width });
+            cx.update(|window, cx| window.draw(cx).clear(cx));
+            let viewport = cx.update(|window, _| window.viewport_size());
+            let popup = cx.debug_bounds("sized-popup").unwrap();
+            assert_eq!(popup.size.width, px(expected));
+            assert_eq!(popup.center().x, viewport.width / 2.);
+        }
     }
 
     struct LazyDialog {
