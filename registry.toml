@@ -441,7 +441,7 @@ description = "A fast patch viewer, unified or side by side, with syntax highlig
 category = "display"
 since = "0.12.0"
 preview_height = 560
-dependencies = ["button"]
+dependencies = ["button", "tooltip"]
 
 [components.commit_graph]
 description = "A Git history list with a lane graph column and ref labels, drawn from a caller-computed layout."

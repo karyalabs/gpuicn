@@ -13,7 +13,8 @@ use std::rc::Rc;
 use gpui_icons::{LucideIcon, lucide};
 use gpui_kit::{
     App, ElementId, Entity, IntoElement, ParentElement as _, Refineable as _, RenderOnce,
-    SharedString, Styled, Window, div, prelude::FluentBuilder as _,
+    SharedString, StatefulInteractiveElement as _, Styled, Window, div,
+    prelude::FluentBuilder as _,
 };
 
 pub use gpui_kit::component::diff::{
@@ -86,8 +87,10 @@ pub struct DiffView {
     read_only: bool,
     selection_actions: Vec<DiffAction>,
     file_actions: Vec<DiffAction>,
+    hunk_action: Option<(DiffAction, Vec<DiffLineRange>)>,
     on_intent: Option<IntentHandler>,
     soft_wrap: bool,
+    header_visible: bool,
     style: gpui_kit::StyleRefinement,
 }
 
@@ -101,8 +104,10 @@ impl DiffView {
             read_only: false,
             selection_actions: Vec::new(),
             file_actions: Vec::new(),
+            hunk_action: None,
             on_intent: None,
             soft_wrap: false,
+            header_visible: true,
             style: Default::default(),
         }
     }
@@ -122,6 +127,29 @@ impl DiffView {
     /// Actions shown in every file header.
     pub fn file_actions(mut self, actions: impl IntoIterator<Item = DiffAction>) -> Self {
         self.file_actions = actions.into_iter().collect();
+        self
+    }
+
+    /// One action for each of `hunks`, shown as a small icon button in the
+    /// gutter beside the hunk's first line, such as "Stage hunk". Its intent
+    /// carries the hunk's range. Give the action an icon; the label is its
+    /// tooltip and accessible name.
+    ///
+    /// The buttons take a gutter lane, which changes the state's layout: give
+    /// every view of one [`DiffState`] the same hunk action, or none.
+    pub fn hunk_action(
+        mut self,
+        action: DiffAction,
+        hunks: impl IntoIterator<Item = DiffLineRange>,
+    ) -> Self {
+        self.hunk_action = Some((action, hunks.into_iter().collect()));
+        self
+    }
+
+    /// Shows or hides the file headers, for a view of one file whose path is
+    /// already shown elsewhere. Default is shown.
+    pub fn header_visible(mut self, visible: bool) -> Self {
+        self.header_visible = visible;
         self
     }
 
@@ -201,6 +229,7 @@ impl RenderOnce for DiffView {
             .hover_highlight(DiffHoverHighlight::LineNumber)
             .change_indicator(DiffChangeIndicator::Bars)
             .soft_wrap(self.soft_wrap)
+            .header_visible(self.header_visible)
             .font_family(theme.fonts.mono.clone());
 
         if let Some((range, end)) = anchor {
@@ -245,6 +274,69 @@ impl RenderOnce for DiffView {
                         ));
                     }
                     strip
+                });
+        }
+
+        if let Some((action, hunks)) = self
+            .hunk_action
+            .filter(|(_, hunks)| !self.read_only && !hunks.is_empty())
+        {
+            let ranges: Rc<Vec<DiffLineRange>> = Rc::new(hunks);
+            let markers: Vec<DiffGutterMarker> = ranges
+                .iter()
+                .enumerate()
+                .map(|(ix, range)| {
+                    DiffGutterMarker::new(
+                        ElementId::Name(format!("diff.hunk.{}.{ix}", range.path()).into()),
+                        DiffLinePosition::new(range.path().clone(), range.side(), range.start()),
+                    )
+                    .with_label(action.label.clone())
+                })
+                .collect();
+            let handler = self.on_intent.clone();
+            let marker_theme = theme.clone();
+            diff = diff
+                .gutter_markers(markers)
+                .render_gutter_marker(move |marker, _, _| {
+                    let position = marker.position();
+                    let range = ranges.iter().find(|range| {
+                        range.path() == position.path()
+                            && range.side() == position.side()
+                            && range.start() == position.line()
+                    });
+                    let intent = range.map(|range| DiffIntent {
+                        action: action.id.clone(),
+                        path: range.path().clone(),
+                        range: Some(range.clone()),
+                    });
+                    let handler = handler.clone();
+                    let label = action.label.clone();
+                    let theme = marker_theme.clone();
+                    Button::new(marker.id().clone())
+                        .aria_label(label.clone())
+                        .style_with(move |button| {
+                            let label = label.clone();
+                            super::button::style_button(
+                                button,
+                                false,
+                                ButtonVariant::Ghost,
+                                ButtonSize::IconXs,
+                                &theme,
+                            )
+                            .tooltip(move |_, cx| super::tooltip::text_tooltip(label.clone(), cx))
+                        })
+                        .when_some(action.icon, |button, icon| {
+                            button.child(
+                                lucide(icon)
+                                    .size(marker_theme.spacing.unit * 3.5_f32)
+                                    .text_color(marker_theme.colors.foreground),
+                            )
+                        })
+                        .on_click(move |_, window, cx| {
+                            if let (Some(handler), Some(intent)) = (&handler, &intent) {
+                                handler(intent, window, cx);
+                            }
+                        })
                 });
         }
 
@@ -320,6 +412,7 @@ index 1111111..2222222 100644
     struct Probe {
         state: Entity<DiffState>,
         read_only: bool,
+        intents: Rc<std::cell::RefCell<Vec<DiffIntent>>>,
     }
 
     impl Render for Probe {
@@ -330,7 +423,17 @@ index 1111111..2222222 100644
                     .selection_actions([
                         DiffAction::new("stage", "Stage lines").icon(LucideIcon::Plus)
                     ])
-                    .file_actions([DiffAction::new("discard", "Discard").destructive(true)]),
+                    .file_actions([DiffAction::new("discard", "Discard").destructive(true)])
+                    .hunk_action(
+                        DiffAction::new("stage-hunk", "Stage hunk").icon(LucideIcon::Plus),
+                        [DiffLineRange::new("src/lib.rs", DiffSide::Original, 2, 2)
+                            .with_end_side(DiffSide::Modified)],
+                    )
+                    .header_visible(true)
+                    .on_intent({
+                        let intents = self.intents.clone();
+                        move |intent, _, _| intents.borrow_mut().push(intent.clone())
+                    }),
             )
         }
     }
@@ -360,11 +463,18 @@ index 1111111..2222222 100644
             );
         });
 
+        // One state per view: views of one state with and without hunk
+        // buttons lay it out differently, so each would re-measure it for
+        // the other on every frame.
         for read_only in [false, true] {
-            let probe_state = state.clone();
+            let probe_state = cx.new(|cx| DiffState::new(DiffFile::parse(PATCH).unwrap(), cx));
+            probe_state.update(cx, |state, cx| {
+                state.set_selected_lines(Some(range.clone()), cx);
+            });
             let window = cx.add_window(move |_, _| Probe {
                 state: probe_state,
                 read_only,
+                intents: Rc::default(),
             });
             let mut cx = VisualTestContext::from_window(window.into(), cx);
             for mode in [
