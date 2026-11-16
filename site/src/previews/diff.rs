@@ -1,8 +1,9 @@
 //! The diff catalog preview: a two-file patch, unified or side by side, with
-//! staging actions on selected lines and file actions in each header.
+//! staging actions on selected lines, a stage button beside each hunk and
+//! file actions in each header.
 
 use crate::*;
-use gpuicn::diff::{DiffAction, DiffFile, DiffMode, DiffState, DiffView};
+use gpuicn::diff::{DiffAction, DiffFile, DiffLineRange, DiffMode, DiffSide, DiffState, DiffView};
 
 const PATCH: &str = r#"diff --git a/src/repository.rs b/src/repository.rs
 index 3b18e51..a7c2f04 100644
@@ -74,6 +75,14 @@ impl Showcase {
                 DiffAction::new("discard", "Discard lines").icon(LucideIcon::Undo2).destructive(true),
             ])
             .file_actions([DiffAction::new("stage-file", "Stage file")])
+            .hunk_action(
+                DiffAction::new("stage-hunk", "Stage hunk").icon(LucideIcon::Plus),
+                [
+                    DiffLineRange::new("src/repository.rs", DiffSide::Original, 14, 24)
+                        .with_end_side(DiffSide::Modified),
+                    DiffLineRange::new(".env", DiffSide::Original, 1, 2),
+                ],
+            )
             .on_intent(move |intent, _, cx| {
                 let what = match &intent.range {
                     Some(range) => format!("lines {}–{} of {}", range.start(), range.end(), intent.path),

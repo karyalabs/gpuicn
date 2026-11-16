@@ -4,6 +4,15 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.1
+
+[Notes](docs/releases/v0.13.1.md)
+
+### Added
+
+- Diff: `hunk_action`, a gutter button beside each hunk that reports the
+  hunk's range, and `header_visible`, which hides the file headers.
+
 ## 0.13.0
 
 [Notes](docs/releases/v0.13.0.md)
