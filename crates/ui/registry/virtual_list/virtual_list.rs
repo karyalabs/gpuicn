@@ -222,6 +222,26 @@ impl VirtualListState {
         Ok(())
     }
 
+    /// Add items after the last one, such as the next page of a long list.
+    /// This is O(appended): selection, focus and the scroll position are
+    /// untouched. A duplicate ID, among the new items or with an existing
+    /// one, leaves the state unchanged.
+    pub fn append_items(&self, items: Vec<ListItem>) -> Result<(), DuplicateListItemId> {
+        let mut data = self.data.borrow_mut();
+        let start = data.items.len();
+        let mut added = HashMap::with_capacity(items.len());
+        for (offset, item) in items.iter().enumerate() {
+            if data.positions.contains_key(&item.id)
+                || added.insert(item.id.clone(), start + offset).is_some()
+            {
+                return Err(DuplicateListItemId(item.id.clone()));
+            }
+        }
+        data.positions.extend(added);
+        data.items.extend(items);
+        Ok(())
+    }
+
     /// Change selection mode. Switching to Single keeps the focused selected row,
     /// or the first selected row in current order.
     pub fn set_selection_mode(&self, mode: ListSelectionMode) {
@@ -857,6 +877,34 @@ mod tests {
         assert_eq!(state.selected(), [id(5)]);
         state.set_selected([id(2), id(4), id(3)]);
         assert_eq!(state.selected(), [id(4)]);
+    }
+
+    #[test]
+    fn appending_keeps_state_and_rejects_duplicates_atomically() {
+        let state = VirtualListState::new(items(&[1, 2, 3])).unwrap();
+        state.select(&id(2), ListSelectionGesture::Replace);
+        state.scroll_to(ListOffset {
+            item_ix: 1,
+            offset_in_item: px(5.),
+        });
+        state.append_items(items(&[4, 5])).unwrap();
+        assert_eq!(state.len(), 5);
+        assert_eq!(state.selected(), [id(2)]);
+        let top = state.scroll_top();
+        assert_eq!((top.item_ix, top.offset_in_item), (1, px(5.)));
+        assert!(state.reveal(&id(5)));
+        assert_eq!(
+            state.append_items(items(&[6, 3])),
+            Err(DuplicateListItemId(id(3)))
+        );
+        assert_eq!(
+            state.append_items(items(&[7, 7])),
+            Err(DuplicateListItemId(id(7)))
+        );
+        assert_eq!(state.len(), 5);
+        state.append_items(items(&[6])).unwrap();
+        state.select(&id(6), ListSelectionGesture::Replace);
+        assert_eq!(state.selected(), [id(6)]);
     }
 
     #[test]
