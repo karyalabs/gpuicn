@@ -105,12 +105,14 @@ const views = [
 </Docs>
 
 <script>
+  import { u } from "@/lib/base"
   // The release workflow writes /downloads/showcase.json beside the macOS
-  // archive. Validate every field before using it.
+  // archive, both under the site's base (/gpuicn). Validate every field
+  // before using it.
   const root = document.querySelector<HTMLElement>("[data-showcase]")!
   const link = root.querySelector<HTMLAnchorElement>("[data-mac-download]")!
   const status = root.querySelector<HTMLElement>("[data-mac-status]")!
-  fetch("/downloads/showcase.json")
+  fetch(u("/downloads/showcase.json"))
     .then((response) => (response.ok ? response.json() : Promise.reject()))
     .then((data) => {
       if (
@@ -120,7 +122,7 @@ const views = [
         !/^[a-f0-9]{64}$/.test(data.sha256) || typeof data.build !== "string" ||
         typeof data.notarized !== "boolean" || typeof data.version !== "string"
       ) throw new Error("Invalid download")
-      link.href = data.url
+      link.href = u(data.url)
       link.hidden = false
       status.hidden = true
       root.querySelector<HTMLElement>("[data-mac-arch]")!.textContent = `on ${data.architecture === "arm64" ? "Apple silicon" : "Intel"}`
