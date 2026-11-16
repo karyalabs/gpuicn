@@ -4,6 +4,16 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.2
+
+[Notes](docs/releases/v0.13.2.md)
+
+### Fixed
+
+- Dialog: a popup can be wider than 384 px. The host no longer caps the
+  width, so `dialog_popup(..).max_w(..)` widens a sheet, and the command
+  palette reaches the 480 px it asks for.
+
 ## 0.13.1
 
 [Notes](docs/releases/v0.13.1.md)
