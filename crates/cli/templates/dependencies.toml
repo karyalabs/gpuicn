@@ -2,7 +2,7 @@
 web-time = "1.1"
 gpui_platform = { package = "gpui-pre-platform", version = "=0.3.12", features = ["font-kit"] }
 gpui-icons = "=0.7.0"
-gpui-kit = { version = "=0.9.1", default-features = false, features = ["component"] }
+gpui-kit = { version = "=0.10.0", default-features = false, features = ["component"] }
 
 [dev-dependencies]
-gpui-kit = { version = "=0.9.1", default-features = false, features = ["component", "test-support"] }
+gpui-kit = { version = "=0.10.0", default-features = false, features = ["component", "test-support"] }

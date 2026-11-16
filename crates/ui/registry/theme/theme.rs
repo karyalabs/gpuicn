@@ -1276,6 +1276,8 @@ fn sync_component_theme(cx: &mut App, theme: UiTheme) {
     component.list_even = colors.muted.opacity(0.5).into();
     component.list_head = colors.muted.into();
     component.list_hover = colors.accent.into();
+    // Kit draws query matches in Select, Combobox and Command with this.
+    component.list_highlight_foreground = colors.primary.into();
     component.list_active = colors.accent.into();
     component.list_active_border = colors.ring.into();
     component.table = colors.background.into();
