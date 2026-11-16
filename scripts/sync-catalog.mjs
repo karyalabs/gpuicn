@@ -62,6 +62,9 @@ writeFileSync(`${root}web/src/generated/catalog.json`, JSON.stringify({
     }))
     .sort((a, b) => a.slug.localeCompare(b.slug)),
 }, null, 2) + "\n");
+// The README states the count the catalog lists; keep the two in step.
+const pageCount = Object.keys(manifest.components).filter((module) => !withoutPage.has(module)).length;
+assert.match(read("README.md"), new RegExp(`apps ${pageCount} polished`), `README.md must say the catalog has ${pageCount} components`);
 writeFileSync(`${root}web/src/generated/setup.json`, JSON.stringify({
   dependencies: read("fixtures/registry-install/Cargo.toml").split("[dependencies]\n")[1].split("\n[workspace]")[0].trim(),
   config: read("fixtures/registry-install/components.json").trim(),
