@@ -21,8 +21,8 @@ use gpui_kit::{
 use super::badge::{Badge, BadgeVariant};
 use super::theme::UiTheme;
 use super::virtual_list::{
-    DuplicateListItemId, ListItem, ListRow, ListSelectionMode, VirtualList, VirtualListEvent,
-    VirtualListState,
+    Chunked, DuplicateListItemId, ListItem, ListRow, ListSelectionMode, VirtualList,
+    VirtualListEvent, VirtualListState, drop_off_thread,
 };
 
 /// Lanes drawn before the column clips; more lanes show a clipping marker.
@@ -261,7 +261,7 @@ pub fn geometry(row: &GraphRow, max_lanes: usize) -> RowGeometry {
 }
 
 struct Data {
-    rows: Vec<GraphRow>,
+    rows: Chunked<GraphRow>,
     lanes: usize,
 }
 
@@ -278,7 +278,7 @@ impl CommitGraphState {
         let state = Self {
             list: VirtualListState::new(Vec::new())?,
             data: Rc::new(RefCell::new(Data {
-                rows: Vec::new(),
+                rows: Chunked::default(),
                 lanes: 1,
             })),
         };
@@ -297,7 +297,15 @@ impl CommitGraphState {
                 .collect(),
         )?;
         let lanes = rows.iter().map(GraphRow::lane_count).max().unwrap_or(1);
-        *self.data.borrow_mut() = Data { rows, lanes };
+        let old = std::mem::replace(
+            &mut *self.data.borrow_mut(),
+            Data {
+                rows: rows.into_iter().collect(),
+                lanes,
+            },
+        );
+        let len = old.rows.len();
+        drop_off_thread(old.rows, len);
         Ok(())
     }
 

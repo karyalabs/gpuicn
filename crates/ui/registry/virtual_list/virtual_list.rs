@@ -25,6 +25,125 @@ use std::{
     sync::Arc,
 };
 
+/// Rows per chunk of [`Chunked`] and entries per map of [`Positions`].
+const CHUNK: usize = 4096;
+
+/// A vector stored in fixed-size chunks. Growing it never moves what is
+/// already there, so appending a page costs the same at row 100,000 as at
+/// row 1,000; a plain `Vec` copies everything each time it doubles.
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+pub struct Chunked<T> {
+    chunks: Vec<Vec<T>>,
+    len: usize,
+}
+
+impl<T> Default for Chunked<T> {
+    fn default() -> Self {
+        Self {
+            chunks: Vec::new(),
+            len: 0,
+        }
+    }
+}
+
+impl<T> Chunked<T> {
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.chunks.get(index / CHUNK)?.get(index % CHUNK)
+    }
+
+    pub fn push(&mut self, value: T) {
+        if self.chunks.last().is_none_or(|chunk| chunk.len() == CHUNK) {
+            self.chunks.push(Vec::with_capacity(CHUNK));
+        }
+        if let Some(chunk) = self.chunks.last_mut() {
+            chunk.push(value);
+        }
+        self.len += 1;
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
+        self.chunks.iter().flatten()
+    }
+}
+
+impl<T> std::ops::Index<usize> for Chunked<T> {
+    type Output = T;
+    fn index(&self, index: usize) -> &T {
+        &self.chunks[index / CHUNK][index % CHUNK]
+    }
+}
+
+impl<T> Extend<T> for Chunked<T> {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, values: I) {
+        for value in values {
+            self.push(value);
+        }
+    }
+}
+
+impl<T> FromIterator<T> for Chunked<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(values: I) -> Self {
+        let mut chunked = Self::default();
+        chunked.extend(values);
+        chunked
+    }
+}
+
+/// Row index by ID, as maps of at most [`CHUNK`] entries each, allocated at
+/// full size. One big map would rehash every ID it holds whenever it grows,
+/// which on a long list takes longer than a frame.
+#[derive(Default)]
+struct Positions {
+    maps: Vec<HashMap<ElementId, usize>>,
+}
+
+impl Positions {
+    fn get(&self, id: &ElementId) -> Option<&usize> {
+        self.maps.iter().rev().find_map(|map| map.get(id))
+    }
+
+    fn contains_key(&self, id: &ElementId) -> bool {
+        self.get(id).is_some()
+    }
+
+    /// Adds an ID the caller has checked is not present.
+    fn insert_new(&mut self, id: ElementId, index: usize) {
+        if self.maps.last().is_none_or(|map| map.len() == CHUNK) {
+            self.maps.push(HashMap::with_capacity(CHUNK));
+        }
+        if let Some(map) = self.maps.last_mut() {
+            map.insert(id, index);
+        }
+    }
+}
+
+impl std::ops::Index<&ElementId> for Positions {
+    type Output = usize;
+    fn index(&self, id: &ElementId) -> &usize {
+        self.get(id).expect("no row has this ID")
+    }
+}
+
+/// Drops a long list's old rows (`len` of them) on another thread: freeing
+/// 100,000 rows takes longer than a frame. Short lists drop in place.
+#[doc(hidden)]
+pub fn drop_off_thread<T: Send + 'static>(value: T, len: usize) {
+    if len > CHUNK && std::mem::needs_drop::<T>() {
+        let _ = std::thread::Builder::new()
+            .name("gpuicn-drop".into())
+            .spawn(move || drop(value));
+    }
+}
+
 /// Metadata for one stable row. The renderer supplies its visual content.
 #[derive(Clone, Debug)]
 pub struct ListItem {
@@ -120,8 +239,8 @@ pub struct ListRow {
 }
 
 struct Data {
-    items: Vec<ListItem>,
-    positions: HashMap<ElementId, usize>,
+    items: Chunked<ListItem>,
+    positions: Positions,
     selected: HashSet<ElementId>,
     focused: Option<ElementId>,
     anchor: Option<ElementId>,
@@ -143,8 +262,8 @@ impl VirtualListState {
     pub fn new(items: Vec<ListItem>) -> Result<Self, DuplicateListItemId> {
         let state = Self {
             data: Rc::new(RefCell::new(Data {
-                items: Vec::new(),
-                positions: HashMap::new(),
+                items: Chunked::default(),
+                positions: Positions::default(),
                 selected: HashSet::new(),
                 focused: None,
                 anchor: None,
@@ -163,20 +282,23 @@ impl VirtualListState {
     /// prefer the next surviving old row, then the previous one, then the start.
     /// This is O(n) work on data changes; rendering does not rebuild the ID index.
     pub fn replace_items(&self, items: Vec<ListItem>) -> Result<(), DuplicateListItemId> {
-        let mut positions = HashMap::with_capacity(items.len());
+        let mut seen = HashSet::with_capacity(items.len());
+        if let Some(item) = items.iter().find(|item| !seen.insert(&item.id)) {
+            return Err(DuplicateListItemId(item.id.clone()));
+        }
+        drop(seen);
+        let mut positions = Positions::default();
         for (index, item) in items.iter().enumerate() {
-            if positions.insert(item.id.clone(), index).is_some() {
-                return Err(DuplicateListItemId(item.id.clone()));
-            }
+            positions.insert_new(item.id.clone(), index);
         }
         let top = self.scroll_top();
         let mut data = self.data.borrow_mut();
         let surviving = |start: usize, enabled: bool| {
-            data.items
-                .iter()
-                .skip(start)
-                .chain(data.items.iter().take(start).rev())
-                .filter_map(|item| positions.get(&item.id).copied())
+            let old = &data.items;
+            let start = start.min(old.len());
+            (start..old.len())
+                .chain((0..start).rev())
+                .filter_map(|index| positions.get(&old[index].id).copied())
                 .find(|index| !enabled || !items[*index].disabled)
         };
         let exact_top = data
@@ -208,9 +330,11 @@ impl VirtualListState {
         {
             data.anchor = data.focused.clone();
         }
-        data.items = items;
-        data.positions = positions;
+        let old_items = std::mem::replace(&mut data.items, items.into_iter().collect());
+        let old_positions = std::mem::replace(&mut data.positions, positions);
         drop(data);
+        let len = old_items.len();
+        drop_off_thread((old_items, old_positions.maps), len);
         self.scroll_to(ListOffset {
             item_ix: new_top,
             offset_in_item: if exact_top.is_some() {
@@ -229,15 +353,16 @@ impl VirtualListState {
     pub fn append_items(&self, items: Vec<ListItem>) -> Result<(), DuplicateListItemId> {
         let mut data = self.data.borrow_mut();
         let start = data.items.len();
-        let mut added = HashMap::with_capacity(items.len());
-        for (offset, item) in items.iter().enumerate() {
-            if data.positions.contains_key(&item.id)
-                || added.insert(item.id.clone(), start + offset).is_some()
-            {
+        let mut added = HashSet::with_capacity(items.len());
+        for item in &items {
+            if data.positions.contains_key(&item.id) || !added.insert(&item.id) {
                 return Err(DuplicateListItemId(item.id.clone()));
             }
         }
-        data.positions.extend(added);
+        drop(added);
+        for (offset, item) in items.iter().enumerate() {
+            data.positions.insert_new(item.id.clone(), start + offset);
+        }
         data.items.extend(items);
         Ok(())
     }
@@ -905,6 +1030,41 @@ mod tests {
         state.append_items(items(&[6])).unwrap();
         state.select(&id(6), ListSelectionGesture::Replace);
         assert_eq!(state.selected(), [id(6)]);
+    }
+
+    #[test]
+    fn long_lists_span_chunks_without_losing_rows() {
+        // Pages that straddle chunk boundaries, as History appends them.
+        let state = VirtualListState::new(Vec::new()).unwrap();
+        let total = CHUNK as u64 * 2 + 700;
+        let mut next = 0;
+        while next < total {
+            let end = (next + 500).min(total);
+            state
+                .append_items(items(&(next..end).collect::<Vec<_>>()))
+                .unwrap();
+            next = end;
+        }
+        assert_eq!(state.len(), usize::try_from(total).unwrap());
+        for row in [0, CHUNK as u64 - 1, CHUNK as u64, total - 1] {
+            let index = usize::try_from(row).unwrap();
+            assert_eq!(state.index_of(&id(row)), Some(index));
+            assert_eq!(state.item(index).unwrap().id, id(row));
+        }
+        // A duplicate in an early chunk is still caught.
+        assert_eq!(
+            state.append_items(items(&[total, 3])),
+            Err(DuplicateListItemId(id(3)))
+        );
+        assert_eq!(state.len(), usize::try_from(total).unwrap());
+        state.set_selected([id(CHUNK as u64 + 1)]);
+        assert_eq!(state.selected(), [id(CHUNK as u64 + 1)]);
+        // Replacing a long list keeps the selection that survives.
+        state
+            .replace_items(items(&[CHUNK as u64 + 1, 1, 2]))
+            .unwrap();
+        assert_eq!(state.selected(), [id(CHUNK as u64 + 1)]);
+        assert_eq!(state.len(), 3);
     }
 
     #[test]
