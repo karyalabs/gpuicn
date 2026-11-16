@@ -43,6 +43,8 @@ pub mod color_picker;
 pub mod combobox;
 #[path = "../registry/command/command.rs"]
 pub mod command;
+#[path = "../registry/commit_graph/commit_graph.rs"]
+pub mod commit_graph;
 #[path = "../registry/composer/composer.rs"]
 pub mod composer;
 #[path = "../registry/context_menu/context_menu.rs"]
@@ -53,6 +55,8 @@ pub mod date_picker;
 pub mod date_time_picker;
 #[path = "../registry/dialog/dialog.rs"]
 pub mod dialog;
+#[path = "../registry/diff/diff.rs"]
+pub mod diff;
 #[path = "../registry/drawer/drawer.rs"]
 pub mod drawer;
 #[path = "../registry/embed/embed.rs"]
@@ -144,6 +148,8 @@ pub mod tooltip;
 pub mod resizable;
 #[path = "../registry/sidebar/sidebar.rs"]
 pub mod sidebar;
+#[path = "../registry/tree/tree.rs"]
+pub mod tree;
 #[path = "../registry/virtual_list/virtual_list.rs"]
 pub mod virtual_list;
 

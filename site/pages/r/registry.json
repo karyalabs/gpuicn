@@ -707,6 +707,58 @@
       }
     },
     {
+      "name": "commit-graph",
+      "type": "registry:item",
+      "title": "Commit Graph",
+      "description": "A Git history list with a lane graph column and ref labels, drawn from a caller-computed layout.",
+      "files": [
+        {
+          "path": "registry/theme/locale.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/locale.rs"
+        },
+        {
+          "path": "registry/theme/primitives.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/primitives.rs"
+        },
+        {
+          "path": "registry/theme/theme.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/theme.rs"
+        },
+        {
+          "path": "registry/scroll_area/scroll_area.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/scroll_area.rs"
+        },
+        {
+          "path": "registry/tooltip/tooltip.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/tooltip.rs"
+        },
+        {
+          "path": "registry/virtual_list/virtual_list.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/virtual_list.rs"
+        },
+        {
+          "path": "registry/badge/badge.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/badge.rs"
+        },
+        {
+          "path": "registry/commit_graph/commit_graph.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/commit_graph.rs"
+        }
+      ],
+      "meta": {
+        "since": "0.12.0",
+        "category": "display"
+      }
+    },
+    {
       "name": "composer",
       "type": "registry:item",
       "title": "Composer",
@@ -929,6 +981,43 @@
       "meta": {
         "since": "0.1.0",
         "category": "overlays"
+      }
+    },
+    {
+      "name": "diff",
+      "type": "registry:item",
+      "title": "Diff",
+      "description": "A fast patch viewer, unified or side by side, with syntax highlighting and actions on selected lines.",
+      "files": [
+        {
+          "path": "registry/theme/locale.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/locale.rs"
+        },
+        {
+          "path": "registry/theme/primitives.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/primitives.rs"
+        },
+        {
+          "path": "registry/theme/theme.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/theme.rs"
+        },
+        {
+          "path": "registry/button/button.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/button.rs"
+        },
+        {
+          "path": "registry/diff/diff.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/diff.rs"
+        }
+      ],
+      "meta": {
+        "since": "0.12.0",
+        "category": "display"
       }
     },
     {
@@ -2592,6 +2681,53 @@
       "meta": {
         "since": "0.2.0",
         "category": "overlays"
+      }
+    },
+    {
+      "name": "tree",
+      "type": "registry:item",
+      "title": "Tree",
+      "description": "A fast expandable hierarchy with disclosure, multi-select, typeahead and lazily loaded children.",
+      "files": [
+        {
+          "path": "registry/theme/locale.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/locale.rs"
+        },
+        {
+          "path": "registry/theme/primitives.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/primitives.rs"
+        },
+        {
+          "path": "registry/theme/theme.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/theme.rs"
+        },
+        {
+          "path": "registry/scroll_area/scroll_area.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/scroll_area.rs"
+        },
+        {
+          "path": "registry/tooltip/tooltip.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/tooltip.rs"
+        },
+        {
+          "path": "registry/virtual_list/virtual_list.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/virtual_list.rs"
+        },
+        {
+          "path": "registry/tree/tree.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/tree.rs"
+        }
+      ],
+      "meta": {
+        "since": "0.12.0",
+        "category": "display"
       }
     },
     {

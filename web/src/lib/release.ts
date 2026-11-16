@@ -1,4 +1,4 @@
 // scripts/release-version.py checks this line against the workspace version.
-export const release = "v0.11.11"
+export const release = "v0.12.0"
 export const releaseSource = `https://raw.githubusercontent.com/karyalabs/gpuicn/${release}`
 export const registry = `${releaseSource}/site/pages/r`

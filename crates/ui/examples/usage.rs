@@ -1351,3 +1351,87 @@ mod item {
             )
     }
 }
+
+mod tree {
+    use crate::ui::tree::*;
+    use gpui_kit::{App, IntoElement, ParentElement as _, Window, div};
+
+    fn example(window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Keep the state in your view; replace nodes when your data changes.
+        let state = window
+            .use_keyed_state("files", cx, |_, _| {
+                TreeState::new(
+                    vec![
+                        TreeNode::folder("src", "src", [TreeNode::leaf("src/main.rs", "main.rs")]),
+                        // Children load the first time the folder opens.
+                        TreeNode::lazy("vendor", "vendor"),
+                        TreeNode::leaf("README.md", "README.md"),
+                    ],
+                    ["src".into()],
+                )
+                .expect("unique IDs")
+            })
+            .read(cx)
+            .clone();
+        let loader = state.clone();
+        Tree::new("files", "Files", state, |row, _, _| {
+            div().child(row.label.clone()).into_any_element()
+        })
+        .on_event(move |event, _, _| {
+            if let TreeEvent::LoadChildren(id) = event {
+                loader.set_children(id, TreeChildren::Loaded(Vec::new()));
+            }
+        })
+    }
+}
+
+mod diff {
+    use crate::ui::diff::*;
+    use gpui_kit::{App, AppContext as _, IntoElement, Window};
+
+    fn example(patch: &str, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Parse once and keep the state; call `set_files` when the patch changes.
+        let files = DiffFile::parse(patch).unwrap_or_default();
+        let state = window
+            .use_keyed_state("diff", cx, |_, cx| cx.new(|cx| DiffState::new(files, cx)))
+            .read(cx)
+            .clone();
+        DiffView::new("diff", &state)
+            .selection_actions([DiffAction::new("stage", "Stage lines")])
+            .on_intent(|intent, _, _| {
+                // Build and apply the partial patch for `intent.range` here.
+                let _ = intent;
+            })
+    }
+}
+
+mod commit_graph {
+    use crate::ui::commit_graph::*;
+    use gpui_kit::{App, IntoElement, ParentElement as _, Window, div};
+
+    fn example(window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Lay the graph out in your history loader: one row per commit, newest
+        // first, with the edges entering and leaving its row.
+        let state = window
+            .use_keyed_state("history", cx, |_, _| {
+                CommitGraphState::new(vec![
+                    GraphRow::new("b2c4", "Merge feature", 0)
+                        .kind(GraphNodeKind::Merge)
+                        .label(GraphLabel::new(GraphLabelKind::Head, "main"))
+                        .outgoing(GraphEdge::straight(0, 0))
+                        .outgoing(GraphEdge::new(0, 1, 1)),
+                    GraphRow::new("9f1e", "Add search", 1)
+                        .incoming(GraphEdge::new(1, 1, 1))
+                        .through(0, 0)
+                        .outgoing(GraphEdge::new(1, 0, 1)),
+                    GraphRow::new("41aa", "Initial commit", 0).incoming(GraphEdge::straight(0, 0)),
+                ])
+                .expect("commit IDs are unique")
+            })
+            .read(cx)
+            .clone();
+        CommitGraph::new("history", "History", &state, |row, _, _, _| {
+            div().child(row.label.clone()).into_any_element()
+        })
+    }
+}
