@@ -4,6 +4,17 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.3
+
+[Notes](docs/releases/v0.13.3.md)
+
+### Fixed
+
+- Virtual List and Commit Graph: appending a page to a long list no longer
+  stalls a frame when the list grows past a power of two. Rows and the ID
+  index are stored in fixed-size chunks, so nothing already loaded is
+  copied or rehashed, and a replaced long list is freed on another thread.
+
 ## 0.13.2
 
 [Notes](docs/releases/v0.13.2.md)
