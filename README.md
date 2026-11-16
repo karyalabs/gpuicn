@@ -11,7 +11,7 @@
   </p>
 </div>
 
-gpuicn gives native [GPUI](https://www.gpui.rs/) apps 45 polished, shadcn-styled
+gpuicn gives native [GPUI](https://www.gpui.rs/) apps 70 polished, shadcn-styled
 components, from Button and Dialog to Sidebar, Resizable and Virtual List. Like
 shadcn/ui, it copies the Rust source into your app, so you own every line and
 can change any of it. Behavior comes from [GPUI Kit](https://github.com/longbridge/gpui-kit);
