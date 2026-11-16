@@ -5,7 +5,7 @@ use super::{
         DialogControl, DialogControlAction, DialogHandle, dialog_backdrop, modal_focus,
         modal_viewport,
     },
-    theme::UiTheme,
+    theme::{UiTheme, primitives::dismiss},
 };
 pub use gpui_kit::base::AlertDialog;
 use gpui_kit::{
@@ -38,15 +38,20 @@ pub fn alert_dialog(
     let id = id.into();
     let focus = modal_focus::prepare(id.clone(), handle.is_open(), window, cx);
     let scope = modal_focus::ModalFocus::new(id.clone());
-    let popup = scope
-        .trap(div(), true)
-        .id(id.clone())
-        .track_focus(&focus)
-        .w_full()
-        .max_w(UiTheme::read(cx).space(96.))
-        .child(scope.boundary(false))
-        .child(scope.boundary(true))
-        .child(modal_viewport((id, "viewport"), popup, window, cx));
+    // Escape cancels, as in shadcn's alert dialog; only a press outside is
+    // ignored. Kit's own Escape binding is off so an app's Escape shortcut
+    // cannot take it first, as in `dialog`.
+    let popup = dismiss::on_escape(scope.trap(div(), true), |window, cx| {
+        window.dispatch_action(Box::new(gpui_kit::base::actions::Cancel), cx);
+        true
+    })
+    .id(id.clone())
+    .track_focus(&focus)
+    .w_full()
+    .max_w(UiTheme::read(cx).space(96.))
+    .child(scope.boundary(false))
+    .child(scope.boundary(true))
+    .child(modal_viewport((id, "viewport"), popup, window, cx));
     AlertDialog::new(cx)
         .handle(handle.clone())
         .close_on_escape(false)

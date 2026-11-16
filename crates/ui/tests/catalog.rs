@@ -343,6 +343,11 @@ fn alert_dialog_opens_from_its_trigger_and_cancels(cx: &mut TestAppContext) {
     draw(cx);
     click(cx, "cancel");
     assert!(!handle.is_open(), "cancel closes it");
+    click(cx, "open");
+    draw(cx);
+    cx.simulate_keystrokes("escape");
+    draw(cx);
+    assert!(!handle.is_open(), "Escape closes it");
 }
 
 #[gpui_kit::test]
