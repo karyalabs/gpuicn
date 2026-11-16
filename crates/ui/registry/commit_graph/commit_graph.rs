@@ -301,6 +301,23 @@ impl CommitGraphState {
         Ok(())
     }
 
+    /// Adds older rows after the last one, for the next page of history.
+    /// This is O(appended), so paging through a long history stays fast;
+    /// selection, focus and the scroll position are untouched. A duplicate
+    /// ID leaves the state unchanged.
+    pub fn append_rows(&self, rows: Vec<GraphRow>) -> Result<(), DuplicateListItemId> {
+        self.list.append_items(
+            rows.iter()
+                .map(|row| ListItem::new(row.id.clone(), row.label.clone()).disabled(row.disabled))
+                .collect(),
+        )?;
+        let mut data = self.data.borrow_mut();
+        let lanes = rows.iter().map(GraphRow::lane_count).max().unwrap_or(1);
+        data.lanes = data.lanes.max(lanes);
+        data.rows.extend(rows);
+        Ok(())
+    }
+
     /// The number of rows.
     pub fn len(&self) -> usize {
         self.data.borrow().rows.len()
@@ -712,6 +729,28 @@ mod tests {
         assert_eq!(geometry(&row, 0).node_lane, 0.);
         // Lane counts saturate instead of overflowing.
         assert_eq!(row.lane_count(), usize::MAX);
+    }
+
+    #[test]
+    fn appended_pages_extend_rows_and_lanes() {
+        let state = CommitGraphState::new(linear(2)).unwrap();
+        state.set_selected([ElementId::Name("c1".into())]);
+        state
+            .append_rows(vec![
+                GraphRow::new("c2", "commit 2", 0).through(3, 1),
+                GraphRow::new("c3", "commit 3", 0),
+            ])
+            .unwrap();
+        assert_eq!(state.len(), 4);
+        assert_eq!(state.lanes(), 4);
+        assert_eq!(state.selected(), [ElementId::Name("c1".into())]);
+        assert!(
+            state
+                .append_rows(vec![GraphRow::new("c0", "again", 0)])
+                .is_err()
+        );
+        assert_eq!(state.len(), 4);
+        assert_eq!(state.row(3).map(|row| row.label), Some("commit 3".into()));
     }
 
     #[test]

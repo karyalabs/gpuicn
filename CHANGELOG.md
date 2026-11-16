@@ -4,6 +4,18 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.12.1
+
+[Notes](docs/releases/v0.12.1.md)
+
+### Added
+
+- Virtual List: `append_items`, which adds rows after the last one without
+  rebuilding the list.
+- Commit graph: `append_rows`, for the next page of history in time
+  proportional to the page.
+- Tree: `expand_folders`, which opens many folders with one rebuild.
+
 ## 0.12.0
 
 [Notes](docs/releases/v0.12.0.md)

@@ -361,6 +361,34 @@ impl TreeState {
         events
     }
 
+    /// Expands many loaded folders with one rebuild, such as every new
+    /// folder after [`Self::replace_nodes`]; calling [`Self::set_expanded`]
+    /// for each costs a rebuild apiece. IDs that aren't loaded folders are
+    /// skipped (expand an unloaded one with `set_expanded`, which asks for
+    /// its children). No events are returned: the caller made the change.
+    pub fn expand_folders(&self, ids: impl IntoIterator<Item = SharedString>) {
+        fn loaded(nodes: &[TreeNode], out: &mut HashSet<SharedString>) {
+            for node in nodes {
+                if let TreeChildren::Loaded(children) = &node.children {
+                    out.insert(node.id.clone());
+                    loaded(children, out);
+                }
+            }
+        }
+        {
+            let mut data = self.data.borrow_mut();
+            let mut folders = HashSet::new();
+            loaded(&data.nodes, &mut folders);
+            let before = data.expanded.len();
+            data.expanded
+                .extend(ids.into_iter().filter(|id| folders.contains(id)));
+            if data.expanded.len() == before {
+                return;
+            }
+        }
+        self.sync();
+    }
+
     /// Expands every ancestor of `id` and scrolls it into view. Returns
     /// `false` when `id` is unknown.
     pub fn reveal(&self, id: &SharedString) -> bool {
@@ -976,6 +1004,31 @@ mod tests {
             &"vendor".into(),
             TreeChildren::Loaded(vec![TreeNode::leaf("src", "clash")]),
         ));
+    }
+
+    #[test]
+    fn expand_folders_opens_loaded_folders_at_once() {
+        let state = TreeState::new(sample(), []).unwrap();
+        state.expand_folders(
+            ["src", "src/ui", "vendor", "README.md", "missing"].map(SharedString::from),
+        );
+        assert!(state.is_expanded(&"src".into()) && state.is_expanded(&"src/ui".into()));
+        assert!(
+            !state.is_expanded(&"vendor".into()),
+            "an unloaded folder waits for set_expanded"
+        );
+        assert_eq!(
+            labels(&state),
+            [
+                "src",
+                "  main.rs",
+                "  ui",
+                "    tree.rs",
+                "  lib.rs",
+                "vendor",
+                "README.md"
+            ]
+        );
     }
 
     #[test]
