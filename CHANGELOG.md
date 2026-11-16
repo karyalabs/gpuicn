@@ -4,6 +4,23 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.0
+
+[Notes](docs/releases/v0.13.0.md)
+
+### Changed
+
+- Runtime pins move to GPUI Kit 0.10.0, still on `gpui-pre` 0.3.12 with
+  gpui-icons 0.7.0. No gpuicn API changes; move the `gpui-kit` pin with
+  gpuicn (`gpuicn update --to 0.13.0`).
+- The theme sets GPUI Kit's new `list_highlight_foreground` (query matches in
+  Select, Combobox and Command) to `primary`.
+
+### Fixed
+
+- Tabs: the arrow keys select the next tab again. GPUI Kit 0.10's tab list
+  moves focus without selecting, which took over gpuicn's keyboard handling.
+
 ## 0.12.1
 
 [Notes](docs/releases/v0.12.1.md)

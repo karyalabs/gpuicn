@@ -254,7 +254,14 @@ impl RenderOnce for Tabs {
             })
             .collect::<Vec<_>>();
         let on_change = self.on_change;
-        let root = gpui_kit::base::Tabs::new(self.id)
+        // Not `gpui_kit::base::Tabs`: since GPUI Kit 0.10 its tabs take over
+        // focus and move it with the arrows without selecting (manual
+        // activation). These tabs select as focus moves, like shadcn's, so
+        // the list keeps its own roving focus and only borrows the role.
+        let root = div()
+            .id(self.id)
+            .role(Role::TabList)
+            .aria_orientation(gpui_kit::Orientation::Horizontal)
             .flex_row_in(theme.direction)
             .items_center()
             .when_some(self.label, |root, label| root.aria_label(label))
