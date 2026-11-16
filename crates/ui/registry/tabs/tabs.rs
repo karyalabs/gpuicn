@@ -248,6 +248,10 @@ impl RenderOnce for Tabs {
                     })
                     .when_some(item.on_secondary, |tab, handler| {
                         tab.on_mouse_down(MouseButton::Right, move |event, window, cx| {
+                            // GPUI focuses the tab on this press after the
+                            // handler runs, which would take focus from the
+                            // context menu the handler just opened.
+                            window.prevent_default();
                             handler(event, window, cx)
                         })
                     })

@@ -881,13 +881,16 @@ use gpui_kit::SharedString;
 struct BadgedTabs {
     selected: SharedString,
     secondary: Option<SharedString>,
+    menu: gpui_kit::FocusHandle,
 }
 impl Render for BadgedTabs {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         use gpuicn::tabs::{Tab, Tabs, TabsSize, TabsVariant};
         let entity = cx.entity().downgrade();
+        let menu = self.menu.clone();
         let tab = |value: &'static str, label: &'static str, aria: &'static str| {
             let entity = entity.clone();
+            let menu = menu.clone();
             Tab::new(value, value, label)
                 .aria_label(aria)
                 .trailing(
@@ -895,7 +898,9 @@ impl Render for BadgedTabs {
                         .debug_selector(move || format!("{value}.badge"))
                         .child("2"),
                 )
-                .on_secondary_click(move |_, _, cx| {
+                .on_secondary_click(move |_, window, cx| {
+                    // As a context menu does when it opens.
+                    menu.focus(window, cx);
                     entity
                         .update(cx, |this, cx| {
                             this.secondary = Some(value.into());
@@ -904,13 +909,14 @@ impl Render for BadgedTabs {
                         .unwrap();
                 })
         };
-        Tabs::new("teams")
+        let tabs = Tabs::new("teams")
             .variant(TabsVariant::Line)
             .size(TabsSize::Sm)
             .selected(self.selected.clone())
             .item(tab("eng", "Engineering", "Engineering, 2 mentions"))
             .item(tab("design", "Design", "Design, 2 mentions"))
-            .end(div().debug_selector(|| "teams.more".into()).child("More"))
+            .end(div().debug_selector(|| "teams.more".into()).child("More"));
+        div().child(tabs).child(div().track_focus(&self.menu))
     }
 }
 
@@ -918,9 +924,10 @@ impl Render for BadgedTabs {
 fn tabs_carry_trailing_badges_an_end_slot_and_a_secondary_click(cx: &mut TestAppContext) {
     use gpui_kit::test::TestQueryExt as _;
     cx.update(gpuicn::init);
-    let (view, cx) = cx.add_window_view(|_, _| BadgedTabs {
+    let (view, cx) = cx.add_window_view(|_, cx| BadgedTabs {
         selected: "eng".into(),
         secondary: None,
+        menu: cx.focus_handle(),
     });
     cx.update(|window, cx| window.draw(cx).clear(cx));
     let design = cx.update(|window, _| {
@@ -947,4 +954,7 @@ fn tabs_carry_trailing_badges_an_end_slot_and_a_secondary_click(cx: &mut TestApp
         gpui_kit::Modifiers::none(),
     );
     cx.update(|_, cx| assert_eq!(view.read(cx).secondary.as_deref(), Some("design")));
+    // The press does not then move focus to the tab, away from the menu
+    // the handler opened.
+    cx.update(|window, cx| assert!(view.read(cx).menu.is_focused(window)));
 }
