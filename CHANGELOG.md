@@ -4,6 +4,16 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.4
+
+[Notes](docs/releases/v0.13.4.md)
+
+### Fixed
+
+- Alert Dialog: Escape cancels it. A press outside still does nothing.
+- Tabs: a context menu opened from `on_secondary_click` keeps focus, so it
+  takes Escape, the arrows and Enter.
+
 ## 0.13.3
 
 [Notes](docs/releases/v0.13.3.md)
