@@ -94,6 +94,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
           <a href={u("/components/")}>Components</a>
           <a href={u("/icons/")}>Icons</a>
           <a href={u("/app/")}>Gallery app</a>
+          <a href={u("/showcase/")}>Showcase</a>
         </nav>
         <div class="head__tools">
           <details class="head__menu head__more" data-theme-menu>
@@ -105,6 +106,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
               <a href={u("/components/")}>Components</a>
               <a href={u("/icons/")}>Icons</a>
               <a href={u("/app/")}>Gallery app</a>
+              <a href={u("/showcase/")}>Showcase</a>
             </nav>
           </details>
           <button class="head__tool" type="button" data-open-palette>
@@ -264,7 +266,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
   .head__links a:hover {
     background: var(--paper-2);
   }
-  @media (min-width: 48rem) {
+  @media (min-width: 56rem) {
     .head__more {
       display: none;
     }
@@ -288,7 +290,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     align-items: center;
     gap: 0.25rem;
   }
-  @media (min-width: 48rem) {
+  @media (min-width: 56rem) {
     .head__nav {
       display: flex;
     }

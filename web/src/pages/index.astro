@@ -5,6 +5,7 @@ import Preview from "../components/Preview.astro"
 import Code from "../components/Code.astro"
 import ComponentCard from "../components/ComponentCard.astro"
 import ThemeControls from "../components/ThemeControls.astro"
+import MattyShowcase from "../components/MattyShowcase.astro"
 import { categories, components, isNew } from "../lib/catalog"
 import { componentDocs, icons } from "../lib/docs"
 import { release } from "../lib/release"
@@ -28,11 +29,13 @@ const newest = components.filter(isNew)
         design. Copy the ones you need into your app and edit them there.
       </p>
       <div class="hero__cta">
-        <a class="btn btn--primary btn--lg" href={u("/components/")}>Browse components</a>
+        <a class="btn btn--primary btn--lg" href={u("/installation/")}>Get started</a>
         <a class="btn btn--lg" href={u("/app/")}>Open the gallery app</a>
-        <a class="btn btn--ghost btn--lg" href={u("/installation/")}>Get started</a>
+        <a class="btn btn--ghost btn--lg" href={u("/components/")}>Browse components</a>
       </div>
     </section>
+
+    <MattyShowcase />
 
     <section class="stage" aria-label="Live components">
       <div class="stage__bar">
@@ -114,8 +117,7 @@ const newest = components.filter(isNew)
         </p>
         <p class="small start__text">
           Also here: {icons.length.toLocaleString("en")} Lucide <a href={u("/icons/")}>icons</a> as Rust
-          names, and <a href={u("/showcase/")}>gpuicn Workspace</a>, an example app for macOS and Linux built
-          from this catalog.
+          names. See how they come together in <a href={u("/showcase/")}>Matty and gpuicn Workspace</a>.
         </p>
       </div>
       <Code
@@ -214,6 +216,7 @@ const newest = components.filter(isNew)
 
   .steps {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
     margin-top: 4rem;
   }
@@ -310,6 +313,7 @@ const newest = components.filter(isNew)
   }
   .start {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
     align-items: center;
     padding: 2rem;

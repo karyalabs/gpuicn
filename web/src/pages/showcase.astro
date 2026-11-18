@@ -3,6 +3,7 @@ import { u } from "@/lib/base"
 import Docs from "../layouts/Docs.astro"
 import Aside from "../components/Aside.astro"
 import Code from "../components/Code.astro"
+import MattyShowcase from "../components/MattyShowcase.astro"
 
 const views = [
   ["light", "Tasks", "gpuicn Workspace showing a project's task list in the light theme"],
@@ -12,11 +13,43 @@ const views = [
 ---
 
 <Docs
-  title="Example app"
+  title="Built with gpuicn"
   part="Get started"
-  lede="gpuicn Workspace is a small desktop app built from this catalog: projects, tasks, and notes, saved on your computer."
+  lede="Explore Matty, a complete Mattermost client, then see how its interface uses the component catalog."
 >
-  <div class="downloads" slot="head" data-showcase>
+  <MattyShowcase />
+
+  <section class="text" id="inside-matty">
+    <h2 class="h2">Inside Matty</h2>
+    <p>Built by Karya Labs for macOS, Linux, Windows and the web. These components are used in Matty's interface; its networking, offline sync and application state live in Matty itself.</p>
+    <h3 class="h3">Channel navigation</h3>
+    <p>
+      <a href={u("/components/sidebar/")}>Sidebar</a> holds the channels, with
+      <a href={u("/components/avatar/")}>Avatar</a> and <a href={u("/components/badge/")}>Badge</a>
+      for people and unread counts, and <a href={u("/components/menu/")}>Menu</a> for actions.
+      <a href="https://github.com/karyalabs/matty/blob/master/crates/matty-app/src/sidebar.rs">Read the sidebar source</a>.
+    </p>
+    <h3 class="h3">Messages and replies</h3>
+    <p>
+      <a href={u("/components/message-list/")}>Message List</a>, <a href={u("/components/composer/")}>Composer</a>,
+      <a href={u("/components/attachment/")}>Attachment</a> and <a href={u("/components/emoji-picker/")}>Emoji Picker</a>
+      come together in the thread pane.
+      <a href="https://github.com/karyalabs/matty/blob/master/crates/matty-app/src/right_pane.rs">Read the thread pane source</a>.
+    </p>
+    <h3 class="h3">Overlays that stay in context</h3>
+    <p>
+      <a href={u("/components/dialog/")}>Dialog</a>, <a href={u("/components/popover/")}>Popover</a> and
+      <a href={u("/components/lightbox/")}>Lightbox</a> handle focused actions and image previews.
+      Try opening an attachment in the <a href="https://demo.karyalabs.dev/matty/">sample workspace</a>.
+    </p>
+    <p>Want to build your own? <a href={u("/installation/")}>Get started</a> or <a href={u("/app/")}>open the component gallery</a>.</p>
+  </section>
+
+  <div class="text" id="workspace">
+    <h2 class="h2">A smaller example: gpuicn Workspace</h2>
+    <p>Projects, tasks, and notes saved on your computer. Workspace is a simpler starting point for reading how an app is assembled from the catalog.</p>
+  </div>
+  <div class="downloads" data-showcase>
     <a class="btn btn--primary" href="#" hidden data-mac-download>Download for macOS</a>
     <span class="small" data-mac-status>Checking the macOS download</span>
     <details class="menu">

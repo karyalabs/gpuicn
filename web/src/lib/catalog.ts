@@ -59,7 +59,7 @@ export const guide = [
   { to: u("/introduction/"), label: "Introduction", blurb: "What gpuicn is, and how installing source differs from adding a crate." },
   { to: u("/installation/"), label: "Installation", blurb: "Create an app, install the CLI, add a component, open a window." },
   { to: u("/theming/"), label: "Theming", blurb: "The tokens every component reads, and how to change them at runtime." },
-  { to: u("/showcase/"), label: "Example app", blurb: "gpuicn Workspace for macOS and Linux, built from this catalog." },
+  { to: u("/showcase/"), label: "Showcase", blurb: "Matty and gpuicn Workspace: real apps built with the component catalog." },
 ]
 
 export const reference = [
