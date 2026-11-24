@@ -255,13 +255,18 @@ impl MenuState {
     pub fn open(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.open_at(None, window, cx);
     }
-    /// Opens at a pointer position, or at the trigger when the position is absent.
+    /// Opens at a pointer position, or at the trigger when the position is
+    /// absent. A menu with no entries stays closed, so a context area whose
+    /// app has nothing to offer at that spot shows no empty panel.
     pub fn open_at(
         &mut self,
         point: Option<Point<Pixels>>,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        if self.items.is_empty() {
+            return;
+        }
         self.pointer = point.is_some();
         self.return_focus = if self.pointer {
             window.focused(cx)

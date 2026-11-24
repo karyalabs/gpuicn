@@ -4,6 +4,15 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.6
+
+[Notes](docs/releases/v0.13.6.md)
+
+### Fixed
+
+- Menu and Context Menu: a menu with no entries stays closed instead of
+  showing an empty panel.
+
 ## 0.13.5
 
 [Notes](docs/releases/v0.13.5.md)
