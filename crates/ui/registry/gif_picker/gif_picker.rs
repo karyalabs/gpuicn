@@ -500,13 +500,16 @@ impl Render for GifPickerState {
                 let selected = highlighted == Some(index);
                 let pick = gif.id.clone();
                 let left = (column_width + gap) * place.column as f32;
-                let cell = match &gif.image {
+                // The highlight ring sits outside the picture, so an
+                // unhighlighted GIF shows no frame around it.
+                let picture = match &gif.image {
                     Some(image) => {
                         clipped_image(image.clone(), theme.radius.md, ObjectFit::Cover, &theme)
                     }
                     None => div().rounded(theme.radius.md).bg(colors.muted),
                 };
-                cell.id((id.clone(), SharedString::from(format!("gif-{index}"))))
+                div()
+                    .id((id.clone(), SharedString::from(format!("gif-{index}"))))
                     .test_support()
                     .role(Role::ListBoxOption)
                     .aria_label(gif.title.clone())
@@ -523,12 +526,15 @@ impl Render for GifPickerState {
                     })
                     .w(column_width)
                     .h(px(place.height))
+                    .p(px(2.))
+                    .rounded(theme.radius.md + px(2.))
                     .border_2()
                     .border_color(if selected {
                         gpui_kit::Hsla::from(colors.ring)
                     } else {
                         gpui_kit::transparent_black()
                     })
+                    .child(picture.size_full())
                     .cursor_pointer()
                     .on_hover(cx.listener(move |this, hovered, _, cx| {
                         if *hovered && this.highlighted != Some(index) {
