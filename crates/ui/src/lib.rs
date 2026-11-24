@@ -71,6 +71,8 @@ pub mod field;
 pub mod fieldset;
 #[path = "../registry/form/form.rs"]
 pub mod form;
+#[path = "../registry/gif_picker/gif_picker.rs"]
+pub mod gif_picker;
 #[path = "../registry/input/input.rs"]
 pub mod input;
 #[path = "../registry/input_group/input_group.rs"]

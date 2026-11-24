@@ -1295,6 +1295,48 @@
       }
     },
     {
+      "name": "gif-picker",
+      "type": "registry:item",
+      "title": "Gif Picker",
+      "description": "A GIF search with a masonry grid that loads more as it scrolls.",
+      "files": [
+        {
+          "path": "registry/theme/locale.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/locale.rs"
+        },
+        {
+          "path": "registry/theme/primitives.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/primitives.rs"
+        },
+        {
+          "path": "registry/theme/theme.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/theme.rs"
+        },
+        {
+          "path": "registry/input/input.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/input.rs"
+        },
+        {
+          "path": "registry/spinner/spinner.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/spinner.rs"
+        },
+        {
+          "path": "registry/gif_picker/gif_picker.rs",
+          "type": "registry:file",
+          "target": "~/src/ui/gif_picker.rs"
+        }
+      ],
+      "meta": {
+        "since": "0.13.5",
+        "category": "chat"
+      }
+    },
+    {
       "name": "input",
       "type": "registry:item",
       "title": "Input",

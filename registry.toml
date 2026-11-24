@@ -479,6 +479,13 @@ since = "0.7.0"
 preview_height = 432
 dependencies = ["input"]
 
+[components.gif_picker]
+description = "A GIF search with a masonry grid that loads more as it scrolls."
+category = "chat"
+since = "0.13.5"
+preview_height = 432
+dependencies = ["input", "spinner"]
+
 [components.message]
 description = "A chat message row with grouping, reactions, and hover actions."
 category = "chat"

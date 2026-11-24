@@ -22,6 +22,7 @@ pub mod empty;
 pub mod field;
 pub mod fieldset;
 pub mod form;
+pub mod gif_picker;
 pub mod input;
 pub mod input_group;
 pub mod kbd;
