@@ -450,6 +450,37 @@ fn menus_mount_in_a_menubar_a_navigation_menu_and_a_context_area(cx: &mut TestAp
 }
 
 #[gpui_kit::test]
+fn a_context_menu_with_no_entries_stays_closed(cx: &mut TestAppContext) {
+    let state = Rc::new(RefCell::new(None));
+    let sink = state.clone();
+    let cx = mount(cx, move |window, cx| {
+        let empty = window.use_keyed_state("menus.empty", cx, |_, cx| {
+            MenuState::new(Vec::<MenuItem>::new(), cx)
+        });
+        *sink.borrow_mut() = Some(empty.clone());
+        div().child(context_menu(
+            &empty,
+            "Nothing here",
+            probe("empty-area").w(px(200.)).h(px(80.)),
+        ))
+    });
+    let area = cx.debug_bounds("empty-area").expect("context area drawn");
+    cx.simulate_event(gpui_kit::MouseDownEvent {
+        button: gpui_kit::MouseButton::Right,
+        position: area.center(),
+        modifiers: Modifiers::default(),
+        click_count: 1,
+        first_mouse: false,
+    });
+    draw(cx);
+    let empty = state.borrow().clone().expect("menu state created");
+    assert!(
+        !cx.read(|cx| empty.read(cx).is_open()),
+        "no empty panel opened"
+    );
+}
+
+#[gpui_kit::test]
 fn text_controls_mount_with_their_shared_states(cx: &mut TestAppContext) {
     let otp = Rc::new(RefCell::new(None));
     let otp_sink = otp.clone();
