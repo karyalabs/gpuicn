@@ -970,6 +970,37 @@ mod emoji_picker {
     }
 }
 
+mod gif_picker {
+    use crate::ui::gif_picker::*;
+    use gpui_kit::{App, AppContext as _, IntoElement, Window};
+
+    fn example(window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let state = window.use_keyed_state("gif-picker", cx, |window, cx| {
+            let state = cx.new(|cx| {
+                let mut state = GifPickerState::new(window, cx);
+                // The application asks its GIF service and resolves the previews.
+                state.set_attribution(Some("Powered by GIPHY".into()), cx);
+                state.set_gifs(
+                    [Gif::new("xT9IgG50Fb7Mi0prBC", "Happy Dance", 200., 150.)
+                        .image("gifs/happy-dance.gif")],
+                    true,
+                    cx,
+                );
+                state
+            });
+            let subscription = cx.subscribe(&state, |_, _, event, _| match event {
+                GifPickerEvent::Search(query) => println!("search for {query:?}"),
+                GifPickerEvent::LoadMore => println!("load the next page"),
+                GifPickerEvent::Pick(id) => println!("send GIF {id}"),
+                GifPickerEvent::Cancel => {}
+            });
+            (state, subscription)
+        });
+        let state = state.read(cx).0.clone();
+        GifPicker::new(&state)
+    }
+}
+
 mod lightbox {
     use crate::ui::dialog::DialogHandle;
     use crate::ui::lightbox::*;

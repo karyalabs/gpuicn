@@ -521,6 +521,12 @@ pub enum UiText {
     NoEmoji,
     /// "Skin tone", the emoji picker's skin tone menu.
     SkinTone,
+    /// "Search GIFs", the GIF picker's placeholder and input name.
+    SearchGifs,
+    /// "GIFs", the GIF picker's grid.
+    Gifs,
+    /// "No GIFs found.", the GIF picker's empty state.
+    NoGifs,
     /// A skin tone name, 0 for "Default skin tone" through 5 for "Dark skin tone".
     SkinToneName(u8),
     /// "Previous image", in the lightbox.
@@ -732,6 +738,9 @@ impl UiText {
             Self::EmojiCategories => "emoji-categories",
             Self::NoEmoji => "emoji-none",
             Self::SkinTone => "emoji-skin-tone",
+            Self::SearchGifs => "gif-search",
+            Self::Gifs => "gifs",
+            Self::NoGifs => "gif-none",
             Self::SkinToneName(_) => "emoji-skin-tone-name",
             Self::PreviousImage => "previous-image",
             Self::NextImage => "next-image",
@@ -919,6 +928,9 @@ impl UiText {
             Self::CustomEmoji => "Custom",
             Self::EmojiCategories => "Emoji categories",
             Self::NoEmoji => "No emoji found.",
+            Self::SearchGifs => "Search GIFs",
+            Self::Gifs => "GIFs",
+            Self::NoGifs => "No GIFs found.",
             Self::SkinTone => "Skin tone",
             Self::PreviousImage => "Previous image",
             Self::NextImage => "Next image",
