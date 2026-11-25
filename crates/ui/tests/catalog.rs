@@ -487,12 +487,19 @@ fn an_attachment_hears_a_right_click_but_does_not_open(cx: &mut TestAppContext) 
     let (open_sink, menu_sink) = (opened.clone(), menus.clone());
     let cx = mount(cx, move |_, _| {
         let (open_sink, menu_sink) = (open_sink.clone(), menu_sink.clone());
-        probe("file-card").w(px(240.)).child(
-            Attachment::new("file", "plan.pdf")
-                .meta("PDF · 2.4 MB")
-                .on_click(move |_, _, _| *open_sink.borrow_mut() += 1)
-                .on_secondary_click(move |_, _, _| *menu_sink.borrow_mut() += 1),
-        )
+        div()
+            .id("row")
+            .on_mouse_up(gpui_kit::MouseButton::Right, |_, _, _| {
+                panic!("the row's own right-click handler ran too")
+            })
+            .child(
+                probe("file-card").w(px(240.)).child(
+                    Attachment::new("file", "plan.pdf")
+                        .meta("PDF · 2.4 MB")
+                        .on_click(move |_, _, _| *open_sink.borrow_mut() += 1)
+                        .on_secondary_click(move |_, _, _| *menu_sink.borrow_mut() += 1),
+                ),
+            )
     });
     let card = cx.debug_bounds("file-card").expect("card drawn");
     cx.simulate_event(gpui_kit::MouseDownEvent {
