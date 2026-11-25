@@ -18,7 +18,7 @@ use super::theme::{
 };
 
 type Handler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
-type SecondaryHandler = Rc<dyn Fn(&gpui_kit::MouseDownEvent, &mut Window, &mut App) + 'static>;
+type SecondaryHandler = Rc<dyn Fn(&gpui_kit::MouseUpEvent, &mut Window, &mut App) + 'static>;
 
 /// Where an attachment is in its upload.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -121,10 +121,11 @@ impl Attachment {
         self
     }
     /// Runs on a right-click, such as to open a context menu at the
-    /// pointer.
+    /// pointer. It runs on release, as a click does, and the press goes no
+    /// further, so a row's own menu under the attachment stays closed.
     pub fn on_secondary_click(
         mut self,
-        handler: impl Fn(&gpui_kit::MouseDownEvent, &mut Window, &mut App) + 'static,
+        handler: impl Fn(&gpui_kit::MouseUpEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_secondary = Some(Rc::new(handler));
         self
@@ -268,13 +269,18 @@ impl RenderOnce for Attachment {
                     .on_click(move |event, window, cx| handler(event, window, cx))
             })
             .when_some(self.on_secondary.clone(), |root, handler| {
-                root.on_mouse_down(gpui_kit::MouseButton::Right, move |event, window, cx| {
-                    // Focus would otherwise move to the card after the
-                    // handler, away from a menu it opened.
+                root.on_mouse_down(gpui_kit::MouseButton::Right, |_, window, _| {
+                    // Focus would otherwise move to the card, away from a
+                    // menu the handler opens.
                     window.prevent_default();
-                    cx.stop_propagation();
-                    handler(event, window, cx)
                 })
+                .on_mouse_up(
+                    gpui_kit::MouseButton::Right,
+                    move |event, window, cx| {
+                        cx.stop_propagation();
+                        handler(event, window, cx)
+                    },
+                )
             });
 
         let sized = self.dimensions.map(|(width, height)| {
