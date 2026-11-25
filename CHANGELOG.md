@@ -4,6 +4,14 @@ Notable changes to gpuicn. Detailed notes for each release are in
 [docs/releases](docs/releases/). Installed source never updates itself; run
 `gpuicn diff` after upgrading to see what a release changes in your copy.
 
+## 0.13.7
+
+[Notes](docs/releases/v0.13.7.md)
+
+### Added
+
+- Attachment: `on_secondary_click`, for a context menu on a file or image.
+
 ## 0.13.6
 
 [Notes](docs/releases/v0.13.6.md)

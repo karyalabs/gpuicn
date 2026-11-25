@@ -481,6 +481,39 @@ fn a_context_menu_with_no_entries_stays_closed(cx: &mut TestAppContext) {
 }
 
 #[gpui_kit::test]
+fn an_attachment_hears_a_right_click_but_does_not_open(cx: &mut TestAppContext) {
+    let opened = Rc::new(RefCell::new(0));
+    let menus = Rc::new(RefCell::new(0));
+    let (open_sink, menu_sink) = (opened.clone(), menus.clone());
+    let cx = mount(cx, move |_, _| {
+        let (open_sink, menu_sink) = (open_sink.clone(), menu_sink.clone());
+        probe("file-card").w(px(240.)).child(
+            Attachment::new("file", "plan.pdf")
+                .meta("PDF · 2.4 MB")
+                .on_click(move |_, _, _| *open_sink.borrow_mut() += 1)
+                .on_secondary_click(move |_, _, _| *menu_sink.borrow_mut() += 1),
+        )
+    });
+    let card = cx.debug_bounds("file-card").expect("card drawn");
+    cx.simulate_event(gpui_kit::MouseDownEvent {
+        button: gpui_kit::MouseButton::Right,
+        position: card.center(),
+        modifiers: Modifiers::default(),
+        click_count: 1,
+        first_mouse: false,
+    });
+    cx.simulate_event(gpui_kit::MouseUpEvent {
+        button: gpui_kit::MouseButton::Right,
+        position: card.center(),
+        modifiers: Modifiers::default(),
+        click_count: 1,
+    });
+    draw(cx);
+    assert_eq!(*menus.borrow(), 1, "the right-click reached the handler");
+    assert_eq!(*opened.borrow(), 0, "a right-click doesn't open the file");
+}
+
+#[gpui_kit::test]
 fn text_controls_mount_with_their_shared_states(cx: &mut TestAppContext) {
     let otp = Rc::new(RefCell::new(None));
     let otp_sink = otp.clone();

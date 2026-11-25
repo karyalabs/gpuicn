@@ -18,6 +18,7 @@ use super::theme::{
 };
 
 type Handler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
+type SecondaryHandler = Rc<dyn Fn(&gpui_kit::MouseDownEvent, &mut Window, &mut App) + 'static>;
 
 /// Where an attachment is in its upload.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -46,6 +47,7 @@ pub struct Attachment {
     on_click: Option<Handler>,
     on_remove: Option<Handler>,
     on_retry: Option<Handler>,
+    on_secondary: Option<SecondaryHandler>,
 }
 
 impl Attachment {
@@ -64,6 +66,7 @@ impl Attachment {
             on_click: None,
             on_remove: None,
             on_retry: None,
+            on_secondary: None,
         }
     }
     /// Sets the secondary line, such as "PDF · 2.4 MB".
@@ -115,6 +118,15 @@ impl Attachment {
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_remove = Some(Rc::new(handler));
+        self
+    }
+    /// Runs on a right-click, such as to open a context menu at the
+    /// pointer.
+    pub fn on_secondary_click(
+        mut self,
+        handler: impl Fn(&gpui_kit::MouseDownEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
+        self.on_secondary = Some(Rc::new(handler));
         self
     }
     /// Adds a Retry button while the upload has failed.
@@ -254,6 +266,15 @@ impl RenderOnce for Attachment {
                         super::theme::primitives::press::claim_now(cx)
                     })
                     .on_click(move |event, window, cx| handler(event, window, cx))
+            })
+            .when_some(self.on_secondary.clone(), |root, handler| {
+                root.on_mouse_down(gpui_kit::MouseButton::Right, move |event, window, cx| {
+                    // Focus would otherwise move to the card after the
+                    // handler, away from a menu it opened.
+                    window.prevent_default();
+                    cx.stop_propagation();
+                    handler(event, window, cx)
+                })
             });
 
         let sized = self.dimensions.map(|(width, height)| {
