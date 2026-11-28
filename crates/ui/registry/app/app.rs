@@ -7,12 +7,9 @@
 
 use std::borrow::Cow;
 
-use gpui_icons::LucideAssetSource;
-use gpui_kit::{
-    App, AppContext as _, Context, Render, SharedString, TitlebarOptions, Window, WindowOptions,
-};
+use gpui_kit::{App, SharedString, TitlebarOptions, WindowOptions};
 
-use super::theme::{Appearance, UiTheme, follow_system, init};
+use super::theme::{Appearance, UiTheme, init};
 
 /// What `run` sets up before the first window opens.
 pub struct AppConfig {
@@ -91,10 +88,18 @@ impl AppConfig {
 ///
 /// Opens the platform with the Lucide assets, applies `config`, follows the
 /// system appearance in the window and activates the application.
-pub fn run<V: Render>(
+///
+/// Not on iOS or Android: GPUI Kit exports no platform there, so a mobile app
+/// opens GPUI's platform itself and calls [`AppConfig::install`].
+#[cfg(not(any(target_os = "ios", target_os = "android")))]
+pub fn run<V: gpui_kit::Render>(
     config: AppConfig,
-    root: impl FnOnce(&mut Window, &mut Context<V>) -> V + 'static,
+    root: impl FnOnce(&mut gpui_kit::Window, &mut gpui_kit::Context<V>) -> V + 'static,
 ) {
+    use super::theme::follow_system;
+    use gpui_icons::LucideAssetSource;
+    use gpui_kit::AppContext as _;
+
     let launch = move |cx: &mut App| {
         let options = config.install(cx);
         cx.open_window(options, |window, cx| {
